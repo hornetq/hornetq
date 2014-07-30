@@ -108,6 +108,58 @@ public class HAPolicy implements Serializable
 
    private boolean restartBackup = HornetQDefaultConfiguration.isDefaultRestartBackup();
 
+   public HAPolicy()
+   {
+   }
+
+   public HAPolicy(POLICY_TYPE policyType, boolean requestBackup, int backupRequestRetries, long backupRequestRetryInterval, int maxBackups, int backupPortOffset, BackupStrategy backupStrategy, String scaleDownDiscoveryGroup, String scaleDownGroupName, String backupGroupName, List<String> remoteConnectors, boolean checkForLiverServer, boolean allowAutoFailBack, long failbackDelay, boolean failoverOnServerShutdown, String replicationClusterName, String scaleDownClusterName, int maxSavedReplicatedJournalsSize, boolean scaleDown, boolean restartBackup)
+   {
+      this.policyType = policyType;
+      this.requestBackup = requestBackup;
+      this.backupRequestRetries = backupRequestRetries;
+      this.backupRequestRetryInterval = backupRequestRetryInterval;
+      this.maxBackups = maxBackups;
+      this.backupPortOffset = backupPortOffset;
+      this.backupStrategy = backupStrategy;
+      this.scaleDownDiscoveryGroup = scaleDownDiscoveryGroup;
+      this.scaleDownGroupName = scaleDownGroupName;
+      this.backupGroupName = backupGroupName;
+      this.remoteConnectors = remoteConnectors;
+      this.checkForLiverServer = checkForLiverServer;
+      this.allowAutoFailBack = allowAutoFailBack;
+      this.failbackDelay = failbackDelay;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
+      this.replicationClusterName = replicationClusterName;
+      this.scaleDownClusterName = scaleDownClusterName;
+      this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
+      this.scaleDown = scaleDown;
+      this.restartBackup = restartBackup;
+   }
+
+   public HAPolicy(POLICY_TYPE policyType, boolean requestBackup, int backupRequestRetries, long backupRequestRetryInterval, int maxBackups, int backupPortOffset, BackupStrategy backupStrategy, List<String> scaleDownConnectors, String scaleDownGroupName, String backupGroupName, List<String> remoteConnectors, boolean checkForLiverServer, boolean allowAutoFailBack, long failbackDelay, boolean failoverOnServerShutdown, String replicationClusterName, String scaleDownClusterName, int maxSavedReplicatedJournalsSize, boolean scaleDown, boolean restartBackup)
+   {
+      this.policyType = policyType;
+      this.requestBackup = requestBackup;
+      this.backupRequestRetries = backupRequestRetries;
+      this.backupRequestRetryInterval = backupRequestRetryInterval;
+      this.maxBackups = maxBackups;
+      this.backupPortOffset = backupPortOffset;
+      this.backupStrategy = backupStrategy;
+      this.scaleDownConnectors = scaleDownConnectors;
+      this.scaleDownGroupName = scaleDownGroupName;
+      this.backupGroupName = backupGroupName;
+      this.remoteConnectors = remoteConnectors;
+      this.checkForLiverServer = checkForLiverServer;
+      this.allowAutoFailBack = allowAutoFailBack;
+      this.failbackDelay = failbackDelay;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
+      this.replicationClusterName = replicationClusterName;
+      this.scaleDownClusterName = scaleDownClusterName;
+      this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
+      this.scaleDown = scaleDown;
+      this.restartBackup = restartBackup;
+   }
+
    public POLICY_TYPE getPolicyType()
    {
       return policyType;
