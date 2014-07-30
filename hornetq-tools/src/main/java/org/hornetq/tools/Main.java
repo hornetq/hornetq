@@ -13,6 +13,9 @@
 
 package org.hornetq.tools;
 
+import org.hornetq.jms.persistence.impl.journal.XmlDataExporter;
+import org.hornetq.jms.persistence.impl.journal.XmlDataImporter;
+
 public class Main
 {
    public static final String USAGE = "Use: java -jar " + getJarName();
@@ -52,8 +55,8 @@ public class Main
          }
          else
          {
-            XmlDataExporter xmlDataExporter = new XmlDataExporter(System.out, arg[1], arg[2], arg[3], arg[4]);
-            xmlDataExporter.writeXMLData();
+            String[] mainArgs = new String[] {arg[1], arg[2], arg[3], arg[4]};
+            XmlDataExporter.main(mainArgs);
          }
       }
       else if (IMPORT.equals(arg[0]))
@@ -65,8 +68,8 @@ public class Main
          }
          else
          {
-            XmlDataImporter xmlDataImporter = new XmlDataImporter(arg[1], arg[2], arg[3], Boolean.parseBoolean(arg[4]), Boolean.parseBoolean(arg[5]));
-            xmlDataImporter.processXml();
+            String[] mainArgs = new String[] {arg[1], arg[2], arg[3], arg[4], arg[5]};
+            XmlDataImporter.main(mainArgs);
          }
       }
       else if (PRINT_DATA.equals(arg[0]))
