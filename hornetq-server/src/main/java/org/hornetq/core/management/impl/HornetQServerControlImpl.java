@@ -24,10 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
+import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
@@ -40,9 +42,9 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -70,6 +72,7 @@ import org.hornetq.core.transaction.impl.CoreTransactionDetail;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.SecurityFormatter;
+import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -78,7 +81,8 @@ import org.hornetq.utils.json.JSONObject;
  *
  *
  */
-public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter
+public class HornetQServerControlImpl extends AbstractControl implements HornetQServerControl, NotificationEmitter,
+                                                                         org.hornetq.core.server.management.NotificationListener
 {
    // Constants -----------------------------------------------------
 
@@ -98,6 +102,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    private final NotificationBroadcasterSupport broadcaster;
 
+   private final AtomicLong notifSeq = new AtomicLong(0);
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -119,6 +124,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
+      server.getManagementService().addNotificationListener(this);
    }
 
    // HornetQServerControlMBean implementation --------------------
@@ -1863,7 +1869,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
    public MBeanNotificationInfo[] getNotificationInfo()
    {
-      NotificationType[] values = NotificationType.values();
+      CoreNotificationType[] values = CoreNotificationType.values();
       String[] names = new String[values.length];
       for (int i = 0; i < values.length; i++)
       {
@@ -2007,6 +2013,17 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          list.add(value.trim());
       }
       return list;
+   }
+
+   @Override
+   public void onNotification(org.hornetq.core.server.management.Notification notification)
+   {
+      if (!(notification.getType() instanceof CoreNotificationType)) return;
+      CoreNotificationType type = (CoreNotificationType) notification.getType();
+      TypedProperties prop = notification.getProperties();
+
+      this.broadcaster.sendNotification(new Notification(type.toString(), this,
+            notifSeq.incrementAndGet(), notification.toString()));
    }
 
 }

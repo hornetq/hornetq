@@ -13,7 +13,6 @@
 package org.hornetq.tests.integration.management;
 import org.junit.Before;
 import org.junit.After;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -25,13 +24,12 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 import org.junit.Assert;
-
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.management.ClusterConnectionControl;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -167,8 +165,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       clusterConnectionControl.stop();
 
       Assert.assertTrue(notifListener.getNotifications().size() > 0);
+
       Notification notif = notifListener.getNotifications().get(notifListener.getNotifications().size() - 1);
-      Assert.assertEquals(NotificationType.CLUSTER_CONNECTION_STOPPED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.CLUSTER_CONNECTION_STOPPED, notif.getType());
+
       Assert.assertEquals(clusterConnectionControl.getName(), notif.getProperties()
                                                                    .getSimpleStringProperty(new SimpleString("name"))
                                                                    .toString());
@@ -176,8 +176,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       clusterConnectionControl.start();
 
       Assert.assertTrue(notifListener.getNotifications().size() > 0);
+
       notif = notifListener.getNotifications().get(notifListener.getNotifications().size() - 1);
-      Assert.assertEquals(NotificationType.CLUSTER_CONNECTION_STARTED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.CLUSTER_CONNECTION_STARTED, notif.getType());
+
       Assert.assertEquals(clusterConnectionControl.getName(), notif.getProperties()
                                                                    .getSimpleStringProperty(new SimpleString("name"))
                                                                    .toString());

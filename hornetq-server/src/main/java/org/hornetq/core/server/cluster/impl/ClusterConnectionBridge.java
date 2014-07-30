@@ -24,8 +24,8 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -254,32 +254,32 @@ public class ClusterConnectionBridge extends BridgeImpl
          SimpleString notifQueueName = new SimpleString(qName);
 
          SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
-                                                BindingType.DIVERT.toInt() +
-                                                " AND " +
-                                                ManagementHelper.HDR_NOTIFICATION_TYPE +
-                                                " IN ('" +
-                                                NotificationType.BINDING_ADDED +
-                                                "','" +
-                                                NotificationType.BINDING_REMOVED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CREATED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CLOSED +
-                                                "','" +
-                                                NotificationType.PROPOSAL +
-                                                "','" +
-                                                NotificationType.PROPOSAL_RESPONSE +
-                                                "','" +
-                                                NotificationType.UNPROPOSAL +
-                                                "') AND " +
-                                                ManagementHelper.HDR_DISTANCE +
-                                                "<" +
-                                                flowRecord.getMaxHops() +
-                                                " AND (" +
-                                                ManagementHelper.HDR_ADDRESS +
-                                                " LIKE '" +
-                                                flowRecord.getAddress() +
-                                                "%')");
+                                                   BindingType.DIVERT.toInt() +
+                                                   " AND " +
+                                                   ManagementHelper.HDR_NOTIFICATION_TYPE +
+                                                   " IN ('" +
+                                                   CoreNotificationType.BINDING_ADDED +
+                                                   "','" +
+                                                   CoreNotificationType.BINDING_REMOVED +
+                                                   "','" +
+                                                   CoreNotificationType.CONSUMER_CREATED +
+                                                   "','" +
+                                                   CoreNotificationType.CONSUMER_CLOSED +
+                                                   "','" +
+                                                   CoreNotificationType.PROPOSAL +
+                                                   "','" +
+                                                   CoreNotificationType.PROPOSAL_RESPONSE +
+                                                   "','" +
+                                                   CoreNotificationType.UNPROPOSAL +
+                                                   "') AND " +
+                                                   ManagementHelper.HDR_DISTANCE +
+                                                   "<" +
+                                                   flowRecord.getMaxHops() +
+                                                   " AND (" +
+                                                   ManagementHelper.HDR_ADDRESS +
+                                                   " LIKE '" +
+                                                   flowRecord.getAddress() +
+                                                   "%')");
 
          session.createTemporaryQueue(managementNotificationAddress, notifQueueName, filter);
 

@@ -12,7 +12,6 @@
  */
 package org.hornetq.tests.integration.management;
 import org.junit.Before;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -24,13 +23,12 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 import org.junit.Assert;
-
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.BridgeControl;
-import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -108,7 +106,7 @@ public class BridgeControlTest extends ManagementTestBase
 
       Assert.assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
-      Assert.assertEquals(NotificationType.BRIDGE_STOPPED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.BRIDGE_STOPPED, notif.getType());
       Assert.assertEquals(bridgeControl.getName(), notif.getProperties()
                                                         .getSimpleStringProperty(new SimpleString("name"))
                                                         .toString());
@@ -117,7 +115,7 @@ public class BridgeControlTest extends ManagementTestBase
 
       Assert.assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
-      Assert.assertEquals(NotificationType.BRIDGE_STARTED, notif.getType());
+      Assert.assertEquals(CoreNotificationType.BRIDGE_STARTED, notif.getType());
       Assert.assertEquals(bridgeControl.getName(), notif.getProperties()
                                                         .getSimpleStringProperty(new SimpleString("name"))
                                                         .toString());
