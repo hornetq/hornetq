@@ -69,7 +69,12 @@
          <artifactId>hornetq-commons</artifactId>
          <version>${project.version}</version>
       </dependency>
-      <dependency>
+       <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-tools</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+     <dependency>
          <groupId>org.hornetq</groupId>
          <artifactId>hornetq-twitter-integration</artifactId>
          <version>${project.version}</version>

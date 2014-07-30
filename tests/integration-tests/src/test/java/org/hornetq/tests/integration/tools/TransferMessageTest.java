@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tools.test.transfer;
+package org.hornetq.tests.integration.tools;
 
 import java.util.ArrayList;
 import java.util.Map;
