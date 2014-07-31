@@ -337,6 +337,16 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
       HornetQClientLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getType());
 
+
+      try
+      {
+         transportConnection.forceClose();
+      }
+      catch (Throwable e)
+      {
+         HornetQClientLogger.LOGGER.warn(e.getMessage(), e);
+      }
+
       // Then call the listeners
       callFailureListeners(me);
 

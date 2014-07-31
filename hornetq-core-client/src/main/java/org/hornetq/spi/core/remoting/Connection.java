@@ -55,6 +55,14 @@ public interface Connection
     */
    void write(HornetQBuffer buffer);
 
+
+   /**
+    * This should close the internal channel without calling any listeners.
+    * This is to avoid a situation where the broker is busy writing on an internal thread.
+    * This should close the socket releasing any pending threads.
+    */
+   void forceClose();
+
    /**
     * Closes the connection.
     */
