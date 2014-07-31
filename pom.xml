@@ -7,6 +7,7 @@
    <version>2.5.0-SNAPSHOT</version>
    <modules>
       <module>hornetq-protocols</module>
+     <module>hornetq-dto</module>
    </modules>
 
    <name>HornetQ Parent</name>
@@ -270,6 +271,16 @@
             <artifactId>jgroups</artifactId>
             <version>3.3.4.Final</version>
          </dependency>
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>airline</artifactId>
+            <version>0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.3.1</version>
+        </dependency>
          <!--needed for microntainer deps in distro-->
          <dependency>
             <groupId>org.jboss.microcontainer</groupId>
@@ -493,6 +504,7 @@
             <activeByDefault>true</activeByDefault>
          </activation>
          <modules>
+            <module>hornetq-dto</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-selector</module>
@@ -517,6 +529,7 @@
       <profile>
          <id>maven-release</id>
          <modules>
+            <module>hornetq-dto</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-selector</module>
@@ -541,6 +554,7 @@
       <profile>
          <id>release</id>
          <modules>
+            <module>hornetq-dto</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-selector</module>
@@ -567,6 +581,7 @@
       <profile>
          <id>hudson-tests</id>
          <modules>
+            <module>hornetq-dto</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-selector</module>
@@ -604,6 +619,7 @@
       <profile>
          <id>jenkins-fast-tests</id>
          <modules>
+            <module>hornetq-dto</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-selector</module>
@@ -637,6 +653,7 @@
       <profile>
          <id>examples</id>
          <modules>
+            <module>hornetq-dto</module>
             <module>hornetq-bootstrap</module>
             <module>hornetq-commons</module>
             <module>hornetq-selector</module>
