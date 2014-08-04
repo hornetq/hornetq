@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -350,7 +352,7 @@ public class JournalStorageManager implements StorageManager
     * To achieve (2), instead of writing directly to instances of {@link JournalImpl}, we write to
     * instances of {@link ReplicatedJournal}.
     * <p/>
-    * At the backup-side replication is handled by {@link ReplicationEndpoint}.
+    * At the backup-side replication is handled by {@link org.hornetq.core.replication.ReplicationEndpoint}.
     *
     * @param replicationManager
     * @param pagingManager
@@ -380,6 +382,10 @@ public class JournalStorageManager implements StorageManager
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
 
+      // We get a picture of the current sitaution on the large messages
+      // and we send the current messages while more state is coming
+      Map<Long, Pair<String, Long>> pendingLargeMessages = null;
+
       try
       {
          Map<SimpleString, Collection<Integer>> pageFilesToSync;
@@ -408,7 +414,7 @@ public class JournalStorageManager implements StorageManager
                   bindingsFiles =
                      prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID, autoFailBack);
                   pageFilesToSync = getPageInformationForSync(pagingManager);
-                  getLargeMessageInformation();
+                  pendingLargeMessages = recoverPendingLargeMessages();
                }
                finally
                {
@@ -428,9 +434,11 @@ public class JournalStorageManager implements StorageManager
             storageManagerLock.writeLock().unlock();
          }
 
+         // it will send a list of IDs that we are allocating
+         replicator.sendLargeMessageIdListMessage(pendingLargeMessages);
          sendJournalFile(messageFiles, JournalContent.MESSAGES);
          sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
-         sendLargeMessageFiles();
+         sendLargeMessageFiles(pendingLargeMessages);
          sendPagesToBackup(pageFilesToSync, pagingManager);
 
          storageManagerLock.writeLock().lock();
@@ -574,23 +582,18 @@ public class JournalStorageManager implements StorageManager
       return info;
    }
 
-   private void sendLargeMessageFiles() throws Exception
+   private void sendLargeMessageFiles(final Map<Long, Pair<String, Long>> pendingLargeMessages) throws Exception
    {
-      while (true)
+      Iterator<Entry<Long, Pair<String, Long>>> iter = pendingLargeMessages.entrySet().iterator();
+      while (started && iter.hasNext())
       {
-         Map.Entry<Long, Pair<String, Long>> entry = replicator.getNextLargeMessageToSync();
-         if (entry == null)
-         {
-            break;
-         }
+         Map.Entry<Long, Pair<String, Long>> entry = iter.next();
          String fileName = entry.getValue().getA();
          final long id = entry.getKey();
          long size = entry.getValue().getB();
          SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
          if (!seqFile.exists())
             continue;
-         if (!started)
-            return;
          replicator.syncLargeMessageFile(seqFile, size, id);
       }
    }
@@ -610,8 +613,9 @@ public class JournalStorageManager implements StorageManager
     *
     * @throws Exception
     */
-   private void getLargeMessageInformation() throws Exception
+   private Map<Long, Pair<String, Long>> recoverPendingLargeMessages() throws Exception
    {
+
       Map<Long, Pair<String, Long>> largeMessages = new HashMap<Long, Pair<String, Long>>();
       // only send durable messages... // listFiles append a "." to anything...
       List<String> filenames = largeMessagesFactory.listFiles("msg");
@@ -620,12 +624,16 @@ public class JournalStorageManager implements StorageManager
       for (String filename : filenames)
       {
          Long id = getLargeMessageIdFromFilename(filename);
-         idList.add(id);
-         SequentialFile seqFile = largeMessagesFactory.createSequentialFile(filename, 1);
-         long size = seqFile.size();
-         largeMessages.put(id, new Pair<String, Long>(filename, size));
+         if (!largeMessagesToDelete.contains(id))
+         {
+            idList.add(id);
+            SequentialFile seqFile = largeMessagesFactory.createSequentialFile(filename, 1);
+            long size = seqFile.size();
+            largeMessages.put(id, new Pair<String, Long>(filename, size));
+         }
       }
-      replicator.sendLargeMessageIdListMessage(largeMessages);
+
+      return largeMessages;
    }
 
    /**
@@ -2392,6 +2400,21 @@ public class JournalStorageManager implements StorageManager
    // This should be accessed from this package only
    void deleteLargeMessageFile(final LargeServerMessage largeServerMessage) throws HornetQException
    {
+      if (largeServerMessage.getPendingRecordID() < 0)
+      {
+         try
+         {
+            // The delete file happens asynchronously
+            // And the client won't be waiting for the actual file to be deleted.
+            // We set a temporary record (short lived) on the journal
+            // to avoid a situation where the server is restarted and pending large message stays on forever
+            largeServerMessage.setPendingRecordID(storePendingLargeMessage(largeServerMessage.getMessageID()));
+         }
+         catch (Exception e)
+         {
+            throw new HornetQInternalErrorException(e.getMessage(), e);
+         }
+      }
       final SequentialFile file = largeServerMessage.getFile();
       if (file == null)
       {
@@ -3443,7 +3466,7 @@ public class JournalStorageManager implements StorageManager
     * This is only used when loading a transaction.
     * <p/>
     * it might be possible to merge the functionality of this class with
-    * {@link PagingStoreImpl.FinishPageMessageOperation}
+    * {@link org.hornetq.core.persistence.impl.journal.JournalStorageManager.FinishPageMessageOperation}
     */
    // TODO: merge this class with the one on the PagingStoreImpl
    private static class FinishPageMessageOperation extends TransactionOperationAbstract implements TransactionOperation
