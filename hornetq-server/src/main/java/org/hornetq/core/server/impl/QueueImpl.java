@@ -14,6 +14,7 @@ package org.hornetq.core.server.impl;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,9 +33,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.CoreNotificationType;
+import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
@@ -42,8 +46,11 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.impl.PostOfficeImpl;
+import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
@@ -52,14 +59,18 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.impl.Redistributor;
+import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.BindingsTransactionImpl;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
@@ -67,6 +78,7 @@ import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
 import org.hornetq.utils.ReferenceCounter;
 import org.hornetq.utils.ReusableLatch;
+import org.hornetq.utils.TypedProperties;
 
 /**
  * Implementation of a Queue
@@ -197,6 +209,14 @@ public class QueueImpl implements Queue
    private final ExpiryScanner expiryScanner = new ExpiryScanner();
 
    private final ReusableLatch deliveriesInTransit = new ReusableLatch(0);
+
+   private AtomicLong queueRateCheckTime = new AtomicLong(System.currentTimeMillis());
+
+   private AtomicLong messagesAddedSnapshot = new AtomicLong(0);
+
+   private ScheduledFuture slowConsumerReaperFuture;
+
+   private SlowConsumerReaperRunnable slowConsumerReaperRunnable;
 
    /**
     * This is to avoid multi-thread races on calculating direct delivery,
@@ -1439,6 +1459,11 @@ public class QueueImpl implements Queue
          {
             storageManager.deleteQueueBinding(tx.getID(), getID());
             tx.setContainsPersistent();
+         }
+
+         if (slowConsumerReaperFuture != null)
+         {
+            slowConsumerReaperFuture.cancel(false);
          }
 
          tx.commit();
@@ -2742,6 +2767,16 @@ public class QueueImpl implements Queue
       messagesAdded = 0;
    }
 
+   public float getRate()
+   {
+      float timeSlice = ((System.currentTimeMillis() - queueRateCheckTime.getAndSet(System.currentTimeMillis())) / 1000.0f);
+      if (timeSlice == 0)
+      {
+         messagesAddedSnapshot.getAndSet(messagesAdded);
+         return 0.0f;
+      }
+      return BigDecimal.valueOf((messagesAdded - messagesAddedSnapshot.getAndSet(messagesAdded)) / timeSlice).setScale(2, BigDecimal.ROUND_UP).floatValue();
+   }
 
    // Inner classes
    // --------------------------------------------------------------------------
@@ -3110,11 +3145,61 @@ public class QueueImpl implements Queue
       deliveringCount.decrementAndGet();
    }
 
-   private void configureExpiry(final SimpleString expiryAddressArgument)
+   private void configureExpiry(final AddressSettings settings)
    {
-      this.expiryAddress = expiryAddressArgument;
+      this.expiryAddress = settings == null ? null : settings.getExpiryAddress();
    }
 
+   private void configureSlowConsumerReaper(final AddressSettings settings)
+   {
+      if (settings == null || settings.getSlowConsumerThreshold() == AddressSettings.DEFAULT_SLOW_CONSUMER_THRESHOLD)
+      {
+         if (slowConsumerReaperFuture != null)
+         {
+            slowConsumerReaperFuture.cancel(false);
+            slowConsumerReaperFuture = null;
+            slowConsumerReaperRunnable = null;
+            if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            {
+               HornetQServerLogger.LOGGER.debug("Cancelled slow-consumer-reaper thread for queue \"" + getName() + "\"");
+            }
+         }
+      }
+      else
+      {
+         if (slowConsumerReaperRunnable == null)
+         {
+            scheduleSlowConsumerReaper(settings);
+         }
+         else if (slowConsumerReaperRunnable.checkPeriod != settings.getSlowConsumerCheckPeriod() ||
+            slowConsumerReaperRunnable.threshold != settings.getSlowConsumerThreshold() ||
+            !slowConsumerReaperRunnable.policy.equals(settings.getSlowConsumerPolicy()))
+         {
+            slowConsumerReaperFuture.cancel(false);
+            scheduleSlowConsumerReaper(settings);
+         }
+      }
+   }
+
+   void scheduleSlowConsumerReaper(AddressSettings settings)
+   {
+      slowConsumerReaperRunnable = new SlowConsumerReaperRunnable(settings.getSlowConsumerCheckPeriod(),
+                                                                  settings.getSlowConsumerThreshold(),
+                                                                  settings.getSlowConsumerPolicy());
+
+      slowConsumerReaperFuture = scheduledExecutor.scheduleWithFixedDelay(slowConsumerReaperRunnable,
+                                                                          settings.getSlowConsumerCheckPeriod(),
+                                                                          settings.getSlowConsumerCheckPeriod(),
+                                                                          TimeUnit.SECONDS);
+
+      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      {
+         HornetQServerLogger.LOGGER.debug("Scheduled slow-consumer-reaper thread for queue \"" + getName() +
+                                             "\"; slow-consumer-check-period=" + settings.getSlowConsumerCheckPeriod() +
+                                             ", slow-consumer-threshold=" + settings.getSlowConsumerThreshold() +
+                                             ", slow-consumer-policy=" + settings.getSlowConsumerPolicy());
+      }
+   }
 
    private class AddressSettingsRepositoryListener implements HierarchicalRepositoryChangeListener
    {
@@ -3122,13 +3207,103 @@ public class QueueImpl implements Queue
       public void onChange()
       {
          AddressSettings settings = addressSettingsRepository.getMatch(address.toString());
-         if (settings == null)
+         configureExpiry(settings);
+         configureSlowConsumerReaper(settings);
+      }
+   }
+
+   private final class SlowConsumerReaperRunnable implements Runnable
+   {
+      private SlowConsumerPolicy policy;
+      private float threshold;
+      private long checkPeriod;
+
+      public SlowConsumerReaperRunnable(long checkPeriod, float threshold, SlowConsumerPolicy policy)
+      {
+         this.checkPeriod = checkPeriod;
+         this.policy = policy;
+         this.threshold = threshold;
+      }
+
+      @Override
+      public void run()
+      {
+         float queueRate = getRate();
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
-            configureExpiry(null);
+            HornetQServerLogger.LOGGER.debug(getAddress() + ":" + getName() + " has " + getConsumerCount() + " consumer(s) and is receiving messages at a rate of " + queueRate + " msgs/second.");
          }
-         else
+         for (Consumer consumer : getConsumers())
          {
-            configureExpiry(settings.getExpiryAddress());
+            if (consumer instanceof ServerConsumerImpl)
+            {
+               ServerConsumerImpl serverConsumer = (ServerConsumerImpl) consumer;
+               float consumerRate = serverConsumer.getRate();
+               if (queueRate < threshold)
+               {
+                  if (HornetQServerLogger.LOGGER.isDebugEnabled())
+                  {
+                     HornetQServerLogger.LOGGER.debug("Insufficient messages received on queue \"" + getName() + "\" to satisfy slow-consumer-threshold. Skipping inspection of consumer.");
+                  }
+               }
+               else if (consumerRate < threshold)
+               {
+                  RemotingConnection connection = null;
+                  RemotingService remotingService = ((PostOfficeImpl) postOffice).getServer().getRemotingService();
+
+                  for (RemotingConnection potentialConnection : remotingService.getConnections())
+                  {
+                     if (potentialConnection.getID().toString().equals(serverConsumer.getConnectionID()))
+                     {
+                        connection = potentialConnection;
+                     }
+                  }
+
+                  if (connection != null)
+                  {
+                     HornetQServerLogger.LOGGER.slowConsumerDetected(serverConsumer.getSessionID(), serverConsumer.getID(), getName().toString(), connection.getRemoteAddress(), threshold, consumerRate);
+                     if (policy.equals(SlowConsumerPolicy.KILL))
+                     {
+                        remotingService.removeConnection(connection.getID());
+                        connection.fail(HornetQMessageBundle.BUNDLE.connectionsClosedByManagement(connection.getRemoteAddress()));
+                     }
+                     else if (policy.equals(SlowConsumerPolicy.NOTIFY))
+                     {
+                        TypedProperties props = new TypedProperties();
+
+                        props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, getConsumerCount());
+
+                        props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
+
+                        if (connection != null)
+                        {
+                           props.putSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS, SimpleString.toSimpleString(connection.getRemoteAddress()));
+
+                           if (connection.getID() != null)
+                           {
+                              props.putSimpleStringProperty(ManagementHelper.HDR_CONNECTION_NAME, SimpleString.toSimpleString(connection.getID().toString()));
+                           }
+                        }
+
+                        props.putLongProperty(ManagementHelper.HDR_CONSUMER_NAME, serverConsumer.getID());
+
+                        props.putSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME, SimpleString.toSimpleString(serverConsumer.getSessionID()));
+
+                        Notification notification = new Notification(null, CoreNotificationType.CONSUMER_SLOW, props);
+
+                        ManagementService managementService = ((PostOfficeImpl) postOffice).getServer().getManagementService();
+                        try
+                        {
+                           managementService.sendNotification(notification);
+                        }
+                        catch (Exception e)
+                        {
+                           HornetQServerLogger.LOGGER.failedToSendSlowConsumerNotification(notification, e);
+                        }
+                     }
+                  }
+               }
+            }
          }
       }
    }

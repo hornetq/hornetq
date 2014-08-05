@@ -71,6 +71,7 @@ import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionDetail;
@@ -1610,6 +1611,11 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             : addressSettings.getAddressFullMessagePolicy() == AddressFullMessagePolicy.DROP ? "DROP"
             : "FAIL";
       settings.put("addressFullMessagePolicy", policy);
+      settings.put("slowConsumerThreshold", addressSettings.getSlowConsumerThreshold());
+      settings.put("slowConsumerCheckPeriod", addressSettings.getSlowConsumerCheckPeriod());
+      policy = addressSettings.getSlowConsumerPolicy() == SlowConsumerPolicy.NOTIFY ? "NOTIFY"
+         : "KILL";
+      settings.put("slowConsumerPolicy", policy);
 
       JSONObject jsonObject = new JSONObject(settings);
       return jsonObject.toString();
@@ -1630,7 +1636,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                   final long maxRedeliveryDelay,
                                   final long redistributionDelay,
                                   final boolean sendToDLAOnNoRoute,
-                                  final String addressFullMessagePolicy) throws Exception
+                                  final String addressFullMessagePolicy,
+                                  final long slowConsumerThreshold,
+                                  final long slowConsumerCheckPeriod,
+                                  final String slowConsumerPolicy) throws Exception
    {
       checkStarted();
 
@@ -1678,6 +1687,20 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       else if (addressFullMessagePolicy.equalsIgnoreCase("FAIL"))
       {
          addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.FAIL);
+      }
+      addressSettings.setSlowConsumerThreshold(slowConsumerThreshold);
+      addressSettings.setSlowConsumerCheckPeriod(slowConsumerCheckPeriod);
+      if (slowConsumerPolicy == null)
+      {
+         addressSettings.setSlowConsumerPolicy(SlowConsumerPolicy.NOTIFY);
+      }
+      else if (slowConsumerPolicy.equalsIgnoreCase("NOTIFY"))
+      {
+         addressSettings.setSlowConsumerPolicy(SlowConsumerPolicy.NOTIFY);
+      }
+      else if (slowConsumerPolicy.equalsIgnoreCase("KILL"))
+      {
+         addressSettings.setSlowConsumerPolicy(SlowConsumerPolicy.KILL);
       }
       server.getAddressSettingsRepository().addMatch(address, addressSettings);
 

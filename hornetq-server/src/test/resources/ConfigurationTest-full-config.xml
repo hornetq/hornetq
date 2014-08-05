@@ -220,6 +220,9 @@
          <page-size-bytes>81738173872337</page-size-bytes>
          <page-max-cache-size>10</page-max-cache-size>
          <message-counter-history-day-limit>4</message-counter-history-day-limit>
+         <slow-consumer-threshold>10</slow-consumer-threshold>
+         <slow-consumer-check-period>5</slow-consumer-check-period>
+         <slow-consumer-policy>NOTIFY</slow-consumer-policy>
       </address-setting>
       <address-setting match="a2">
          <dead-letter-address>a2.1</dead-letter-address>
@@ -229,6 +232,9 @@
          <page-size-bytes>7126716262626</page-size-bytes>
          <page-max-cache-size>20</page-max-cache-size>
          <message-counter-history-day-limit>8</message-counter-history-day-limit>
+         <slow-consumer-threshold>20</slow-consumer-threshold>
+         <slow-consumer-check-period>15</slow-consumer-check-period>
+         <slow-consumer-policy>KILL</slow-consumer-policy>
       </address-setting>
    </address-settings>
 
