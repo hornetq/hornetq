@@ -40,6 +40,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -502,6 +503,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       long redistributionDelay = 5;
       boolean sendToDLAOnNoRoute = true;
       String addressFullMessagePolicy = "PAGE";
+      long slowConsumerThreshold = 5;
+      long slowConsumerCheckPeriod = 10;
+      String slowConsumerPolicy = SlowConsumerPolicy.KILL.toString();
 
       serverControl.addAddressSettings(addressMatch,
                                        DLA,
@@ -517,7 +521,10 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        maxRedeliveryDelay,
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
-                                       addressFullMessagePolicy);
+                                       addressFullMessagePolicy,
+                                       slowConsumerThreshold,
+                                       slowConsumerCheckPeriod,
+                                       slowConsumerPolicy);
 
 
       boolean ex = false;
@@ -537,7 +544,10 @@ public class HornetQServerControlTest extends ManagementTestBase
                                           maxRedeliveryDelay,
                                           redistributionDelay,
                                           sendToDLAOnNoRoute,
-                                          addressFullMessagePolicy);
+                                          addressFullMessagePolicy,
+                                          slowConsumerThreshold,
+                                          slowConsumerCheckPeriod,
+                                          slowConsumerPolicy);
       }
       catch (Exception expected)
       {
@@ -564,6 +574,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
+      assertEquals(slowConsumerThreshold, info.getSlowConsumerThreshold());
+      assertEquals(slowConsumerCheckPeriod, info.getSlowConsumerCheckPeriod());
+      assertEquals(slowConsumerPolicy, info.getSlowConsumerPolicy());
 
       serverControl.addAddressSettings(addressMatch,
                                        DLA,
@@ -579,7 +592,10 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        maxRedeliveryDelay,
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
-                                       addressFullMessagePolicy);
+                                       addressFullMessagePolicy,
+                                       slowConsumerThreshold,
+                                       slowConsumerCheckPeriod,
+                                       slowConsumerPolicy);
 
 
       jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
@@ -598,6 +614,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
+      assertEquals(slowConsumerThreshold, info.getSlowConsumerThreshold());
+      assertEquals(slowConsumerCheckPeriod, info.getSlowConsumerCheckPeriod());
+      assertEquals(slowConsumerPolicy, info.getSlowConsumerPolicy());
 
 
       ex = false;
@@ -617,7 +636,10 @@ public class HornetQServerControlTest extends ManagementTestBase
                                           maxRedeliveryDelay,
                                           redistributionDelay,
                                           sendToDLAOnNoRoute,
-                                          addressFullMessagePolicy);
+                                          addressFullMessagePolicy,
+                                          slowConsumerThreshold,
+                                          slowConsumerCheckPeriod,
+                                          slowConsumerPolicy);
       }
       catch (Exception e)
       {

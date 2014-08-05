@@ -260,4 +260,6 @@ public interface Queue extends Bindable
    List<MessageReference> cancelScheduledMessages();
 
    void postAcknowledge(MessageReference ref);
+
+   float getRate();
 }

@@ -1522,4 +1522,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       return addressManager;
    }
+
+   public HornetQServer getServer()
+   {
+      return server;
+   }
 }
