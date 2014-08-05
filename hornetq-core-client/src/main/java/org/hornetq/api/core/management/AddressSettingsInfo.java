@@ -49,6 +49,12 @@ public final class AddressSettingsInfo
 
    private final boolean sendToDLAOnNoRoute;
 
+   private final long slowConsumerThreshold;
+
+   private final long slowConsumerCheckPeriod;
+
+   private final String slowConsumerPolicy;
+
    // Static --------------------------------------------------------
 
    public static AddressSettingsInfo from(final String jsonString) throws Exception
@@ -66,7 +72,10 @@ public final class AddressSettingsInfo
                                      object.getString("expiryAddress"),
                                      object.getBoolean("lastValueQueue"),
                                      object.getLong("redistributionDelay"),
-                                     object.getBoolean("sendToDLAOnNoRoute"));
+                                     object.getBoolean("sendToDLAOnNoRoute"),
+                                     object.getLong("slowConsumerThreshold"),
+                                     object.getLong("slowConsumerCheckPeriod"),
+                                     object.getString("slowConsumerPolicy"));
    }
 
    // Constructors --------------------------------------------------
@@ -83,7 +92,10 @@ public final class AddressSettingsInfo
                               String expiryAddress,
                               boolean lastValueQueue,
                               long redistributionDelay,
-                              boolean sendToDLAOnNoRoute)
+                              boolean sendToDLAOnNoRoute,
+                              long slowConsumerThreshold,
+                              long slowConsumerCheckPeriod,
+                              String slowConsumerPolicy)
    {
       this.addressFullMessagePolicy = addressFullMessagePolicy;
       this.maxSizeBytes = maxSizeBytes;
@@ -98,6 +110,9 @@ public final class AddressSettingsInfo
       this.lastValueQueue = lastValueQueue;
       this.redistributionDelay = redistributionDelay;
       this.sendToDLAOnNoRoute = sendToDLAOnNoRoute;
+      this.slowConsumerThreshold = slowConsumerThreshold;
+      this.slowConsumerCheckPeriod = slowConsumerCheckPeriod;
+      this.slowConsumerPolicy = slowConsumerPolicy;
    }
 
    // Public --------------------------------------------------------
@@ -170,6 +185,21 @@ public final class AddressSettingsInfo
    public long getMaxRedeliveryDelay()
    {
       return maxRedeliveryDelay;
+   }
+
+   public long getSlowConsumerThreshold()
+   {
+      return slowConsumerThreshold;
+   }
+
+   public long getSlowConsumerCheckPeriod()
+   {
+      return slowConsumerCheckPeriod;
+   }
+
+   public String getSlowConsumerPolicy()
+   {
+      return slowConsumerPolicy;
    }
 }
 

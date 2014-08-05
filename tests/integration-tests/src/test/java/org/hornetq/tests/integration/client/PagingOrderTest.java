@@ -749,7 +749,10 @@ public class PagingOrderTest extends ServiceTestBase
                                                           1000,
                                                           0,
                                                           false,
-                                                          "PAGE");
+                                                          "PAGE",
+                                                          -1,
+                                                          10,
+                                                          "KILL");
 
       HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
                                                                                                                       new TransportConfiguration(INVM_CONNECTOR_FACTORY));
@@ -822,7 +825,10 @@ public class PagingOrderTest extends ServiceTestBase
                                                           1000,
                                                           0,
                                                           false,
-                                                          "PAGE");
+                                                          "PAGE",
+                                                          -1,
+                                                          10,
+                                                          "KILL");
 
       jmsServer.createQueue(true, "Q1", null, true, "/queue/Q1");
 

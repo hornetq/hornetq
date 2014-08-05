@@ -561,5 +561,9 @@ public class FakeQueue implements Queue
       return null;
    }
 
-
+   @Override
+   public float getRate()
+   {
+      return 0.0f;
+   }
 }
