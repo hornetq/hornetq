@@ -624,4 +624,10 @@ public class FakeQueue implements Queue
    public void postAcknowledge(MessageReference ref)
    {
    }
+
+   @Override
+   public float getRate()
+   {
+      return 0.0f;
+   }
 }

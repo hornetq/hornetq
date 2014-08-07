@@ -12,12 +12,14 @@
  */
 package org.hornetq.core.server.impl;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -134,6 +136,12 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private final AtomicBoolean writeReady = new AtomicBoolean(true);
 
    private final long creationTime;
+
+   private AtomicLong consumerRateCheckTime = new AtomicLong(System.currentTimeMillis());
+
+   private AtomicLong messageConsumedSnapshot = new AtomicLong(0);
+
+   private long acks;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -745,6 +753,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
 
             ref.getQueue().acknowledge(tx, ref);
+            acks++;
          }
          while (ref.getMessage().getMessageID() != messageID);
 
@@ -803,6 +812,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          ref.getQueue().acknowledge(tx, ref);
       }
+      acks++;
    }
 
    public void individualCancel(final long messageID, boolean failed) throws Exception
@@ -897,6 +907,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    public void disconnect()
    {
       callback.disconnect(id, getQueue().getName().toString());
+   }
+
+   public float getRate()
+   {
+      float timeSlice = ((System.currentTimeMillis() - consumerRateCheckTime.getAndSet(System.currentTimeMillis())) / 1000.0f);
+      if (timeSlice == 0)
+      {
+         messageConsumedSnapshot.getAndSet(acks);
+         return 0.0f;
+      }
+      return BigDecimal.valueOf((acks - messageConsumedSnapshot.getAndSet(acks)) / timeSlice).setScale(2, BigDecimal.ROUND_UP).floatValue();
    }
 
    // Private --------------------------------------------------------------------------------------
