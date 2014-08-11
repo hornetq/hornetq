@@ -16,10 +16,8 @@ import io.airlift.command.Arguments;
 import io.airlift.command.Command;
 import org.hornetq.dto.BrokerDTO;
 import org.hornetq.factory.BrokerFactory;
-import org.hornetq.utils.FactoryFinder;
 
 import java.io.File;
-import java.net.URI;
 
 @Command(name = "stop", description = "stops the broker instance")
 public class Stop implements Action
@@ -32,10 +30,7 @@ public class Stop implements Action
    @Override
    public Object execute(ActionContext context) throws Exception
    {
-      URI configURI = new URI(configuration);
-      FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/");
-      BrokerFactory factory = (BrokerFactory)finder.newInstance(configURI.getScheme());
-      BrokerDTO broker = factory.createBroker(configURI);
+      BrokerDTO broker = BrokerFactory.createBroker(configuration);
 
       File file = new File(broker.core.configuration).getParentFile();
 

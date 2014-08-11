@@ -12,11 +12,41 @@
  */
 package org.hornetq.factory;
 
+import org.hornetq.cli.ConfigurationException;
 import org.hornetq.dto.BrokerDTO;
+import org.hornetq.utils.FactoryFinder;
 
+import java.io.IOException;
 import java.net.URI;
 
-public interface BrokerFactory
+public class BrokerFactory
 {
-   BrokerDTO createBroker(URI brokerURI) throws Exception;
+
+   public static BrokerDTO createBroker(URI configURI) throws Exception
+   {
+      if (configURI.getScheme() == null)
+      {
+         throw new ConfigurationException("Invalid configuration URI, no scheme specified: " + configURI);
+      }
+
+      BrokerFactoryHandler factory = null;
+      try
+      {
+         FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/");
+         factory = (BrokerFactoryHandler)finder.newInstance(configURI.getScheme());
+      }
+      catch (IOException ioe )
+      {
+         throw new ConfigurationException("Invalid configuration URI, can't find configuration scheme: " + configURI.getScheme());
+      }
+
+
+      return factory.createBroker(configURI);
+   }
+
+   public static BrokerDTO createBroker(String configuration) throws Exception
+   {
+      return createBroker(new URI(configuration));
+   }
+
 }

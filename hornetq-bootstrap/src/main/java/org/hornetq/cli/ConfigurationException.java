@@ -10,19 +10,12 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.factory;
+package org.hornetq.cli;
 
-import org.hornetq.dto.BrokerDTO;
-import org.hornetq.dto.XmlUtil;
-
-import java.io.File;
-import java.net.URI;
-
-public class XmlBrokerFactory implements BrokerFactory
+public class ConfigurationException extends Exception
 {
-   @Override
-   public BrokerDTO createBroker(URI brokerURI) throws Exception
+   public ConfigurationException(String message)
    {
-      return XmlUtil.decode(BrokerDTO.class, new File(brokerURI.getSchemeSpecificPart()));
+      super(message);
    }
 }
