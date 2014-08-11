@@ -25,12 +25,10 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.impl.StandaloneNamingServer;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.hornetq.utils.FactoryFinder;
 
 import javax.management.MBeanServer;
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.net.URI;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,10 +44,10 @@ public class Run implements Action
    @Override
    public Object execute(ActionContext context) throws Exception
    {
-      URI configURI = new URI(configuration);
-      FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/");
-      BrokerFactory factory = (BrokerFactory)finder.newInstance(configURI.getScheme());
-      BrokerDTO broker = factory.createBroker(configURI);
+
+      System.out.println("Loading configuration file: " + configuration);
+
+      BrokerDTO broker = BrokerFactory.createBroker(configuration);
 
       addShutdownHook(new File(broker.core.configuration).getParentFile());
 
