@@ -356,7 +356,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
       for (Channel channel : channels.values())
       {
-         channel.returnBlocking();
+         channel.returnBlocking(me);
       }
    }
 

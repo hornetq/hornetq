@@ -499,7 +499,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          if (inCreateSessionLatch != null)
             inCreateSessionLatch.countDown();
       }
-      forceReturnChannel1();
+      forceReturnChannel1(null);
 
       // we need to stop the factory from connecting if it is in the middle of trying to failover before we get the lock
       causeExit();
@@ -667,7 +667,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   // Forcing return all channels won't guarantee that any blocked thread will return
                   // immediately
                   // So we need to wait for it
-                  forceReturnChannel1();
+                  forceReturnChannel1(me);
 
                   // Now we need to make sure that the thread has actually exited and returned it's
                   // connections
@@ -714,7 +714,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                connector = null;
 
-               reconnectSessions(oldConnection, reconnectAttempts);
+               reconnectSessions(oldConnection, reconnectAttempts, me);
 
                if (oldConnection != null)
                {
@@ -1032,7 +1032,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    /*
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
-   private void reconnectSessions(final CoreRemotingConnection oldConnection, final int reconnectAttempts)
+   private void reconnectSessions(final CoreRemotingConnection oldConnection, final int reconnectAttempts, final HornetQException cause)
    {
       HashSet<ClientSessionInternal> sessionsToFailover;
       synchronized (sessions)
@@ -1072,7 +1072,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       for (ClientSessionInternal session : sessionsToFailover)
       {
-         session.handleFailover(connection);
+         session.handleFailover(connection, cause);
       }
    }
 
@@ -1513,7 +1513,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
-   private void forceReturnChannel1()
+   private void forceReturnChannel1(HornetQException cause)
    {
       if (connection != null)
       {
@@ -1521,7 +1521,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
          if (channel1 != null)
          {
-            channel1.returnBlocking();
+            channel1.returnBlocking(cause);
          }
       }
    }

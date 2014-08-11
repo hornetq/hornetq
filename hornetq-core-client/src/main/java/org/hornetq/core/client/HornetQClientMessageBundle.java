@@ -110,7 +110,7 @@ public interface HornetQClientMessageBundle
 
    @Message(id = 119016, value =  "Connection failure detected. Unblocking a blocking call that will never get a resp" +
          "onse", format = Message.Format.MESSAGE_FORMAT)
-   HornetQUnBlockedException unblockingACall();
+   HornetQUnBlockedException unblockingACall(@Cause Throwable t);
 
    @Message(id = 119017, value =  "Consumer is closed", format = Message.Format.MESSAGE_FORMAT)
    HornetQObjectClosedException consumerClosed();
