@@ -169,9 +169,9 @@ public class HornetQSessionContext extends SessionContext
    // Failover utility methods
 
    @Override
-   public void returnBlocking()
+   public void returnBlocking(HornetQException cause)
    {
-      sessionChannel.returnBlocking();
+      sessionChannel.returnBlocking(cause);
    }
 
    @Override

@@ -252,7 +252,7 @@ public abstract class SessionContext
    /**
     * Interrupt and return any blocked calls
     */
-   public abstract void returnBlocking();
+   public abstract void returnBlocking(HornetQException cause);
 
    /**
     * it will lock the communication channel of the session avoiding anything to come while failover is happening.

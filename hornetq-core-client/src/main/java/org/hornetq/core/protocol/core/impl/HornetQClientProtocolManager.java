@@ -193,7 +193,6 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
          if (inCreateSessionLatch != null)
             inCreateSessionLatch.countDown();
       }
-      forceReturnChannel1();
 
 
       Channel channel1 = getChannel1();
@@ -395,7 +394,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
 
    }
 
-   public boolean cleanupBeforeFailover()
+   public boolean cleanupBeforeFailover(HornetQException cause)
    {
 
       boolean needToInterrupt;
@@ -423,7 +422,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
 
       if (needToInterrupt)
       {
-         forceReturnChannel1();
+         forceReturnChannel1(cause);
 
          // Now we need to make sure that the thread has actually exited and returned it's
          // connections
@@ -565,7 +564,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       }
    }
 
-   private void forceReturnChannel1()
+   private void forceReturnChannel1(HornetQException cause)
    {
       if (connection != null)
       {
@@ -573,7 +572,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
 
          if (channel1 != null)
          {
-            channel1.returnBlocking();
+            channel1.returnBlocking(cause);
          }
       }
    }

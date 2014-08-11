@@ -645,7 +645,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
 
 
-            if (clientProtocolManager.cleanupBeforeFailover())
+            if (clientProtocolManager.cleanupBeforeFailover(me))
             {
 
 
@@ -677,7 +677,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                connector = null;
 
-               reconnectSessions(oldConnection, reconnectAttempts);
+               reconnectSessions(oldConnection, reconnectAttempts, me);
 
                if (oldConnection != null)
                {
@@ -859,7 +859,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    /*
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
-   private void reconnectSessions(final RemotingConnection oldConnection, final int reconnectAttempts)
+   private void reconnectSessions(final RemotingConnection oldConnection, final int reconnectAttempts, final HornetQException cause)
    {
       HashSet<ClientSessionInternal> sessionsToFailover;
       synchronized (sessions)
@@ -906,7 +906,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       for (ClientSessionInternal session : sessionsToFailover)
       {
-         session.handleFailover(connection);
+         session.handleFailover(connection, cause);
       }
    }
 
