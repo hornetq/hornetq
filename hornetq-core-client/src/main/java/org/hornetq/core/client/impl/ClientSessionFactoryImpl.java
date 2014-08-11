@@ -45,13 +45,14 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.impl.HornetQClientProtocolManager;
+import org.hornetq.core.protocol.core.impl.HornetQClientProtocolManagerFactory;
 import org.hornetq.core.protocol.core.impl.PacketDecoder;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ClientProtocolManager;
+import org.hornetq.spi.core.remoting.ClientProtocolManagerFactory;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
@@ -74,12 +75,12 @@ import org.hornetq.utils.UUIDGenerator;
 public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, ConnectionLifeCycleListener
 {
 
-
-   // TODO use the factory here
-   protected ClientProtocolManager clientProtocolManager = new HornetQClientProtocolManager(this);
+   protected final ClientProtocolManager clientProtocolManager;
 
    // Constants
    // ------------------------------------------------------------------------------------
+
+   private static final ClientProtocolManagerFactory clientProtocolManagerFactory = new HornetQClientProtocolManagerFactory();
 
    private static final boolean isTrace = HornetQClientLogger.LOGGER.isTraceEnabled();
 
@@ -227,9 +228,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       confirmationWindowWarning = new ConfirmationWindowWarning(serverLocator.getConfirmationWindowSize() < 0);
 
-
-      // TODO : Get rid of this / encapsulate it through the ClientProtocolManager (create a ExchangeServerProtocol for instance)
-      ((HornetQClientProtocolManager) clientProtocolManager).replacePacketDecoder(packetDecoder);
+      this.clientProtocolManager = clientProtocolManagerFactory.newProtocolManager(this, packetDecoder);
 
    }
 

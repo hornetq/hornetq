@@ -13,6 +13,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.protocol.core.impl.PacketDecoder;
 
 /**
  * @author Clebert Suconic
@@ -20,4 +21,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 public interface ClientProtocolManagerFactory
 {
    ClientProtocolManager newProtocolManager(ClientSessionFactoryInternal factoryInternal);
+
+   ClientProtocolManager newProtocolManager(ClientSessionFactoryInternal factoryInternal, PacketDecoder packetDecoder);
 }
