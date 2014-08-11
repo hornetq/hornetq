@@ -59,7 +59,7 @@ public interface ClientSessionInternal extends ClientSession
 
    void preHandleFailover(RemotingConnection connection);
 
-   void handleFailover(RemotingConnection backupConnection);
+   void handleFailover(RemotingConnection backupConnection, HornetQException cause);
 
    RemotingConnection getConnection();
 
