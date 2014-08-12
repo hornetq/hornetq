@@ -679,6 +679,22 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
    }
 
+   public boolean closeConnectionsForUser(final String userName) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         return server.closeConnectionsForUser(userName);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    public String[] listConnectionIDs() throws Exception
    {
       checkStarted();
