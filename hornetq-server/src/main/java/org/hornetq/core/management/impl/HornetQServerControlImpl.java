@@ -1314,6 +1314,44 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       return closed;
    }
 
+   public synchronized boolean closeConnectionsForUser(final String userName)
+   {
+      boolean closed = false;
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         for (ServerSession serverSession : server.getSessions())
+         {
+            if (serverSession.getUsername() != null && serverSession.getUsername().equals(userName))
+            {
+               RemotingConnection connection = null;
+
+               for (RemotingConnection potentialConnection : remotingService.getConnections())
+               {
+                  if (potentialConnection.getID().toString().equals(serverSession.getConnectionID()))
+                  {
+                     connection = potentialConnection;
+                  }
+               }
+
+               if (connection != null)
+               {
+                  remotingService.removeConnection(connection.getID());
+                  connection.fail(HornetQMessageBundle.BUNDLE.connectionsForUserClosedByManagement(userName));
+                  closed = true;
+               }
+            }
+         }
+      }
+      finally
+      {
+         blockOnIO();
+      }
+      return closed;
+   }
+
    public String[] listConnectionIDs()
    {
       checkStarted();

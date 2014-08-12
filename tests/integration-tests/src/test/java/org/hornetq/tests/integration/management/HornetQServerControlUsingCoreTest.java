@@ -118,6 +118,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Boolean) proxy.invokeOperation("closeConsumerConnectionsForAddress", address);
          }
 
+         public boolean closeConnectionsForUser(final String userName) throws Exception
+         {
+            return (Boolean) proxy.invokeOperation("closeConnectionsForUser", userName);
+         }
+
          public boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
          {
             return (Boolean) proxy.invokeOperation("commitPreparedTransaction", transactionAsBase64);
