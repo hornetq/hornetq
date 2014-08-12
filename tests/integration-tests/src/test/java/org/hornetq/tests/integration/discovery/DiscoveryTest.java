@@ -13,7 +13,11 @@
 
 package org.hornetq.tests.integration.discovery;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -1216,6 +1220,28 @@ public class DiscoveryTest extends UnitTestCase
       params.put(UUIDGenerator.getInstance().generateStringUUID(), true);
       TransportConfiguration tc = new TransportConfiguration(className, params, name);
       return tc;
+   }
+
+   /**
+    * https://issues.jboss.org/browse/HORNETQ-1389
+    * @throws Exception
+    */
+   @Test
+   public void testJGroupsBroadcastGroupConfigurationSerializable() throws Exception
+   {
+      JGroupsBroadcastGroupConfiguration jgroupsConfig =
+         new JGroupsBroadcastGroupConfiguration("test-jgroups-file_ping.xml", "somChannel");
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+      ObjectOutputStream objectOut = new ObjectOutputStream(byteOut);
+      objectOut.writeObject(jgroupsConfig);
+
+      byte[] serializedData = byteOut.toByteArray();
+      ByteArrayInputStream byteIn = new ByteArrayInputStream(serializedData);
+      ObjectInputStream objectIn = new ObjectInputStream(byteIn);
+
+      Object object = objectIn.readObject();
+      assertNotNull(object);
+      assertTrue(object instanceof JGroupsBroadcastGroupConfiguration);
    }
 
    private TransportConfiguration generateTC()
