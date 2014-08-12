@@ -359,4 +359,7 @@ public interface HornetQMessageBundle
 
    @Message(id = 119106, value = "Invalid slow consumer policy type {0}", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException invalidSlowConsumerPolicyType(String val);
+
+   @Message(id = 119107, value = "consumer connections for address {0} closed by management", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInternalErrorException consumerConnectionsClosedByManagement(String address);
 }
