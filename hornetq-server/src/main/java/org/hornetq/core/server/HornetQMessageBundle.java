@@ -342,4 +342,6 @@ public interface HornetQMessageBundle
    @Message(id = 119103, value =  "Server is stopping. Message grouping not allowed", format = Message.Format.MESSAGE_FORMAT)
    HornetQException groupWhileStopping();
 
+   @Message(id = 119107, value = "consumer connections for address {0} closed by management", format = Message.Format.MESSAGE_FORMAT)
+   HornetQInternalErrorException consumerConnectionsClosedByManagement(String address);
 }
