@@ -1528,6 +1528,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return server.getHornetQServerControl().closeConsumerConnectionsForAddress(address);
    }
 
+   public boolean closeConnectionsForUser(final String userName) throws Exception
+   {
+      checkInitialised();
+      return server.getHornetQServerControl().closeConnectionsForUser(userName);
+   }
+
    public String[] listConnectionIDs() throws Exception
    {
       return server.getHornetQServerControl().listConnectionIDs();

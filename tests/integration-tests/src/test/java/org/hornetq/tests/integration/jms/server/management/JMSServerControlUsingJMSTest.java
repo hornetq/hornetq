@@ -189,6 +189,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             return (Boolean)proxy.invokeOperation("closeConsumerConnectionsForAddress", address);
          }
 
+         public boolean closeConnectionsForUser(final String userName) throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("closeConnectionsForUser", userName);
+         }
+
          public boolean createQueue(final String name) throws Exception
          {
             return (Boolean)proxy.invokeOperation("createQueue", name);

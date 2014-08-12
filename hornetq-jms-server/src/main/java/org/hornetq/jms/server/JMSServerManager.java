@@ -286,6 +286,8 @@ public interface JMSServerManager extends HornetQComponent
 
    boolean closeConsumerConnectionsForAddress(String address) throws Exception;
 
+   boolean closeConnectionsForUser(String address) throws Exception;
+
    String[] listConnectionIDs() throws Exception;
 
    String[] listSessions(String connectionID) throws Exception;
