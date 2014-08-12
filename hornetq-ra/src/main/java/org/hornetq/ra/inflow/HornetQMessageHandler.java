@@ -28,10 +28,13 @@ import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.ra.HornetQRALogger;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.HornetQXAResourceWrapper;
 import org.hornetq.utils.FutureLatch;
 
 /**
@@ -40,6 +43,7 @@ import org.hornetq.utils.FutureLatch;
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class HornetQMessageHandler implements MessageHandler
 {
@@ -189,7 +193,10 @@ public class HornetQMessageHandler implements MessageHandler
       transacted = activation.isDeliveryTransacted();
       if (activation.isDeliveryTransacted() && !activation.getActivationSpec().isUseLocalTx())
       {
-         endpoint = endpointFactory.createEndpoint(session);
+         XAResource xaResource = new HornetQXAResourceWrapper(session,
+                                                     ((HornetQResourceAdapter) spec.getResourceAdapter()).getJndiName(),
+                                                     ((ClientSessionFactoryInternal) cf).getLiveNodeId());
+         endpoint = endpointFactory.createEndpoint(xaResource);
          useXA = true;
       }
       else
