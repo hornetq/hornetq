@@ -56,6 +56,8 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
    {
       factory = new BroadcastEndpointFactory()
       {
+         private static final long serialVersionUID = 1047956472941098435L;
+
          @Override
          public BroadcastEndpoint createBroadcastEndpoint() throws Exception
          {
@@ -70,6 +72,8 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
    {
       factory = new BroadcastEndpointFactory()
       {
+         private static final long serialVersionUID = 5110372849181145377L;
+
          @Override
          public BroadcastEndpoint createBroadcastEndpoint() throws Exception
          {
