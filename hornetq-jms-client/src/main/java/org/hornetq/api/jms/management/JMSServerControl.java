@@ -253,6 +253,12 @@ public interface JMSServerControl
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    /**
+    * Closes all the connections on this server for consumers which are consuming from a queue associated with a particular address.
+    */
+   @Operation(desc = "Closes all the consumer connections for the given HornetQ address", impact = MBeanOperationInfo.INFO)
+   boolean closeConsumerConnectionsForAddress(@Parameter(desc = "a HornetQ address", name = "address") String address) throws Exception;
+
+   /**
     * Lists all the IDs of the connections connected to this server.
     */
    @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
