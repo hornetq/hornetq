@@ -301,6 +301,12 @@ public class BackupSyncDelay implements Interceptor
       }
 
       @Override
+      public void returnBlocking(Throwable cause)
+      {
+         throw new UnsupportedOperationException();
+      }
+
+      @Override
       public Lock getLock()
       {
          throw new UnsupportedOperationException();

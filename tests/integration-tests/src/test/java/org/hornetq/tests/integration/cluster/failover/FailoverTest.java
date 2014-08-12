@@ -1839,7 +1839,8 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer);
    }
 
-   public void _testForceBlockingReturn() throws Exception
+   @Test
+   public void testForceBlockingReturn() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -1849,7 +1850,7 @@ public class FailoverTest extends FailoverTestBase
 
       // Add an interceptor to delay the send method so we can get time to cause failover before it returns
 
-      // liveServer.getRemotingService().addIncomingInterceptor(new DelayInterceptor());
+      liveServer.getServer().getRemotingService().addIncomingInterceptor(new DelayInterceptor());
 
       final ClientSession session = createSession(sf, true, true, 0);
 
@@ -1889,7 +1890,11 @@ public class FailoverTest extends FailoverTestBase
 
       Assert.assertNotNull(sender.e);
 
+      Assert.assertNotNull(sender.e.getCause());
+
       Assert.assertEquals(sender.e.getType(), HornetQExceptionType.UNBLOCKED);
+
+      Assert.assertEquals(((HornetQException)sender.e.getCause()).getType(), HornetQExceptionType.DISCONNECTED);
 
       session.close();
    }

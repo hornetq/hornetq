@@ -376,9 +376,9 @@ public class DelegatingSession implements ClientSessionInternal
       session.preHandleFailover(connection);
    }
 
-   public void handleFailover(final CoreRemotingConnection backupConnection)
+   public void handleFailover(final CoreRemotingConnection backupConnection, HornetQException cause)
    {
-      session.handleFailover(backupConnection);
+      session.handleFailover(backupConnection, cause);
    }
 
    public void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception

@@ -1002,7 +1002,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    // Needs to be synchronized to prevent issues with occurring concurrently with close()
 
-   public void handleFailover(final CoreRemotingConnection backupConnection)
+   public void handleFailover(final CoreRemotingConnection backupConnection, HornetQException cause)
    {
       synchronized (this)
       {
@@ -1190,7 +1190,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                   resetCreditManager = true;
                }
 
-               channel.returnBlocking();
+               channel.returnBlocking(cause);
             }
          }
          catch (Throwable t)
