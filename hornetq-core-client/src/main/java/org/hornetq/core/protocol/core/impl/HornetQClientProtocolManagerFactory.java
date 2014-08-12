@@ -27,4 +27,11 @@ public class HornetQClientProtocolManagerFactory implements ClientProtocolManage
    {
       return new HornetQClientProtocolManager(factoryInternal);
    }
+
+   public ClientProtocolManager newProtocolManager(ClientSessionFactoryInternal factoryInternal, PacketDecoder packetDecoder)
+   {
+      HornetQClientProtocolManager clientProtocolManager = new HornetQClientProtocolManager(factoryInternal);
+      clientProtocolManager.replacePacketDecoder(packetDecoder);
+      return clientProtocolManager;
+   }
 }
