@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
@@ -69,6 +68,7 @@ import org.hornetq.utils.UUIDGenerator;
 /**
  * @author Tim Fox
  * @author Clebert Suconic
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 
 public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, ConnectionLifeCycleListener
@@ -184,7 +184,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
-      checkTransportKeys(connectorFactory, connectorConfig.getParams());
+      checkTransportKeys(connectorFactory, connectorConfig);
 
       this.callTimeout = callTimeout;
 
@@ -1265,11 +1265,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                               scheduledThreadPool);
    }
 
-   private void checkTransportKeys(final ConnectorFactory factory, final Map<String, Object> params)
+   private void checkTransportKeys(final ConnectorFactory factory, final TransportConfiguration tc)
    {
-      if (params != null)
+      if (tc.getParams() != null)
       {
-         Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), params.keySet());
+         Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), tc.getParams().keySet());
 
          if (!invalid.isEmpty())
          {
@@ -1281,7 +1281,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
       }
    }
-
 
    /**
     * It will connect to either live or backup accordingly to the current configurations

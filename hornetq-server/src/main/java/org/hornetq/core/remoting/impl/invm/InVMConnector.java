@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.remoting.impl.invm;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -34,10 +36,20 @@ import org.hornetq.utils.OrderedExecutorFactory;
  * A InVMConnector
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  *
  */
 public class InVMConnector extends AbstractConnector
 {
+   public static final Map<String, Object> DEFAULT_CONFIG;
+
+   static
+   {
+      Map<String, Object> config = new HashMap<String , Object>();
+      config.put(TransportConstants.SERVER_ID_PROP_NAME, TransportConstants.DEFAULT_SERVER_ID);
+      DEFAULT_CONFIG = Collections.unmodifiableMap(config);
+   }
+
    // Used for testing failure only
    public static volatile boolean failOnCreateConnection;
 

@@ -41,6 +41,8 @@ import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -117,6 +119,7 @@ import static org.hornetq.utils.Base64.encodeBytes;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class NettyConnector extends AbstractConnector
 {
@@ -142,10 +145,19 @@ public class NettyConnector extends AbstractConnector
 
    private static final AttributeKey<String> REMOTING_KEY = AttributeKey.valueOf(SEC_HORNETQ_REMOTING_KEY);
 
+   // Default Configuration
+   public static final Map<String, Object> DEFAULT_CONFIG;
+
    static
    {
       // Disable resource leak detection for performance reasons by default
       ResourceLeakDetector.setEnabled(false);
+
+      // Set default Configuration
+      Map<String, Object> config = new HashMap<String , Object>();
+      config.put(TransportConstants.HOST_PROP_NAME, TransportConstants.DEFAULT_HOST);
+      config.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT);
+      DEFAULT_CONFIG = Collections.unmodifiableMap(config);
    }
 
    // Attributes ----------------------------------------------------

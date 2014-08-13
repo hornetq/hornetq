@@ -26,6 +26,7 @@ import org.hornetq.spi.core.remoting.ConnectorFactory;
  * A NettyConnectorFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class NettyConnectorFactory implements ConnectorFactory
 {
@@ -36,7 +37,8 @@ public class NettyConnectorFactory implements ConnectorFactory
                                     final Executor threadPool,
                                     final ScheduledExecutorService scheduledThreadPool)
    {
-      return new NettyConnector(configuration, handler, listener, closeExecutor, threadPool, scheduledThreadPool);
+      Map<String, Object> config = (configuration == null || configuration.isEmpty()) ? NettyConnector.DEFAULT_CONFIG : configuration;
+      return new NettyConnector(config, handler, listener, closeExecutor, threadPool, scheduledThreadPool);
    }
 
    public Set<String> getAllowableProperties()
@@ -49,4 +51,5 @@ public class NettyConnectorFactory implements ConnectorFactory
    {
       return false;
    }
+
 }
