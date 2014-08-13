@@ -1330,7 +1330,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
                for (RemotingConnection potentialConnection : remotingService.getConnections())
                {
-                  if (potentialConnection.getID().toString().equals(serverSession.getConnectionID()))
+                  if (potentialConnection.getID().toString().equals(serverSession.getConnectionID().toString()))
                   {
                      connection = potentialConnection;
                   }
