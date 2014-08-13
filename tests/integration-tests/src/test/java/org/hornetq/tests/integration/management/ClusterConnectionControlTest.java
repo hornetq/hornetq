@@ -165,8 +165,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       clusterConnectionControl.stop();
 
       Assert.assertTrue(notifListener.getNotifications().size() > 0);
-      Notification notif = notifListener.getNotifications().get(0);
-      Assert.assertEquals(CoreNotificationType.CLUSTER_CONNECTION_STOPPED, notif.getType());
+      Notification notif = getFirstNotificationOfType(notifListener.getNotifications(), CoreNotificationType.CLUSTER_CONNECTION_STOPPED);
+      Assert.assertNotNull(notif);
       Assert.assertEquals(clusterConnectionControl.getName(), notif.getProperties()
                                                                    .getSimpleStringProperty(new SimpleString("name"))
                                                                    .toString());
@@ -174,11 +174,26 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       clusterConnectionControl.start();
 
       Assert.assertTrue(notifListener.getNotifications().size() > 0);
-      notif = notifListener.getNotifications().get(1);
-      Assert.assertEquals(CoreNotificationType.CLUSTER_CONNECTION_STARTED, notif.getType());
+      notif = getFirstNotificationOfType(notifListener.getNotifications(), CoreNotificationType.CLUSTER_CONNECTION_STARTED);
+      Assert.assertNotNull(notif);
       Assert.assertEquals(clusterConnectionControl.getName(), notif.getProperties()
                                                                    .getSimpleStringProperty(new SimpleString("name"))
                                                                    .toString());
+   }
+
+   private Notification getFirstNotificationOfType(List<Notification> notifications, CoreNotificationType type)
+   {
+      Notification result = null;
+
+      for (Notification notification : notifications)
+      {
+         if (notification.getType().equals(type))
+         {
+            result = notification;
+         }
+      }
+
+      return result;
    }
 
    // Package protected ---------------------------------------------
