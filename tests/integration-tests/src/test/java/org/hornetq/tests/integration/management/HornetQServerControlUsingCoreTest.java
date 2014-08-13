@@ -95,17 +95,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
       session.start();
 
    }
-   //the core messaging proxy doesnt work when the server is stopped so we cant run these tests
+
+   // the core messaging proxy doesn't work when the server is stopped so we cant run these 2 tests
    @Override
    public void testScaleDownWithOutConnector() throws Exception
    {
-      super.testScaleDownWithOutConnector();
    }
 
    @Override
    public void testScaleDownWithConnector() throws Exception
    {
-      super.testScaleDownWithConnector();
    }
 
    @Override
@@ -122,6 +121,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          @Override
          public void scaleDown(String connector) throws Exception
          {
+            throw new UnsupportedOperationException();
          }
 
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_SERVER);
