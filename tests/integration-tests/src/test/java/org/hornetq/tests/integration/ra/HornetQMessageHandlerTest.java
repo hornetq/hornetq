@@ -17,6 +17,7 @@ import javax.resource.ResourceException;
 import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -31,6 +32,7 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Test;
 
@@ -114,6 +116,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    @Test
    public void testSimpleMessageReceivedOnQueueManyMessagesAndInterrupt() throws Exception
    {
+      final int SIZE = 14;
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
@@ -123,25 +126,25 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
-      CountDownLatch latch = new CountDownLatch(15);
+      CountDownLatch latch = new CountDownLatch(SIZE);
       MultipleEndpoints endpoint = new MultipleEndpoints(latch, true);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
-      for (int i = 0; i < 15; i++)
+      for (int i = 0; i < SIZE; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeString("teststring" + i);
          clientProducer.send(message);
       }
       session.close();
-      latch.await(5, TimeUnit.SECONDS);
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
 
-      assertEquals(15, endpoint.messages);
-      assertEquals(0, endpoint.interrupted);
+      assertEquals(SIZE, endpoint.messages.intValue());
+      assertEquals(0, endpoint.interrupted.intValue());
 
       qResourceAdapter.stop();
    }
@@ -149,6 +152,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    @Test
    public void testSimpleMessageReceivedOnQueueManyMessagesAndInterruptTimeout() throws Exception
    {
+      final int SIZE = 14;
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
@@ -159,26 +163,26 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
-      CountDownLatch latch = new CountDownLatch(15);
+      CountDownLatch latch = new CountDownLatch(SIZE);
       MultipleEndpoints endpoint = new MultipleEndpoints(latch, true);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
-      for (int i = 0; i < 15; i++)
+      for (int i = 0; i < SIZE; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.getBodyBuffer().writeString("teststring" + i);
          clientProducer.send(message);
       }
       session.close();
-      latch.await(5, TimeUnit.SECONDS);
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
 
-      assertEquals(15, endpoint.messages);
+      assertEquals(SIZE, endpoint.messages.intValue());
       //half onmessage interrupted
-      assertEquals(8, endpoint.interrupted);
+      assertEquals(SIZE / 2, endpoint.interrupted.intValue());
 
       qResourceAdapter.stop();
    }
@@ -789,8 +793,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    {
       private final CountDownLatch latch;
       private final boolean pause;
-      int messages = 0;
-      int interrupted = 0;
+      AtomicInteger messages = new AtomicInteger(0);
+      AtomicInteger interrupted = new AtomicInteger(0);
 
       public MultipleEndpoints(CountDownLatch latch, boolean pause)
       {
@@ -821,16 +825,16 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       public void onMessage(Message message)
       {
          latch.countDown();
-         if (pause && messages++ % 2 == 0)
+         if (pause && messages.getAndIncrement() % 2 == 0)
          {
             try
             {
-               System.out.println("pausing for 2 secs");
+               IntegrationTestLogger.LOGGER.info("pausing for 2 secs");
                Thread.sleep(2000);
             }
             catch (InterruptedException e)
             {
-               interrupted++;
+               interrupted.getAndIncrement();
             }
          }
       }
