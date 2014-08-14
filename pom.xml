@@ -47,6 +47,10 @@
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
       </HornetQ-Version>
       <resteasy.version>3.0.4.Final</resteasy.version>
+      <version.spring>3.0.3.RELEASE</version.spring>
+      <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
+      <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
+      <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
       <skipBytemanTests>true</skipBytemanTests>
@@ -175,7 +179,7 @@
          <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
-            <version>1.5.1.Final</version>
+            <version>1.5.2.Final</version>
          </dependency>
 
          <dependency>
@@ -194,7 +198,7 @@
          <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
-            <version>1.0-SP4</version>
+            <version>1.1</version>
          </dependency>
          <dependency>
             <groupId>javax.inject</groupId>
@@ -203,22 +207,23 @@
          </dependency>
 
          <!-- needed to compile JavaEE examples-->
-         <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-ejb-api</artifactId>
-            <version>3.0.0.GA</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-            <version>1.0.0.Final</version>
-         </dependency>
+          <dependency>
+              <groupId>org.jboss.spec.javax.ejb</groupId>
+              <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+              <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
+              <scope>provided</scope>
+          </dependency>
+          <dependency>
+              <groupId>org.jboss.spec.javax.transaction</groupId>
+              <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+              <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec}</version>
+          </dependency>
 
-         <!--this specifically for the JMS Bridge-->
+        <!--this specifically for the JMS Bridge-->
          <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
-            <version>7.0.0.Final</version>
+            <version>7.1.0.Final</version>
             <exclusions>
                <exclusion>
                   <groupId>org.jboss.logging</groupId>
@@ -258,7 +263,7 @@
          <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-common-core</artifactId>
-            <version>2.2.14.GA</version>
+            <version>2.2.22.GA</version>
             <exclusions>
                <exclusion>
                   <groupId>org.jboss.logging</groupId>
@@ -363,22 +368,22 @@
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>3.0.3.RELEASE</version>
+            <version>${version.spring}</version>
          </dependency>
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>3.0.3.RELEASE</version>
+            <version>${version.spring}</version>
          </dependency>
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>3.0.3.RELEASE</version>
+            <version>${version.spring}</version>
          </dependency>
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jms</artifactId>
-            <version>3.0.3.RELEASE</version>
+            <version>${version.spring}</version>
          </dependency>
          <!--needed for the rest support-->
          <dependency>
@@ -444,17 +449,18 @@
          </dependency>
 
          <!-- needed for javaee examples-->
-         <dependency>
-            <groupId>org.jboss.ejb3</groupId>
-            <artifactId>jboss-ejb3-ext-api</artifactId>
-            <version>1.0.0</version>
-         </dependency>
+          <dependency>
+              <groupId>org.jboss.ejb3</groupId>
+              <artifactId>jboss-ejb3-ext-api</artifactId>
+              <version>2.1.0</version>
+          </dependency>
 
-         <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-jca-api</artifactId>
-            <version>1.5.0.GA</version>
-         </dependency>
+          <dependency>
+              <groupId>org.jboss.spec.javax.resource</groupId>
+              <artifactId>jboss-connector-api_1.7_spec</artifactId>
+              <version>${version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec}</version>
+              <scope>provided</scope>
+          </dependency>
 
          <!-- needed for javadoc graphics-->
          <dependency>

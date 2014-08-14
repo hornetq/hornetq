@@ -47,11 +47,10 @@
          <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
-      <dependency>
-         <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-jca-api</artifactId>
-         <scope>provided</scope>
-      </dependency>
+       <dependency>
+           <groupId>org.jboss.spec.javax.resource</groupId>
+           <artifactId>jboss-connector-api_1.7_spec</artifactId>
+       </dependency>
    </dependencies>
 
 </project>
