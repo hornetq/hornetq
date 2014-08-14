@@ -13,8 +13,8 @@
 
    <properties>
       <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
-      <vertx.version>2.1RC1</vertx.version>
-      <vertx.testtools.version>2.0.2-final</vertx.testtools.version>
+      <vertx.version>2.1.2</vertx.version>
+      <vertx.testtools.version>2.0.3-final</vertx.testtools.version>
    </properties>
 
    <dependencies>
@@ -124,11 +124,6 @@
       <dependency>
          <groupId>org.twitter4j</groupId>
          <artifactId>twitter4j-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>com.hazelcast</groupId>
-         <artifactId>hazelcast</artifactId>
-         <version>2.6.6</version>
       </dependency>
       <dependency>
          <groupId>junit</groupId>

@@ -47,6 +47,7 @@
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
       </HornetQ-Version>
       <resteasy.version>3.0.4.Final</resteasy.version>
+      <jackson-databind.version>2.3.1</jackson-databind.version>
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
       <skipBytemanTests>true</skipBytemanTests>
@@ -275,11 +276,6 @@
             <groupId>io.airlift</groupId>
             <artifactId>airline</artifactId>
             <version>0.6</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.3.1</version>
         </dependency>
          <!--needed for microntainer deps in distro-->
          <dependency>
