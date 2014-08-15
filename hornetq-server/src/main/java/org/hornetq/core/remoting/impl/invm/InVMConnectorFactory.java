@@ -27,7 +27,7 @@ import org.hornetq.spi.core.remoting.ConnectorFactory;
  * A InVMConnectorFactory
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class InVMConnectorFactory implements ConnectorFactory
 {
@@ -38,7 +38,8 @@ public class InVMConnectorFactory implements ConnectorFactory
                                     final Executor threadPool,
                                     final ScheduledExecutorService scheduledThreadPool)
    {
-      InVMConnector connector = new InVMConnector(configuration, handler, listener, closeExecutor, threadPool);
+      Map<String, Object> config = (configuration == null || configuration.isEmpty()) ? InVMConnector.DEFAULT_CONFIG : configuration;
+      InVMConnector connector = new InVMConnector(config, handler, listener, closeExecutor, threadPool);
 
       return connector;
    }
@@ -53,4 +54,5 @@ public class InVMConnectorFactory implements ConnectorFactory
    {
       return true;
    }
+
 }
