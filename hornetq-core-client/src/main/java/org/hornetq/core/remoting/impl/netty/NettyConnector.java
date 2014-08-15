@@ -888,6 +888,11 @@ public class NettyConnector extends AbstractConnector
                   ctx.close();
                }
             }
+            else if (response.getStatus().code() == HttpResponseStatus.FORBIDDEN.code())
+            {
+               HornetQClientLogger.LOGGER.httpUpgradeNotSupportedByRemoteAcceptor();
+               ctx.close();
+            }
             latch.countDown();
          }
       }

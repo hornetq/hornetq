@@ -19,11 +19,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -35,10 +37,14 @@ import org.hornetq.core.remoting.impl.netty.ConnectionCreator;
 import org.hornetq.core.remoting.impl.netty.HttpAcceptorHandler;
 import org.hornetq.core.remoting.impl.netty.HttpKeepAliveRunnable;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
+import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.utils.ConfigurationHelper;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class ProtocolHandler
 {
@@ -103,6 +109,12 @@ public class ProtocolHandler
                ctx.pipeline().remove(this);
                ctx.pipeline().remove("http-handler");
                ctx.fireChannelRead(msg);
+            }
+            // HORNETQ-1391
+            else if (upgrade != null && upgrade.equalsIgnoreCase(NettyConnector.HORNETQ_REMOTING))
+            {
+               // Send the response and close the connection if necessary.
+               ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, FORBIDDEN)).addListener(ChannelFutureListener.CLOSE);
             }
          }
          else
