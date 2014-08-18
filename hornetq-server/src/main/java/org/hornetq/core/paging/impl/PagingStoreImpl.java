@@ -926,7 +926,7 @@ public class PagingStoreImpl implements PagingStore
 
             currentPage.write(pagedMessage);
 
-            if (tx == null && syncNonTransactional)
+            if (tx == null && syncNonTransactional && message.isDurable())
             {
                sync();
             }
