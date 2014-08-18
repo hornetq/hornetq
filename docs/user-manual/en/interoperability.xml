@@ -303,7 +303,5 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
         <para>Please refer to the openwire example for more coding details.</para>
         <para>Currently we support ActiveMQ clients that using standard JMS APIs. In the future we will get more supports
         for some advanced, ActiveMQ specific features into HornetQ.</para>
-        <note><para>HornetQ now doesn't support 'cached' marshalling. 
-        To get a working connection you need to disable caching. Please see the openwire example.</para></note>
     </section>
 </chapter>
