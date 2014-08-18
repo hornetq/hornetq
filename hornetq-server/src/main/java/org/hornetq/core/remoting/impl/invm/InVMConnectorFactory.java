@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
@@ -38,8 +39,7 @@ public class InVMConnectorFactory implements ConnectorFactory
                                     final Executor threadPool,
                                     final ScheduledExecutorService scheduledThreadPool)
    {
-      Map<String, Object> config = (configuration == null || configuration.isEmpty()) ? InVMConnector.DEFAULT_CONFIG : configuration;
-      InVMConnector connector = new InVMConnector(config, handler, listener, closeExecutor, threadPool);
+      InVMConnector connector = new InVMConnector(configuration, handler, listener, closeExecutor, threadPool);
 
       return connector;
    }
@@ -55,4 +55,12 @@ public class InVMConnectorFactory implements ConnectorFactory
       return true;
    }
 
+   @Override
+   public void setDefaults(TransportConfiguration connectorConfig)
+   {
+      if (connectorConfig.getParams().isEmpty())
+      {
+         connectorConfig.getParams().putAll(InVMConnector.DEFAULT_CONFIG);
+      }
+   }
 }
