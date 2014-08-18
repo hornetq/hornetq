@@ -13,8 +13,10 @@
 
 package org.hornetq.utils;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -600,7 +602,71 @@ public final class TypedProperties
    @Override
    public String toString()
    {
-      return "TypedProperties[" + properties + "]";
+      StringBuilder sb = new StringBuilder("TypedProperties[");
+
+
+      if (properties != null)
+      {
+
+         Iterator<Entry<SimpleString, PropertyValue>> iter = properties.entrySet().iterator();
+
+         while (iter.hasNext())
+         {
+            Entry<SimpleString, PropertyValue> iterItem = iter.next();
+            sb.append(iterItem.getKey() + "=");
+
+            // it seems weird but it's right!!
+            // The first getValue is from the EntrySet
+            // The second is to convert the PropertyValue into the actual value
+            Object theValue = iterItem.getValue().getValue();
+
+
+            if (theValue == null)
+            {
+               sb.append("NULL-value");
+            }
+            else if (theValue instanceof byte[])
+            {
+               sb.append("bytes(" + ByteUtil.bytesToHex((byte [])theValue, 2) + ")");
+
+               if (iterItem.getKey().toString().startsWith("_HQ"))
+               {
+                  sb.append(",bytesAsLongs(");
+                  try
+                  {
+                     ByteBuffer buff = ByteBuffer.wrap((byte[]) theValue);
+                     while (buff.hasRemaining())
+                     {
+                        long bindingID = buff.getLong();
+                        sb.append(bindingID);
+                        if (buff.hasRemaining())
+                        {
+                           sb.append(",");
+                        }
+                     }
+                  }
+                  catch (Throwable e)
+                  {
+                     sb.append("error-converting-longs=" + e.getMessage());
+                     e.printStackTrace();
+                  }
+                  sb.append(")");
+               }
+            }
+            else
+            {
+               sb.append(theValue.toString());
+            }
+
+
+            if (iter.hasNext())
+            {
+               sb.append(",");
+            }
+         }
+      }
+
+      return sb.append("]").toString();
    }
 
    // Private ------------------------------------------------------------------------------------
