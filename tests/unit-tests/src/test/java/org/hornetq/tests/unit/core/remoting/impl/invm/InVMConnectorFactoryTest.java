@@ -16,13 +16,11 @@ package org.hornetq.tests.unit.core.remoting.impl.invm;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.remoting.impl.netty.NettyConnector;
-import org.hornetq.spi.core.remoting.Connector;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -36,18 +34,17 @@ public class InVMConnectorFactoryTest
    {
       InVMConnectorFactory inVMConnectorFactory = new InVMConnectorFactory();
 
-      // Tests defaults are set when config is null
-      Connector connector = inVMConnectorFactory.createConnector(null, null, null, null, null, null);
-      assertTrue(connector.isEquivalent(NettyConnector.DEFAULT_CONFIG));
+      // Test defaults are added when TransportConfig params are empty
+      TransportConfiguration tc = new TransportConfiguration(null, new HashMap<String, Object>());
+      inVMConnectorFactory.setDefaults(tc);
+      assertTrue(tc.getParams().equals(InVMConnector.DEFAULT_CONFIG));
 
-      // Tests defaults are set when config is empty
-      Map<String, Object> config = new HashMap<String, Object>();
-      connector = inVMConnectorFactory.createConnector(config, null, null, null, null, null);
-      assertTrue(connector.isEquivalent(NettyConnector.DEFAULT_CONFIG));
-
-      // Tests defaults are not set when config has entries
-      config.put(TransportConstants.SERVER_ID_PROP_NAME, -1);
-      connector = inVMConnectorFactory.createConnector(config, null, null, null, null, null);
-      assertFalse(connector.isEquivalent(NettyConnector.DEFAULT_CONFIG));
+      // Test defaults are not set when TransportConfig params are not empty
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put("Foo", "Bar");
+      tc = new TransportConfiguration(null, params);
+      inVMConnectorFactory.setDefaults(tc);
+      assertTrue(tc.getParams().size() == 1);
+      assertTrue(tc.getParams().containsKey("Foo"));
    }
 }

@@ -16,19 +16,11 @@ package org.hornetq.tests.unit.core.remoting.impl.netty;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.spi.core.remoting.BufferHandler;
-import org.hornetq.spi.core.remoting.Connection;
-import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
-import org.hornetq.spi.core.remoting.Connector;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -42,52 +34,17 @@ public class NettyConnectorFactoryTest
    {
       NettyConnectorFactory nettyConnectorFactory = new NettyConnectorFactory();
 
-      BufferHandler bufferHandler = new BufferHandler()
-      {
-         @Override
-         public void bufferReceived(Object connectionID, HornetQBuffer buffer)
-         {
-         }
-      };
+      // Test defaults are added when TransportConfig params are empty
+      TransportConfiguration tc = new TransportConfiguration(null, new HashMap<String, Object>());
+      nettyConnectorFactory.setDefaults(tc);
+      assertTrue(tc.getParams().equals(NettyConnector.DEFAULT_CONFIG));
 
-      ConnectionLifeCycleListener connectionLifeCycleListener = new ConnectionLifeCycleListener()
-      {
-         @Override
-         public void connectionCreated(HornetQComponent component, Connection connection, String protocol)
-         {
-         }
-
-         @Override
-         public void connectionDestroyed(Object connectionID)
-         {
-         }
-
-         @Override
-         public void connectionException(Object connectionID, HornetQException me)
-         {
-         }
-
-         @Override
-         public void connectionReadyForWrites(Object connectionID, boolean ready)
-         {
-         }
-      };
-
-      // Tests defaults are set when config is null
-      Connector connector = nettyConnectorFactory.createConnector(null, bufferHandler, connectionLifeCycleListener,
-                                                                  null, null, null);
-      assertTrue(connector.isEquivalent(NettyConnector.DEFAULT_CONFIG));
-
-      // Tests defaults are set when config is empty
-      Map<String, Object> config = new HashMap<String, Object>();
-      connector = nettyConnectorFactory.createConnector(config, bufferHandler, connectionLifeCycleListener,
-                                                        null, null, null);
-      assertTrue(connector.isEquivalent(NettyConnector.DEFAULT_CONFIG));
-
-      // Tests defaults are not set when config has entries
-      config.put(TransportConstants.HOST_PROP_NAME, "0.0.0.0");
-      connector = nettyConnectorFactory.createConnector(config, bufferHandler, connectionLifeCycleListener,
-                                                        null, null, null);
-      assertFalse(connector.isEquivalent(NettyConnector.DEFAULT_CONFIG));
+      // Test defaults are not set when TransportConfig params are not empty
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put("Foo", "Bar");
+      tc = new TransportConfiguration(null, params);
+      nettyConnectorFactory.setDefaults(tc);
+      assertTrue(tc.getParams().size() == 1);
+      assertTrue(tc.getParams().containsKey("Foo"));
    }
 }

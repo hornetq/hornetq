@@ -41,6 +41,7 @@ import org.junit.Test;
  * This test covers the API for ClientSession although XA tests are tested separately.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class SessionTest extends ServiceTestBase
 {
@@ -500,5 +501,14 @@ public class SessionTest extends ServiceTestBase
       Assert.assertEquals(10, q.getMessageCount());
       clientSession.close();
       sendSession.close();
+   }
+
+   @Test
+   public void testGetNodeId() throws Exception
+   {
+      cf = createSessionFactory(locator);
+      ClientSession clientSession = addClientSession(cf.createSession(false, true, true));
+      String nodeId = ((ClientSessionInternal) clientSession).getNodeId();
+      assertNotNull(nodeId);
    }
 }

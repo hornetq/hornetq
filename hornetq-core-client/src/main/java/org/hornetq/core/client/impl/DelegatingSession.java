@@ -38,6 +38,7 @@ import org.hornetq.utils.ConcurrentHashSet;
  * on GC if it has not already been closed
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class DelegatingSession implements ClientSessionInternal
 {
@@ -641,5 +642,11 @@ public class DelegatingSession implements ClientSessionInternal
    public void scheduleConfirmation(SendAcknowledgementHandler handler, Message msg)
    {
       session.scheduleConfirmation(handler, msg);
+   }
+
+   @Override
+   public String getNodeId()
+   {
+      return session.getNodeId();
    }
 }

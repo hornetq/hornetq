@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -56,10 +58,16 @@ import org.jgroups.JChannel;
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 {
    private static final long serialVersionUID = 4756893709825838770L;
+
+   /**
+    * The Name of the product that this resource adapter represents.
+    */
+   public static final String PRODUCT_NAME = "HornetQ";
 
    /**
     * Trace enabled
@@ -110,6 +118,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private boolean useAutoRecovery = true;
 
    private final List<HornetQRAManagedConnectionFactory> managedConnectionFactories = new ArrayList<HornetQRAManagedConnectionFactory>();
+
+   private String entries;
 
    /**
     * Constructor
@@ -369,6 +379,29 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public void setHA(final Boolean ha)
    {
       this.raProperties.setHA(ha);
+   }
+
+   public String getEntries()
+   {
+      return entries;
+   }
+
+   public String getJndiName()
+   {
+      if (!(entries == null || entries.isEmpty()))
+      {
+         Matcher m = Pattern.compile("\"(.*?)\"").matcher(entries);
+         if (m.find())
+         {
+            return m.group(1);
+         }
+      }
+      return null;
+   }
+
+   public void setEntries(String entries)
+   {
+      this.entries = entries;
    }
 
    /**

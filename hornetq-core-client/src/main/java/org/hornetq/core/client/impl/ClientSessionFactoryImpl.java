@@ -159,7 +159,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private String liveNodeID;
 
-
    public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
                                    final long callTimeout,
@@ -183,6 +182,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       this.connectorConfig = connectorConfig;
 
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+
+      connectorFactory.setDefaults(connectorConfig);
 
       checkTransportKeys(connectorFactory, connectorConfig);
 
@@ -1565,6 +1566,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
+   @Override
+   public String getLiveNodeId()
+   {
+      return liveNodeID;
+   }
 
    class SessionFactoryProtocolHandler implements ProtocolResponseHandler
    {
@@ -1606,5 +1612,4 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          serverLocator.notifyNodeDown(eventTime, nodeID);
       }
    }
-
 }

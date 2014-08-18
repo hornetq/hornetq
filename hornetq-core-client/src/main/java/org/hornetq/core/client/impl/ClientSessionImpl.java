@@ -51,6 +51,7 @@ import org.hornetq.utils.XidCodecSupport;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public final class ClientSessionImpl implements ClientSessionInternal, FailureListener
 {
@@ -719,6 +720,12 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
    public boolean isClosing()
    {
       return inClose;
+   }
+
+   @Override
+   public String getNodeId()
+   {
+      return sessionFactory.getLiveNodeId();
    }
 
    // ClientSessionInternal implementation

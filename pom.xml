@@ -214,7 +214,6 @@
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
             <version>1.0.0.Final</version>
          </dependency>
-
          <!--this specifically for the JMS Bridge-->
          <dependency>
             <groupId>org.jboss</groupId>
@@ -232,6 +231,12 @@
             <groupId>org.jboss.jbossts.jts</groupId>
             <artifactId>jbossjts-jacorb</artifactId>
             <version>4.17.13.Final</version>
+         </dependency>
+         <!-- this for Ironjacamar SPI XAResourceWrapper implementation -->
+         <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-api</artifactId>
+            <version>1.2.0.Beta2</version>
          </dependency>
          <!--needed to compile security-->
          <dependency>
@@ -415,7 +420,6 @@
             <artifactId>jboss-jaspi-api</artifactId>
             <version>1.0.0.GA</version>
          </dependency>
-
          <!--needed to run the jms tests -->
          <dependency>
             <groupId>org.jboss.naming</groupId>

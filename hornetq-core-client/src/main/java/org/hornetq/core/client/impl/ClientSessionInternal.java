@@ -116,4 +116,5 @@ public interface ClientSessionInternal extends ClientSession
 
    boolean isClosing();
 
+   String getNodeId();
 }
