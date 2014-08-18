@@ -185,7 +185,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    {
       Notification result = null;
 
-      for (Notification notification : notifications)
+      // the notifications can change while we're looping
+      List<Notification> notificationsClone = new ArrayList<>(notifications);
+
+      for (Notification notification : notificationsClone)
       {
          if (notification.getType().equals(type))
          {
