@@ -47,7 +47,7 @@ public class OpenWireExample extends HornetQExample
 
       try
       {
-         String urlString = "tcp://" + OWHOST + ":" + OWPORT + "?wireFormat.cacheEnabled=false";
+         String urlString = "tcp://" + OWHOST + ":" + OWPORT;
 
          // Step 1. Create an ActiveMQ Connection Factory
          ConnectionFactory factory = new ActiveMQConnectionFactory(urlString);
