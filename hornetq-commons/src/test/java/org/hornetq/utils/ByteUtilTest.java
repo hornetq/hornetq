@@ -26,11 +26,18 @@ public class ByteUtilTest
    public void testBytesToString()
    {
       byte[] byteArray = new byte[] {0, 1, 2, 3};
-      System.out.println(ByteUtil.bytesToHex(byteArray, 2));
 
       testEquals("0001 0203", ByteUtil.bytesToHex(byteArray, 2));
       testEquals("00 01 02 03", ByteUtil.bytesToHex(byteArray, 1));
       testEquals("000102 03", ByteUtil.bytesToHex(byteArray, 3));
+   }
+
+
+   @Test
+   public void testMaxString()
+   {
+      byte[] byteArray = new byte[20 * 1024];
+      System.out.println(ByteUtil.maxString(ByteUtil.bytesToHex(byteArray, 2),150));
    }
 
 
