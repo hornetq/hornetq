@@ -81,6 +81,7 @@ public class TransportConfiguration implements Serializable
     */
    public TransportConfiguration()
    {
+      this.params = new HashMap<>();
    }
 
    /**
@@ -95,7 +96,7 @@ public class TransportConfiguration implements Serializable
    {
       factoryClassName = className;
 
-      this.params = params;
+      this.params = params == null ? new HashMap<String, Object>() : params;
 
       this.name = name;
    }

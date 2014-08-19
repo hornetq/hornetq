@@ -1605,7 +1605,7 @@ public class HornetQServerImpl implements HornetQServer
    {
 
       return new PagingManagerImpl(new PagingStoreFactoryNIO(storageManager, configuration.getPagingDirectory(),
-                                                             configuration.getJournalBufferSize_NIO(),
+                                                             configuration.getJournalBufferTimeout_NIO(),
                                                              scheduledPool,
                                                              executorFactory,
                                                              configuration.isJournalSyncNonTransactional(),

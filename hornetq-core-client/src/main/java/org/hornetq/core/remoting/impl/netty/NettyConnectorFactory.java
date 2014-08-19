@@ -55,7 +55,7 @@ public class NettyConnectorFactory implements ConnectorFactory
    @Override
    public void setDefaults(TransportConfiguration connectorConfig)
    {
-      if (connectorConfig.getParams() == null || connectorConfig.getParams().isEmpty())
+      if (connectorConfig.getParams().isEmpty())
       {
          connectorConfig.getParams().putAll(NettyConnector.DEFAULT_CONFIG);
       }
