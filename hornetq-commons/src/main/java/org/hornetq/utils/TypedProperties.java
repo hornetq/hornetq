@@ -627,9 +627,9 @@ public final class TypedProperties
             }
             else if (theValue instanceof byte[])
             {
-               sb.append("bytes(" + ByteUtil.bytesToHex((byte [])theValue, 2) + ")");
+               sb.append("[" + ByteUtil.bytesToHex((byte [])theValue, 2) + ")");
 
-               if (iterItem.getKey().toString().startsWith("_HQ"))
+               if (iterItem.getKey().toString().startsWith("_HQ_ROUTE_TO"))
                {
                   sb.append(",bytesAsLongs(");
                   try
@@ -648,9 +648,8 @@ public final class TypedProperties
                   catch (Throwable e)
                   {
                      sb.append("error-converting-longs=" + e.getMessage());
-                     e.printStackTrace();
                   }
-                  sb.append(")");
+                  sb.append("]");
                }
             }
             else
