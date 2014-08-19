@@ -627,7 +627,7 @@ public final class TypedProperties
             }
             else if (theValue instanceof byte[])
             {
-               sb.append("[" + ByteUtil.bytesToHex((byte [])theValue, 2) + ")");
+               sb.append("[" + ByteUtil.maxString(ByteUtil.bytesToHex((byte [])theValue, 2), 150) + ")");
 
                if (iterItem.getKey().toString().startsWith("_HQ_ROUTE_TO"))
                {

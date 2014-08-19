@@ -22,6 +22,17 @@ public class ByteUtil
 
    protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
+   public static String maxString(String value, int size)
+   {
+      if (value.length() < size)
+      {
+         return value;
+      }
+      else
+      {
+         return value.substring(0, size / 2) + " ... " + value.substring(value.length() - size / 2);
+      }
+   }
    public static String bytesToHex(byte[] bytes, int groupSize)
    {
       char[] hexChars = new char[bytes.length * 2 + numberOfGroups(bytes, groupSize)];
