@@ -43,7 +43,7 @@ public class AutomaticColocatedQuorumVoteTest extends ServiceTestBase
 {
    private final HAPolicy.POLICY_TYPE policyType;
 
-   @Parameterized.Parameters
+   @Parameterized.Parameters(name = "policyType={0}")
    public static Collection getParameters()
    {
       return Arrays.asList(new Object[][]

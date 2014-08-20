@@ -54,7 +54,7 @@ public class BindingsClusterTest extends JMSClusteredTestBase
       this.crash = crash;
    }
 
-   @Parameterized.Parameters
+   @Parameterized.Parameters(name = "crash={0}")
    public static Collection getParameters()
    {
       return Arrays.asList(new Object[][]{{true}, {false}});
