@@ -209,7 +209,7 @@ public class AMQServerSession extends ServerSessionImpl
    }
 
    @Override
-   public void createConsumer(final long consumerID,
+   public ServerConsumer createConsumer(final long consumerID,
                               final SimpleString queueName,
                               final SimpleString filterString,
                               final boolean browseOnly,
@@ -287,10 +287,12 @@ public class AMQServerSession extends ServerSessionImpl
 
             managementService.sendNotification(notification);
          }
+
+         return consumer;
       }
       else
       {
-         super.createConsumer(consumerID, queueName, filterString, browseOnly, supportLargeMessage, credits);
+         return super.createConsumer(consumerID, queueName, filterString, browseOnly, supportLargeMessage, credits);
       }
    }
 

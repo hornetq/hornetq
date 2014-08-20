@@ -42,8 +42,8 @@ import org.hornetq.utils.UUIDGenerator;
 import org.proton.plug.AMQPConnectionContext;
 import org.proton.plug.AMQPSessionCallback;
 import org.proton.plug.AMQPSessionContext;
+import org.proton.plug.SASLResult;
 import org.proton.plug.context.ProtonPlugSender;
-import org.proton.plug.handler.SASLResult;
 
 import static org.hornetq.core.protocol.proton.util.ConverterUtil.serverConverter;
 

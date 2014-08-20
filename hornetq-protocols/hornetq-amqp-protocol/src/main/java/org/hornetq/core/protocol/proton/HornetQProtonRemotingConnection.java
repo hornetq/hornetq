@@ -25,7 +25,6 @@ import org.proton.plug.AMQPConnectionContext;
 /**
  *
  * This is a Server's Connection representation used by HornetQ.
- * Don't confuse with the ConnectionContext existent on ProtonPlug
  * @author Clebert Suconic
  */
 
@@ -123,7 +122,7 @@ public class HornetQProtonRemotingConnection extends AbstractRemotingConnection
    @Override
    public boolean checkDataReceived()
    {
-      return false;
+      return amqpConnection.checkDataReceived();
    }
 
    @Override

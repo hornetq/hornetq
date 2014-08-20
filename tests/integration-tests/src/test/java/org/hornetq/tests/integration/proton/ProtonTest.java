@@ -53,6 +53,7 @@ public class ProtonTest extends ServiceTestBase
    public void setUp() throws Exception
    {
       super.setUp();
+      disableCheckThread();
       server = this.createServer(true, true);
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PORT_PROP_NAME, "5672");
@@ -431,7 +432,7 @@ public class ProtonTest extends ServiceTestBase
 
    private javax.jms.Connection createConnection() throws JMSException
    {
-      final ConnectionFactoryImpl factory = new ConnectionFactoryImpl("localhost", 5672, "aaaaaaaa", "aaaaaaa");
+      final ConnectionFactoryImpl factory = new ConnectionFactoryImpl("localhost", 5672, "guest", "guest");
       final javax.jms.Connection connection = factory.createConnection();
       connection.setExceptionListener(new ExceptionListener()
       {

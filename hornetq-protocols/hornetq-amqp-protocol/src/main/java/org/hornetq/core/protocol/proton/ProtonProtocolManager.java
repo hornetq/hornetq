@@ -18,6 +18,7 @@ import java.util.concurrent.Executor;
 import io.netty.channel.ChannelPipeline;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.protocol.proton.sasl.HornetQPlainSASL;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.Notification;
@@ -27,7 +28,8 @@ import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
-import org.proton.plug.AMQPConnectionContext;
+import org.proton.plug.AMQPServerConnectionContext;
+import org.proton.plug.ServerSASL;
 import org.proton.plug.context.server.ProtonServerConnectionContextFactory;
 
 /**
@@ -60,7 +62,9 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
    {
       HornetQProtonConnectionCallback connectionCallback = new HornetQProtonConnectionCallback(this, remotingConnection);
 
-      AMQPConnectionContext amqpConnection = ProtonServerConnectionContextFactory.getFactory().createConnection(connectionCallback);
+      AMQPServerConnectionContext amqpConnection = ProtonServerConnectionContextFactory.getFactory().createConnection(connectionCallback);
+
+      amqpConnection.createServerSASL(new ServerSASL[]{new HornetQPlainSASL(server.getSecurityManager())});
 
       Executor executor = server.getExecutorFactory().getExecutor();
 
