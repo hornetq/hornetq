@@ -45,7 +45,7 @@ public class ScaleDownTest extends ClusterTestBase
 
    // this will ensure that all tests in this class are run twice,
    // once with "true" passed to the class' constructor and once with "false"
-   @Parameterized.Parameters
+   @Parameterized.Parameters(name = "useScaleDownGroupName={0}")
    public static Collection getParameters()
    {
       return Arrays.asList(new Object[][]{

@@ -32,7 +32,6 @@ import org.hornetq.tests.integration.openwire.BasicOpenWireTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  * adapted from: org.apache.activemq.JMSConsumerTest
@@ -43,7 +42,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class JMSConsumer6Test extends BasicOpenWireTest
 {
-   @Parameters
+   @Parameterized.Parameters(name = "destinationType={0}")
    public static Collection<Object[]> getParams()
    {
       return Arrays.asList(new Object[][] {

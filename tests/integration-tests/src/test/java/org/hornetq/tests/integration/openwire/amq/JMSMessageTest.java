@@ -36,7 +36,6 @@ import org.hornetq.tests.integration.openwire.BasicOpenWireTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  * adapted from: org.apache.activemq.JMSMessageTest
@@ -47,7 +46,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class JMSMessageTest extends BasicOpenWireTest
 {
-   @Parameters
+   @Parameterized.Parameters(name = "deliveryMode={0} destinationType={1}")
    public static Collection<Object[]> getParams()
    {
       return Arrays.asList(new Object[][] {
