@@ -27,7 +27,6 @@ import org.apache.activemq.command.MessageId;
 import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.openwire.OpenWireUtil;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.jms.client.HornetQDestination;
@@ -53,85 +52,83 @@ public class AMQConsumer implements BrowserListener
       this.currentSize = new AtomicInteger(0);
    }
 
-   public void init()
+   public void init() throws Exception
    {
       AMQServerSession coreSession = session.getCoreSession();
 
-      try
+      SimpleString selector = info.getSelector() == null ? null : new SimpleString(info.getSelector());
+
+      nativeId = session.getCoreServer().getStorageManager().generateUniqueID();
+
+      SimpleString address = new SimpleString(this.actualDest.getPhysicalName());
+
+      if (this.actualDest.isTopic())
       {
-         SimpleString selector = info.getSelector() == null ? null : new SimpleString(info.getSelector());
-
-         nativeId = session.getCoreServer().getStorageManager().generateUniqueID();
-
-         SimpleString address = new SimpleString(this.actualDest.getPhysicalName());
-
-         if (this.actualDest.isTopic())
+         // on recreate we don't need to create queues
+         address = new SimpleString("jms.topic." + this.actualDest.getPhysicalName());
+         if (info.isDurable())
          {
-            //on recreate we don't need to create queues
-            address = new SimpleString("jms.topic." + this.actualDest.getPhysicalName());
-            if (info.isDurable())
+            subQueueName = new SimpleString(
+                  HornetQDestination.createQueueNameForDurableSubscription(
+                        true, info.getClientId(), info.getSubscriptionName()));
+
+            QueueQueryResult result = coreSession.executeQueueQuery(subQueueName);
+            if (result.isExists())
             {
-               subQueueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(true, info.getClientId(), info.getSubscriptionName()));
-
-               QueueQueryResult result = coreSession.executeQueueQuery(subQueueName);
-               if (result.isExists())
+               // Already exists
+               if (result.getConsumerCount() > 0)
                {
-                  // Already exists
-                  if (result.getConsumerCount() > 0)
-                  {
-                     throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
-                  }
-
-                  SimpleString oldFilterString = result.getFilterString();
-
-                  boolean selectorChanged = selector == null && oldFilterString != null ||
-                                               oldFilterString == null && selector != null ||
-                                               oldFilterString != null && selector != null &&
-                                               !oldFilterString.equals(selector);
-
-                  SimpleString oldTopicName = result.getAddress();
-
-                  boolean topicChanged = !oldTopicName.equals(address);
-
-                  if (selectorChanged || topicChanged)
-                  {
-                     // Delete the old durable sub
-                     coreSession.deleteQueue(subQueueName);
-
-                     // Create the new one
-                     coreSession.createQueue(address, subQueueName, selector, false, true);
-                  }
-
+                  throw new IllegalStateException(
+                        "Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
                }
-               else
+
+               SimpleString oldFilterString = result.getFilterString();
+
+               boolean selectorChanged = selector == null
+                     && oldFilterString != null || oldFilterString == null
+                     && selector != null || oldFilterString != null
+                     && selector != null && !oldFilterString.equals(selector);
+
+               SimpleString oldTopicName = result.getAddress();
+
+               boolean topicChanged = !oldTopicName.equals(address);
+
+               if (selectorChanged || topicChanged)
                {
-                  coreSession.createQueue(address, subQueueName, selector, false, true);
+                  // Delete the old durable sub
+                  coreSession.deleteQueue(subQueueName);
+
+                  // Create the new one
+                  coreSession.createQueue(address, subQueueName, selector,
+                        false, true);
                }
+
             }
             else
             {
-               subQueueName = new SimpleString(UUID.randomUUID().toString());
-
-               coreSession.createQueue(address, subQueueName, selector, true, false);
+               coreSession.createQueue(address, subQueueName, selector, false,
+                     true);
             }
-
-            coreSession.createConsumer(nativeId, subQueueName, null, info.isBrowser(), false, Integer.MAX_VALUE);
          }
          else
          {
-            SimpleString queueName = new SimpleString("jms.queue." + this.actualDest.getPhysicalName());
-            coreSession.createConsumer(nativeId, queueName, selector, info.isBrowser(), false, Integer.MAX_VALUE);
+            subQueueName = new SimpleString(UUID.randomUUID().toString());
+
+            coreSession.createQueue(address, subQueueName, selector, true, false);
          }
 
-         if (info.isBrowser())
-         {
-            AMQServerConsumer coreConsumer = coreSession.getConsumer(nativeId);
-            coreConsumer.setBrowserListener(this);
-         }
+         coreSession.createConsumer(nativeId, subQueueName, null, info.isBrowser(), false, Integer.MAX_VALUE);
       }
-      catch (Exception e)
+      else
       {
-         HornetQServerLogger.LOGGER.error("error init consumer", e);
+         SimpleString queueName = new SimpleString("jms.queue." + this.actualDest.getPhysicalName());
+         coreSession.createConsumer(nativeId, queueName, selector, info.isBrowser(), false, Integer.MAX_VALUE);
+      }
+
+      if (info.isBrowser())
+      {
+         AMQServerConsumer coreConsumer = coreSession.getConsumer(nativeId);
+         coreConsumer.setBrowserListener(this);
       }
 
    }

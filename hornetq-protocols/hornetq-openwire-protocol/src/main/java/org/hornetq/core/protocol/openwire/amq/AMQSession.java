@@ -62,8 +62,6 @@ public class AMQSession implements SessionCallback
 
    private AtomicBoolean started = new AtomicBoolean(false);
 
-   private boolean isInternal;
-
    private TransactionId txId = null;
 
    private boolean isTx;
@@ -109,7 +107,7 @@ public class AMQSession implements SessionCallback
 
    }
 
-   public void createConsumer(ConsumerInfo info)
+   public void createConsumer(ConsumerInfo info) throws Exception
    {
       //check destination
       ActiveMQDestination dest = info.getDestination();
@@ -266,17 +264,10 @@ public class AMQSession implements SessionCallback
 
       for (ActiveMQDestination dest : actualDestinations)
       {
-         try
-         {
-            OpenWireUtil.toCoreMessage(coreMsg, messageSend, connection.getMarshaller());
-            SimpleString address = OpenWireUtil.toCoreAddress(dest);
-            coreMsg.setAddress(address);
-            coreSession.send(coreMsg, false);
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.error("error sending message", e);
-         }
+         OpenWireUtil.toCoreMessage(coreMsg, messageSend, connection.getMarshaller());
+         SimpleString address = OpenWireUtil.toCoreAddress(dest);
+         coreMsg.setAddress(address);
+         coreSession.send(coreMsg, false);
       }
    }
 
@@ -429,12 +420,12 @@ public class AMQSession implements SessionCallback
 
    public void setInternal(boolean internal)
    {
-      this.isInternal = internal;
+      this.coreSession.setInternal(internal);
    }
 
    public boolean isInternal()
    {
-      return this.isInternal;
+      return this.coreSession.isInternal();
    }
 
    public void deliverMessage(MessageDispatch dispatch)

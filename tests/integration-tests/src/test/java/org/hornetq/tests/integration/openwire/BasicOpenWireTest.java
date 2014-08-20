@@ -62,14 +62,17 @@ public class BasicOpenWireTest extends OpenWireTestBase
       SimpleString durableQueue = new SimpleString("jms.queue." + durableQueueName);
       this.server.createQueue(durableQueue, durableQueue, null, true, false);
 
-      connection = (ActiveMQConnection) factory.createConnection();
+      if (!enableSecurity)
+      {
+         connection = (ActiveMQConnection) factory.createConnection();
+      }
    }
 
    @Override
    @After
    public void tearDown() throws Exception
    {
-      System.out.println("tear down!");
+      System.out.println("tear down! " + connection);
       try
       {
          if (connection != null)

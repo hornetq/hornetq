@@ -1204,7 +1204,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   protected SecurityStore getSecurityStore()
+   public SecurityStore getSecurityStore()
    {
       return securityStore;
    }

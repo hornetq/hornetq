@@ -63,16 +63,20 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.protocol.openwire.amq.AMQConnectionContext;
 import org.hornetq.core.protocol.openwire.amq.AMQPersistenceAdapter;
 import org.hornetq.core.protocol.openwire.amq.AMQProducerBrokerExchange;
+import org.hornetq.core.protocol.openwire.amq.AMQServerSession;
 import org.hornetq.core.protocol.openwire.amq.AMQSession;
 import org.hornetq.core.protocol.openwire.amq.AMQTransportConnectionState;
 import org.hornetq.core.remoting.impl.netty.NettyServerConnection;
+import org.hornetq.core.security.CheckType;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 public class OpenWireProtocolManager implements ProtocolManager
 {
@@ -260,6 +264,13 @@ public class OpenWireProtocolManager implements ProtocolManager
 
    public void addConnection(AMQConnectionContext context, ConnectionInfo info) throws Exception
    {
+      String username = info.getUserName();
+      String password = info.getPassword();
+
+      if (!this.validateUser(username, password))
+      {
+         throw new SecurityException("User name [" + username + "] or password is invalid.");
+      }
       String clientId = info.getClientId();
       if (clientId == null)
       {
@@ -555,8 +566,8 @@ public class OpenWireProtocolManager implements ProtocolManager
    {
       AMQSession amqSession = new AMQSession(theConn.getState().getInfo(), ss,
             server, theConn, this);
-      amqSession.setInternal(internal);
       amqSession.initialize();
+      amqSession.setInternal(internal);
       sessions.put(ss.getSessionId(), amqSession);
       return amqSession;
    }
@@ -616,6 +627,17 @@ public class OpenWireProtocolManager implements ProtocolManager
       {
          SimpleString qName = new SimpleString("jms.queue."
                + dest.getPhysicalName());
+         ConnectionState state = connection.brokerConnectionStates.get(info.getConnectionId());
+         ConnectionInfo connInfo = state.getInfo();
+         if (connInfo != null)
+         {
+            String user = connInfo.getUserName();
+            String pass = connInfo.getPassword();
+
+            AMQServerSession fakeSession = new AMQServerSession(user, pass);
+            CheckType checkType = dest.isTemporary() ? CheckType.CREATE_NON_DURABLE_QUEUE : CheckType.CREATE_DURABLE_QUEUE;
+            ((HornetQServerImpl)server).getSecurityStore().check(qName, checkType, fakeSession);
+         }
          this.server.createQueue(qName, qName, null, false, true);
          if (dest.isTemporary())
          {
@@ -695,6 +717,20 @@ public class OpenWireProtocolManager implements ProtocolManager
          }
       }
       return recovered.toArray(new TransactionId[0]);
+   }
+
+   public boolean validateUser(String login, String passcode)
+   {
+      boolean validated = true;
+
+      HornetQSecurityManager sm = server.getSecurityManager();
+
+      if (sm != null && server.getConfiguration().isSecurityEnabled())
+      {
+         validated = sm.validateUser(login, passcode);
+      }
+
+      return validated;
    }
 
    public void forgetTransaction(TransactionId xid) throws Exception
