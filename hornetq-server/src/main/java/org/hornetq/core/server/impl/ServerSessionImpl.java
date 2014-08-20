@@ -109,9 +109,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Attributes ----------------------------------------------------------------------------
 
-   private final String username;
+   protected final String username;
 
-   private final String password;
+   protected final String password;
 
    private final int minLargeMessageSize;
 
@@ -123,7 +123,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    protected final boolean strictUpdateDeliveryCount;
 
-   private final RemotingConnection remotingConnection;
+   protected final RemotingConnection remotingConnection;
 
    protected final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
@@ -143,18 +143,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    protected volatile boolean started = false;
 
-   private final Map<SimpleString, TempQueueCleanerUpper> tempQueueCleannerUppers = new HashMap<SimpleString, TempQueueCleanerUpper>();
+   protected final Map<SimpleString, TempQueueCleanerUpper> tempQueueCleannerUppers = new HashMap<SimpleString, TempQueueCleanerUpper>();
 
-   private final String name;
+   protected final String name;
 
-   private final HornetQServer server;
+   protected final HornetQServer server;
 
    private final SimpleString managementAddress;
 
    // The current currentLargeMessage being processed
    private volatile LargeServerMessage currentLargeMessage;
 
-   private final RoutingContext routingContext = new RoutingContextImpl(null);
+   protected final RoutingContext routingContext = new RoutingContextImpl(null);
 
    protected final SessionCallback callback;
 
@@ -167,7 +167,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final OperationContext context;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
-   private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
+   protected final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
 
    private final long creationTime = System.currentTimeMillis();
 
@@ -182,6 +182,30 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final TransactionFactory transactionFactory;
 
    // Constructors ---------------------------------------------------------------------------------
+
+   //create an 'empty' session. Only used by AMQServerSession
+   //in order to check username and password
+   protected ServerSessionImpl(String username, String password)
+   {
+      this.username = username;
+      this.password = password;
+
+      this.transactionFactory = null;
+      this.strictUpdateDeliveryCount = false;
+      this.storageManager = null;
+      this.server = null;
+      this.securityStore = null;
+      this.resourceManager = null;
+      this.remotingConnection = null;
+      this.preAcknowledge = false;
+      this.postOffice = null;
+      this.name = null;
+      this.minLargeMessageSize = 0;
+      this.managementService = null;
+      this.managementAddress = null;
+      this.context = null;
+      this.callback = null;
+   }
 
    public ServerSessionImpl(final String name,
                             final String username,
@@ -558,13 +582,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return remotingConnection;
    }
 
-   private static class TempQueueCleanerUpper implements CloseListener, FailureListener
+   public static class TempQueueCleanerUpper implements CloseListener, FailureListener
    {
       private final SimpleString bindingName;
 
       private final HornetQServer server;
 
-      TempQueueCleanerUpper(final HornetQServer server, final SimpleString bindingName)
+      public TempQueueCleanerUpper(final HornetQServer server, final SimpleString bindingName)
       {
          this.server = server;
 
@@ -1749,7 +1773,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       theTx.rollback();
    }
 
-   private void doSend(final ServerMessage msg, final boolean direct) throws Exception
+   protected void doSend(final ServerMessage msg, final boolean direct) throws Exception
    {
       // check the user has write access to this address.
       try

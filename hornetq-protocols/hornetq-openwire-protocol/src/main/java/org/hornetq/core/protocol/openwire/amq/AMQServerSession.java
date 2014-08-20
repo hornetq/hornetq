@@ -14,30 +14,44 @@ package org.hornetq.core.protocol.openwire.amq;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.management.CoreNotificationType;
+import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.protocol.openwire.AMQTransactionImpl;
 import org.hornetq.core.security.SecurityStore;
+import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerConsumer;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.RefsOperation;
 import org.hornetq.core.server.impl.ServerConsumerImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
+import org.hornetq.utils.TypedProperties;
+import org.hornetq.utils.UUID;
 
 public class AMQServerSession extends ServerSessionImpl
 {
+   private boolean internal;
 
    public AMQServerSession(String name, String username, String password,
          int minLargeMessageSize, boolean autoCommitSends,
@@ -60,6 +74,12 @@ public class AMQServerSession extends ServerSessionImpl
          hornetQServerImpl, managementAddress,
          simpleString, callback,
          context, new AMQTransactionFactory());
+   }
+
+   //create a fake session just for security check
+   public AMQServerSession(String user, String pass)
+   {
+      super(user, pass);
    }
 
    protected void doClose(final boolean failed) throws Exception
@@ -189,6 +209,172 @@ public class AMQServerSession extends ServerSessionImpl
    }
 
    @Override
+   public void createConsumer(final long consumerID,
+                              final SimpleString queueName,
+                              final SimpleString filterString,
+                              final boolean browseOnly,
+                              final boolean supportLargeMessage,
+                              final Integer credits) throws Exception
+   {
+      if (this.internal)
+      {
+         //internal sessions doesn't check security
+
+         Binding binding = postOffice.getBinding(queueName);
+
+         if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
+         {
+            throw HornetQMessageBundle.BUNDLE.noSuchQueue(queueName);
+         }
+
+         Filter filter = FilterImpl.createFilter(filterString);
+
+         ServerConsumer consumer = newConsumer(consumerID, this,
+               (QueueBinding) binding, filter, started, browseOnly,
+               storageManager, callback, preAcknowledge,
+               strictUpdateDeliveryCount, managementService,
+               supportLargeMessage, credits);
+         consumers.put(consumer.getID(), consumer);
+
+         if (!browseOnly)
+         {
+            TypedProperties props = new TypedProperties();
+
+            props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS,
+                  binding.getAddress());
+
+            props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME,
+                  binding.getClusterName());
+
+            props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME,
+                  binding.getRoutingName());
+
+            props.putIntProperty(ManagementHelper.HDR_DISTANCE,
+                  binding.getDistance());
+
+            Queue theQueue = (Queue) binding.getBindable();
+
+            props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT,
+                  theQueue.getConsumerCount());
+
+            // HORNETQ-946
+            props.putSimpleStringProperty(ManagementHelper.HDR_USER,
+                  SimpleString.toSimpleString(username));
+
+            props.putSimpleStringProperty(ManagementHelper.HDR_REMOTE_ADDRESS,
+                  SimpleString.toSimpleString(this.remotingConnection
+                        .getRemoteAddress()));
+
+            props.putSimpleStringProperty(ManagementHelper.HDR_SESSION_NAME,
+                  SimpleString.toSimpleString(name));
+
+            if (filterString != null)
+            {
+               props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING,
+                     filterString);
+            }
+
+            Notification notification = new Notification(null,
+                  CoreNotificationType.CONSUMER_CREATED, props);
+
+            if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            {
+               HornetQServerLogger.LOGGER.debug("Session with user=" + username
+                     + ", connection=" + this.remotingConnection
+                     + " created a consumer on queue " + queueName
+                     + ", filter = " + filterString);
+            }
+
+            managementService.sendNotification(notification);
+         }
+      }
+      else
+      {
+         super.createConsumer(consumerID, queueName, filterString, browseOnly, supportLargeMessage, credits);
+      }
+   }
+
+   @Override
+   public void createQueue(final SimpleString address,
+                           final SimpleString name,
+                           final SimpleString filterString,
+                           final boolean temporary,
+                           final boolean durable) throws Exception
+   {
+      if (!this.internal)
+      {
+         super.createQueue(address, name, filterString, temporary, durable);
+         return;
+      }
+
+      server.createQueue(address, name, filterString, durable, temporary);
+
+      if (temporary)
+      {
+         // Temporary queue in core simply means the queue will be deleted if
+         // the remoting connection
+         // dies. It does not mean it will get deleted automatically when the
+         // session is closed.
+         // It is up to the user to delete the queue when finished with it
+
+         TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(server, name);
+
+         remotingConnection.addCloseListener(cleaner);
+         remotingConnection.addFailureListener(cleaner);
+
+         tempQueueCleannerUppers.put(name, cleaner);
+      }
+
+      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      {
+         HornetQServerLogger.LOGGER.debug("Queue " + name + " created on address " + name +
+                                             " with filter=" + filterString + " temporary = " +
+                                             temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
+      }
+
+   }
+
+   @Override
+   protected void doSend(final ServerMessage msg, final boolean direct) throws Exception
+   {
+      if (!this.internal)
+      {
+         super.doSend(msg, direct);
+         return;
+      }
+
+      //bypass security check for internal sessions
+      if (tx == null || autoCommitSends)
+      {
+      }
+      else
+      {
+         routingContext.setTransaction(tx);
+      }
+
+      try
+      {
+         postOffice.route(msg, routingContext, direct);
+
+         Pair<UUID, AtomicLong> value = targetAddressInfos.get(msg.getAddress());
+
+         if (value == null)
+         {
+            targetAddressInfos.put(msg.getAddress(), new Pair<UUID, AtomicLong>(msg.getUserID(), new AtomicLong(1)));
+         }
+         else
+         {
+            value.setA(msg.getUserID());
+            value.getB().incrementAndGet();
+         }
+      }
+      finally
+      {
+         routingContext.clear();
+      }
+   }
+
+   @Override
    protected ServerConsumer newConsumer(long consumerID,
          ServerSessionImpl serverSessionImpl, QueueBinding binding,
          Filter filter, boolean started2, boolean browseOnly,
@@ -215,6 +401,16 @@ public class AMQServerSession extends ServerSessionImpl
    public AMQServerConsumer getConsumer(long nativeId)
    {
       return (AMQServerConsumer) this.consumers.get(nativeId);
+   }
+
+   public void setInternal(boolean internal)
+   {
+      this.internal = internal;
+   }
+
+   public boolean isInternal()
+   {
+      return this.internal;
    }
 
 }

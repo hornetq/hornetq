@@ -27,6 +27,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.jms.JMSSecurityException;
+
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.BrokerInfo;
@@ -41,6 +43,7 @@ import org.apache.activemq.command.ConsumerInfo;
 import org.apache.activemq.command.ControlCommand;
 import org.apache.activemq.command.DataArrayResponse;
 import org.apache.activemq.command.DestinationInfo;
+import org.apache.activemq.command.ExceptionResponse;
 import org.apache.activemq.command.FlushCommand;
 import org.apache.activemq.command.KeepAliveInfo;
 import org.apache.activemq.command.Message;
@@ -74,6 +77,7 @@ import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQSecurityException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.openwire.amq.AMQBrokerStoppedException;
 import org.hornetq.core.protocol.openwire.amq.AMQConnectionContext;
@@ -666,7 +670,8 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
                   "Failed with SecurityException: " + e.getLocalizedMessage(),
                   e);
          }
-         throw e;
+         Response resp = new ExceptionResponse(e);
+         return resp;
       }
       if (info.isManageable())
       {
@@ -1080,10 +1085,25 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    }
 
    @Override
-   public Response processAddConsumer(ConsumerInfo info) throws Exception
+   public Response processAddConsumer(ConsumerInfo info)
    {
-      protocolManager.addConsumer(this, info);
-      return null;
+      Response resp = null;
+      try
+      {
+         protocolManager.addConsumer(this, info);
+      }
+      catch (Exception e)
+      {
+         if (e instanceof HornetQSecurityException)
+         {
+            resp = new ExceptionResponse(new JMSSecurityException(e.getMessage()));
+         }
+         else
+         {
+            resp = new ExceptionResponse(e);
+         }
+      }
+      return resp;
    }
 
    AMQConsumerBrokerExchange addConsumerBrokerExchange(ConsumerId id)
@@ -1177,8 +1197,23 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    @Override
    public Response processAddDestination(DestinationInfo dest) throws Exception
    {
-      protocolManager.addDestination(this, dest);
-      return null;
+      Response resp = null;
+      try
+      {
+         protocolManager.addDestination(this, dest);
+      }
+      catch (Exception e)
+      {
+         if (e instanceof HornetQSecurityException)
+         {
+            resp = new ExceptionResponse(new JMSSecurityException(e.getMessage()));
+         }
+         else
+         {
+            resp = new ExceptionResponse(e);
+         }
+      }
+      return resp;
    }
 
    @Override
@@ -1298,17 +1333,32 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    }
 
    @Override
-   public Response processMessage(Message messageSend) throws Exception
+   public Response processMessage(Message messageSend)
    {
-      ProducerId producerId = messageSend.getProducerId();
-      AMQProducerBrokerExchange producerExchange = getProducerBrokerExchange(producerId);
-      AMQSession session = protocolManager.getSession(producerId.getParentId());
-
-      if (producerExchange.canDispatch(messageSend))
+      Response resp = null;
+      try
       {
-         session.send(producerExchange, messageSend);
+         ProducerId producerId = messageSend.getProducerId();
+         AMQProducerBrokerExchange producerExchange = getProducerBrokerExchange(producerId);
+         AMQSession session = protocolManager.getSession(producerId.getParentId());
+
+         if (producerExchange.canDispatch(messageSend))
+         {
+            session.send(producerExchange, messageSend);
+         }
       }
-      return null;
+      catch (Exception e)
+      {
+         if (e instanceof HornetQSecurityException)
+         {
+            resp = new ExceptionResponse(new JMSSecurityException(e.getMessage()));
+         }
+         else
+         {
+            resp = new ExceptionResponse(e);
+         }
+      }
+      return resp;
    }
 
    private AMQProducerBrokerExchange getProducerBrokerExchange(ProducerId id) throws IOException

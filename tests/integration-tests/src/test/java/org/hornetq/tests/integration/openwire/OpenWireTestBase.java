@@ -13,9 +13,13 @@
 package org.hornetq.tests.integration.openwire;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.After;
@@ -28,6 +32,7 @@ public class OpenWireTestBase extends ServiceTestBase
 
    protected HornetQServer server;
    protected boolean realStore = false;
+   protected boolean enableSecurity = false;
 
    @Override
    @Before
@@ -41,7 +46,52 @@ public class OpenWireTestBase extends ServiceTestBase
       TransportConfiguration transportConfiguration = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
 
       server.getConfiguration().getAcceptorConfigurations().add(transportConfiguration);
+      server.getConfiguration().setSecurityEnabled(enableSecurity);
+
+      if (enableSecurity)
+      {
+         server.getSecurityManager().addRole("openwireSender", "sender");
+         server.getSecurityManager().addUser("openwireSender", "SeNdEr");
+         //sender cannot receive
+         Role senderRole = new Role("sender", true, false, false, false, true, true, false);
+
+         server.getSecurityManager().addRole("openwireReceiver", "receiver");
+         server.getSecurityManager().addUser("openwireReceiver", "ReCeIvEr");
+         //receiver cannot send
+         Role receiverRole = new Role("receiver", false, true, false, false, true, true, false);
+
+         server.getSecurityManager().addRole("openwireGuest", "guest");
+         server.getSecurityManager().addUser("openwireGuest", "GuEsT");
+
+         //guest cannot do anything
+         Role guestRole = new Role("guest", false, false, false, false, false, false, false);
+
+         server.getSecurityManager().addRole("openwireDestinationManager", "manager");
+         server.getSecurityManager().addUser("openwireDestinationManager", "DeStInAtIoN");
+
+         //guest cannot do anything
+         Role destRole = new Role("manager", false, false, false, false, true, true, false);
+
+         Map<String, Set<Role>> settings = server.getConfiguration().getSecurityRoles();
+         if (settings == null)
+         {
+            settings = new HashMap<String, Set<Role>>();
+            server.getConfiguration().setSecurityRoles(settings);
+         }
+         Set<Role> anySet = settings.get("#");
+         if (anySet == null)
+         {
+            anySet = new HashSet<Role>();
+            settings.put("#", anySet);
+         }
+         anySet.add(senderRole);
+         anySet.add(receiverRole);
+         anySet.add(guestRole);
+         anySet.add(destRole);
+      }
+
       server.start();
+      System.out.println("debug: server started");
    }
 
    @Override
