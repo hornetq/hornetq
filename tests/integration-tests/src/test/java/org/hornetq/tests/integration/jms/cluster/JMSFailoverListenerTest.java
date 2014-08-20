@@ -21,7 +21,9 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.SimpleString;
@@ -163,7 +165,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
       JMSUtil.crash(liveService, ((HornetQSession) sess).getCoreSession());
 
-      Assert.assertEquals(FailoverEventType.FAILURE_DETECTED, listener.getEventTypeList().get(0));
+      Assert.assertEquals(FailoverEventType.FAILURE_DETECTED, listener.get(0));
       for (int i = 0; i < numMessages; i++)
       {
          JMSFailoverListenerTest.log.info("got message " + i);
@@ -178,10 +180,10 @@ public class JMSFailoverListenerTest extends ServiceTestBase
       TextMessage tm = (TextMessage) consumer.receiveNoWait();
 
       Assert.assertNull(tm);
-      Assert.assertEquals(FailoverEventType.FAILOVER_COMPLETED, listener.getEventTypeList().get(1));
+      Assert.assertEquals(FailoverEventType.FAILOVER_COMPLETED, listener.get(1));
 
       conn.close();
-      Assert.assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.getEventTypeList().size());
+      Assert.assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.size());
    }
 
    @Test
@@ -233,7 +235,7 @@ public class JMSFailoverListenerTest extends ServiceTestBase
       // Note we block on P send to make sure all messages get to server before failover
 
       JMSUtil.crash(liveService, coreSessionLive);
-      Assert.assertEquals(FailoverEventType.FAILURE_DETECTED, listener.getEventTypeList().get(0));
+      Assert.assertEquals(FailoverEventType.FAILURE_DETECTED, listener.get(0));
       connLive.close();
 
       // Now recreate on backup
@@ -256,8 +258,8 @@ public class JMSFailoverListenerTest extends ServiceTestBase
       }
 
       TextMessage tm = (TextMessage) consumerBackup.receiveNoWait();
-      Assert.assertEquals(FailoverEventType.FAILOVER_FAILED, listener.getEventTypeList().get(1));
-      Assert.assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.getEventTypeList().size());
+      Assert.assertEquals(FailoverEventType.FAILOVER_FAILED, listener.get(1));
+      Assert.assertEquals("Expected 2 FailoverEvents to be triggered", 2, listener.size());
       Assert.assertNull(tm);
 
       connBackup.close();
@@ -381,17 +383,41 @@ public class JMSFailoverListenerTest extends ServiceTestBase
 
    private static class MyFailoverListener implements FailoverEventListener
    {
-      private ArrayList<FailoverEventType> eventTypeList = new ArrayList<FailoverEventType>();
+      private List<FailoverEventType> eventTypeList = Collections.synchronizedList(new ArrayList<FailoverEventType>());
 
-      public ArrayList<FailoverEventType> getEventTypeList()
+
+      public FailoverEventType get(int element)
       {
-         return eventTypeList;
+         waitForElements(element + 1);
+         return eventTypeList.get(element);
+      }
+
+      public int size()
+      {
+         return eventTypeList.size();
+      }
+
+      private void waitForElements(int elements)
+      {
+         long timeout = System.currentTimeMillis() + 5000;
+         while (timeout > System.currentTimeMillis() && eventTypeList.size() < elements)
+         {
+            try
+            {
+               Thread.sleep(1);
+            }
+            catch (Throwable e)
+            {
+               fail(e.getMessage());
+            }
+         }
+
+         Assert.assertTrue(eventTypeList.size() >= elements);
       }
 
       public void failoverEvent(FailoverEventType eventType)
       {
          eventTypeList.add(eventType);
-         log.info("Failover event just happened : " + eventType.toString());
       }
    }
 }
