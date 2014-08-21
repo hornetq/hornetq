@@ -55,7 +55,7 @@ public class ProtonTest extends ServiceTestBase
       server = this.createServer(false, true);
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PORT_PROP_NAME, "5672");
-      params.put(TransportConstants.PROTOCOL_PROP_NAME, "AMQP");
+      params.put(TransportConstants.PROTOCOLS_PROP_NAME, "AMQP");
       TransportConfiguration transportConfiguration = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
 
       server.getConfiguration().getAcceptorConfigurations().add(transportConfiguration);
