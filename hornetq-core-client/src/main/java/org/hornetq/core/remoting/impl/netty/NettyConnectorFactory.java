@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
@@ -53,11 +52,8 @@ public class NettyConnectorFactory implements ConnectorFactory
    }
 
    @Override
-   public void setDefaults(TransportConfiguration connectorConfig)
+   public Map<String, Object> getDefaults()
    {
-      if (connectorConfig.getParams().isEmpty())
-      {
-         connectorConfig.getParams().putAll(NettyConnector.DEFAULT_CONFIG);
-      }
+      return NettyConnector.DEFAULT_CONFIG;
    }
 }

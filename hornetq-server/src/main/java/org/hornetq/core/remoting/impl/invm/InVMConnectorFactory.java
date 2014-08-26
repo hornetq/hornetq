@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
@@ -56,11 +55,8 @@ public class InVMConnectorFactory implements ConnectorFactory
    }
 
    @Override
-   public void setDefaults(TransportConfiguration connectorConfig)
+   public Map<String, Object> getDefaults()
    {
-      if (connectorConfig.getParams().isEmpty())
-      {
-         connectorConfig.getParams().putAll(InVMConnector.DEFAULT_CONFIG);
-      }
+      return InVMConnector.DEFAULT_CONFIG;
    }
 }
