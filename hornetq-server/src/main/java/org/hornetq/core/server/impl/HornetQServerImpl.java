@@ -176,6 +176,7 @@ import static org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum.B
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
+ * @author <a href="mailto:mtaylor@redhat.com>Martyn Taylor</a>
  */
 public class HornetQServerImpl implements HornetQServer
 {
@@ -320,6 +321,10 @@ public class HornetQServerImpl implements HornetQServer
 
    private final List<SimpleString> scaledDownNodeIDs = new ArrayList<>();
 
+   private boolean threadPoolSupplied = false;
+
+   private boolean scheduledPoolSupplied = false;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -391,6 +396,39 @@ public class HornetQServerImpl implements HornetQServer
 
       this.parentServer = parentServer;
 
+   }
+
+
+   public HornetQServerImpl(Configuration configuration,
+                            MBeanServer mbeanServer,
+                            final HornetQSecurityManager securityManager,
+                            final HornetQServer parentServer,
+                            final ExecutorService threadPool,
+                            final ScheduledExecutorService scheduledPool)
+   {
+      this(configuration, mbeanServer, securityManager, parentServer);
+
+      if (threadPool != null)
+      {
+         this.threadPool = threadPool;
+         this.executorFactory = new OrderedExecutorFactory(threadPool);
+         this.threadPoolSupplied = true;
+      }
+
+      if (scheduledPool != null)
+      {
+         this.scheduledPool = scheduledPool;
+         this.scheduledPoolSupplied = true;
+      }
+   }
+
+   public HornetQServerImpl(Configuration configuration,
+                            MBeanServer mbeanServer,
+                            final HornetQSecurityManager securityManager,
+                            final ExecutorService threadPool,
+                            final ScheduledExecutorService scheduledPool)
+   {
+      this(configuration, mbeanServer, securityManager, null, threadPool, scheduledPool);
    }
 
    // life-cycle methods
@@ -716,7 +754,7 @@ public class HornetQServerImpl implements HornetQServer
 
       stopComponent(postOffice);
 
-      if (scheduledPool != null)
+      if (scheduledPool != null && !scheduledPoolSupplied)
       {
          // we just interrupt all running tasks, these are supposed to be pings and the like.
          scheduledPool.shutdownNow();
@@ -724,7 +762,7 @@ public class HornetQServerImpl implements HornetQServer
 
       stopComponent(memoryManager);
 
-      if (threadPool != null)
+      if (threadPool != null && !threadPoolSupplied)
       {
          threadPool.shutdown();
          try
@@ -744,15 +782,11 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
-      scheduledPool = null;
-      threadPool = null;
+      if (!threadPoolSupplied) threadPool = null;
+      if (!scheduledPoolSupplied) scheduledPool = null;
 
       if (securityStore != null)
          securityStore.stop();
-
-      threadPool = null;
-
-      scheduledPool = null;
 
       pagingManager = null;
       securityStore = null;
@@ -1683,20 +1717,26 @@ public class HornetQServerImpl implements HornetQServer
          configuration.setJournalType(JournalType.NIO);
       }
 
-      if (configuration.getThreadPoolMaxSize() == -1)
+      if (!threadPoolSupplied)
       {
-         threadPool = Executors.newCachedThreadPool(tFactory);
-      }
-      else
-      {
-         threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), tFactory);
+         if (configuration.getThreadPoolMaxSize() == -1)
+         {
+            threadPool = Executors.newCachedThreadPool(tFactory);
+         }
+         else
+         {
+            threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), tFactory);
+         }
+         executorFactory = new OrderedExecutorFactory(threadPool);
       }
 
-      executorFactory = new OrderedExecutorFactory(threadPool);
-      scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                      new HornetQThreadFactory("HornetQ-scheduled-threads",
-                                                                               false,
-                                                                               getThisClassLoader()));
+      if (!scheduledPoolSupplied)
+      {
+         scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
+                                                         new HornetQThreadFactory("HornetQ-scheduled-threads",
+                                                                                  false,
+                                                                                  getThisClassLoader()));
+      }
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
