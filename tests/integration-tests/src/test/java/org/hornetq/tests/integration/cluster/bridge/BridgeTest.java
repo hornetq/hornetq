@@ -13,6 +13,8 @@
 package org.hornetq.tests.integration.cluster.bridge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,8 @@ import org.hornetq.utils.ReusableLatch;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * A JMSBridgeTest
@@ -65,6 +69,7 @@ import org.junit.Test;
  *         <p/>
  *         Created 14 Jan 2009 14:05:01
  */
+@RunWith(value = Parameterized.class)
 public class BridgeTest extends ServiceTestBase
 {
 
@@ -72,9 +77,26 @@ public class BridgeTest extends ServiceTestBase
    private HornetQServer server1;
    private ServerLocator locator;
 
+   private final boolean netty;
+
+
+   @Parameterized.Parameters(name = "isNetty={0}")
+   public static Collection getParameters()
+   {
+      return Arrays.asList(new Object[][]{
+         {true},
+         {false}
+      });
+   }
+
+   public BridgeTest(boolean isNetty)
+   {
+      this.netty = isNetty;
+   }
+
    protected boolean isNetty()
    {
-      return false;
+      return netty;
    }
 
 
