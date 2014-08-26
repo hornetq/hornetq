@@ -681,6 +681,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage cMessage = consumer.receive(5000);
+         assertNotNull(cMessage);
          assertNotNull(cMessage.getBodyBuffer().readString());
          //NB we dont test for order as they will be round robined and out of order
       }

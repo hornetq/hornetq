@@ -13,6 +13,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -189,7 +190,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       if (!isSharedStore())
       {
-         waitForBackupTopologyAnnouncement(sfs[0]);
+         assertTrue(servers[2].waitForBackupSync(10, TimeUnit.SECONDS));
       }
 
       closeSessionFactory(0);
