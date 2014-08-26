@@ -147,7 +147,7 @@ public interface HornetQServerControl
    boolean isFailoverOnServerShutdown();
 
    /**
-    * Returns the minimal number of journal files before compacting.
+    * Returns the minimalserver number of journal files before compacting.
     */
    int getJournalCompactMinFiles();
 

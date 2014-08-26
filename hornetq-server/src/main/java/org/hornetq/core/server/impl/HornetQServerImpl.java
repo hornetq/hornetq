@@ -101,7 +101,6 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage;
@@ -138,6 +137,7 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterControl;
 import org.hornetq.core.server.cluster.ClusterController;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.HornetQServerSideProtocolManagerFactory;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
@@ -828,7 +828,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          scaleDownServerLocator = clusterManager.getHAManager().getScaleDownConnector();
          //use a Node Locator to connect to the cluster
-         scaleDownServerLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+         scaleDownServerLocator.setProtocolManagerFactory(new HornetQServerSideProtocolManagerFactory());
          LiveNodeLocator nodeLocator = clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName() == null ?
             new AnyLiveNodeLocatorForScaleDown(HornetQServerImpl.this) :
             new NamedLiveNodeLocatorForScaleDown(clusterManager.getHAManager().getHAPolicy().getScaleDownGroupName(), HornetQServerImpl.this);
@@ -1204,6 +1204,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   @Override
    public SecurityStore getSecurityStore()
    {
       return securityStore;

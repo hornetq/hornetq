@@ -10,21 +10,45 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.tests.integration.cluster.bridge;
+
+package org.hornetq.core.protocol.core.impl;
+
+import org.hornetq.spi.core.remoting.ConsumerContext;
 
 /**
- * A NettyBridgeTest
- *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
+ * @author Clebert Suconic
  */
-public class NettyBridgeTest extends BridgeTest
+
+public class HornetQConsumerContext extends ConsumerContext
 {
-   @Override
-   protected boolean isNetty()
+   private long id;
+
+   public HornetQConsumerContext(long id)
    {
+      this.id = id;
+   }
+
+   public long getId()
+   {
+      return id;
+   }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      HornetQConsumerContext that = (HornetQConsumerContext) o;
+
+      if (id != that.id) return false;
+
       return true;
    }
 
+   @Override
+   public int hashCode()
+   {
+      return (int) (id ^ (id >>> 32));
+   }
 }

@@ -25,7 +25,7 @@ public class PacketImpl implements Packet
 {
    // Constants -------------------------------------------------------------------------
 
-   // The minimal size for all the packets, Common data for all the packets (look at
+   // The minimalserver size for all the packets, Common data for all the packets (look at
    // PacketImpl.encode)
    public static final int PACKET_HEADERS_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE +
                                                  DataConstants.SIZE_LONG;

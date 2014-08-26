@@ -30,8 +30,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.core.protocol.core.impl.HornetQConsumerContext;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.spi.core.remoting.ConsumerContext;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.UUID;
@@ -333,9 +335,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public Object getId()
+      public ConsumerContext getConsumerContext()
       {
-         return id;
+         return new HornetQConsumerContext(this.id);
       }
 
       @Override

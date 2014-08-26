@@ -151,6 +151,8 @@ public class ProtocolHandler
             if (protocolManager.isProtocol(in.copy(0, 8).array()))
             {
                protocolToUse = protocol;
+
+               System.out.println("Using " + protocol);
                break;
             }
          }
@@ -164,6 +166,7 @@ public class ProtocolHandler
          ChannelPipeline pipeline = ctx.pipeline();
          protocolManagerToUse.addChannelHandlers(pipeline);
          pipeline.addLast("handler", channelHandler);
+         // TODO: Why the connecion in so indirect to the protocol used?
          NettyServerConnection connection = channelHandler.createConnection(ctx, protocolToUse, httpEnabled);
          protocolManagerToUse.handshake(connection, new ChannelBufferWrapper(in));
          pipeline.remove(this);

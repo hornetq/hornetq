@@ -417,20 +417,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void createConsumer(final long consumerID,
-                              final SimpleString queueName,
-                              final SimpleString filterString,
-                              final boolean browseOnly) throws Exception
+   public ServerConsumer createConsumer(final long consumerID,
+                                        final SimpleString queueName,
+                                        final SimpleString filterString,
+                                        final boolean browseOnly) throws Exception
    {
-      this.createConsumer(consumerID, queueName, filterString, browseOnly, true, null);
+      return this.createConsumer(consumerID, queueName, filterString, browseOnly, true, null);
    }
 
-   public void createConsumer(final long consumerID,
-                              final SimpleString queueName,
-                              final SimpleString filterString,
-                              final boolean browseOnly,
-                              final boolean supportLargeMessage,
-                              final Integer credits) throws Exception
+   public ServerConsumer createConsumer(final long consumerID,
+                                        final SimpleString queueName,
+                                        final SimpleString filterString,
+                                        final boolean browseOnly,
+                                        final boolean supportLargeMessage,
+                                        final Integer credits) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -498,6 +498,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          managementService.sendNotification(notification);
       }
+
+      return consumer;
    }
 
    protected ServerConsumer newConsumer(long consumerID,
@@ -758,12 +760,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          // have these messages to be stuck on the limbo until the server is restarted
          // The tx has already timed out, so we need to ack and rollback immediately
          Transaction newTX = newTransaction();
-         consumer.acknowledge(autoCommitAcks, newTX, messageID);
+         consumer.acknowledge(newTX, messageID);
          newTX.rollback();
       }
       else
       {
-         consumer.acknowledge(autoCommitAcks, tx, messageID);
+         consumer.acknowledge(autoCommitAcks ? null : tx, messageID);
       }
    }
 
@@ -771,23 +773,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
-      if (this.xa && tx == null)
-      {
-         throw new HornetQXAException(XAException.XAER_PROTO, "Invalid transaction state");
-      }
-
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
          // JBPAPP-8845 - if we let stuff to be acked on a rolled back TX, we will just
          // have these messages to be stuck on the limbo until the server is restarted
          // The tx has already timed out, so we need to ack and rollback immediately
          Transaction newTX = newTransaction();
-         consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
+         consumer.individualAcknowledge(tx, messageID);
          newTX.rollback();
       }
       else
       {
-         consumer.individualAcknowledge(autoCommitAcks, tx, messageID);
+         consumer.individualAcknowledge(autoCommitAcks ? null : tx, messageID);
       }
 
    }
@@ -822,11 +819,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       try
       {
-         tx.commit();
+         if (tx != null)
+         {
+            tx.commit();
+         }
       }
       finally
       {
-         tx = newTransaction();
+         if (xa)
+         {
+            tx = null;
+         }
+         else
+         {
+            tx = newTransaction();
+         }
       }
    }
 
@@ -1396,6 +1403,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    @Override
    public Transaction getCurrentTransaction()
    {
+      if (tx == null)
+      {
+         tx = newTransaction();
+      }
       return tx;
    }
 

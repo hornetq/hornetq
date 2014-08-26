@@ -87,6 +87,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private final boolean supportLargeMessage;
 
+   private Object protocolContext;
+
    /**
     * We get a readLock when a message is handled, and return the readLock when the message is finally delivered
     * When stopping the consumer we need to get a writeLock to make sure we had all delivery finished
@@ -231,6 +233,16 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    // ServerConsumer implementation
    // ----------------------------------------------------------------------
 
+   public Object getProtocolContext()
+   {
+      return protocolContext;
+   }
+
+   public void setProtocolContext(Object protocolContext)
+   {
+      this.protocolContext = protocolContext;
+   }
+
    public long getID()
    {
       return id;
@@ -274,7 +286,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
-      if (availableCredits != null && availableCredits.get() <= 0)
+      if (callback != null && !callback.hasCredits(this) || availableCredits != null && availableCredits.get() <= 0)
       {
          if (HornetQServerLogger.LOGGER.isDebugEnabled())
          {
@@ -526,7 +538,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                      forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
                      forcedDeliveryMessage.setAddress(messageQueue.getName());
 
-                     callback.sendMessage(forcedDeliveryMessage, id, 0);
+                     callback.sendMessage(forcedDeliveryMessage, ServerConsumerImpl.this, 0);
                   }
                }
             }
@@ -573,7 +585,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
             if (performACK)
             {
-               acknowledge(false, tx, ref.getMessage().getMessageID());
+               acknowledge(tx, ref.getMessage().getMessageID());
 
                performACK = false;
             }
@@ -663,7 +675,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
-   public void receiveCredits(final int credits) throws Exception
+   public void receiveCredits(final int credits)
    {
       if (credits == -1)
       {
@@ -713,7 +725,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return messageQueue;
    }
 
-   public void acknowledge(final boolean autoCommitAcks, Transaction tx, final long messageID) throws Exception
+   public void acknowledge(Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
@@ -728,7 +740,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       boolean startedTransaction = false;
 
-      if (tx == null || autoCommitAcks)
+      if (tx == null)
       {
          startedTransaction = true;
          tx = new TransactionImpl(storageManager);
@@ -790,7 +802,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
-   public void individualAcknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
+   public void individualAcknowledge(final Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
@@ -804,7 +816,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          throw new IllegalStateException("Cannot find ref to ack " + messageID);
       }
 
-      if (autoCommitAcks)
+      if (tx == null)
       {
          ref.getQueue().acknowledge(ref);
       }
@@ -906,7 +918,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    @Override
    public void disconnect()
    {
-      callback.disconnect(id, getQueue().getName().toString());
+      callback.disconnect(this, getQueue().getName().toString());
    }
 
    public float getRate()
@@ -922,7 +934,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    // Private --------------------------------------------------------------------------------------
 
-   private void promptDelivery()
+   public void promptDelivery()
    {
       // largeMessageDeliverer is always set inside a lock
       // if we don't acquire a lock, we will have NPE eventually
@@ -959,7 +971,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
     */
    private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
    {
-      int packetSize = callback.sendMessage(message, id, ref.getDeliveryCount());
+      int packetSize = callback.sendMessage(message, ServerConsumerImpl.this, ref.getDeliveryCount());
 
       if (availableCredits != null)
       {
@@ -1061,7 +1073,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                sentInitialPacket = true;
 
                int packetSize = callback.sendLargeMessage(largeMessage,
-                                                          id,
+                                                          ServerConsumerImpl.this,
                                                           context.getLargeBodySize(),
                                                           ref.getDeliveryCount());
 
@@ -1109,7 +1121,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
                byte[] body = bodyBuffer.toByteBuffer().array();
 
-               int packetSize = callback.sendLargeMessageContinuation(id,
+               int packetSize = callback.sendLargeMessageContinuation(ServerConsumerImpl.this,
                                                                       body,
                                                                       positionPendingLargeMessage + localChunkLen < sizePendingLargeMessage,
                                                                       false);

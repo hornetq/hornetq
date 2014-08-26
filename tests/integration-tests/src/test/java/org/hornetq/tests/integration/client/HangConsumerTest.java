@@ -12,6 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.ServerConsumer;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
@@ -522,6 +523,12 @@ public class HangConsumerTest extends ServiceTestBase
 
    class MyCallback implements SessionCallback
    {
+      @Override
+      public boolean hasCredits(ServerConsumer consumerID)
+      {
+         return true;
+      }
+
       final SessionCallback targetCallback;
 
       MyCallback(SessionCallback parameter)
@@ -547,7 +554,7 @@ public class HangConsumerTest extends ServiceTestBase
        * @see org.hornetq.spi.core.protocol.SessionCallback#sendMessage(org.hornetq.core.server.ServerMessage, long, int)
        */
       @Override
-      public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
+      public int sendMessage(ServerMessage message, ServerConsumer consumer, int deliveryCount)
       {
          inCall.countDown();
          try
@@ -562,7 +569,7 @@ public class HangConsumerTest extends ServiceTestBase
 
          try
          {
-            return targetCallback.sendMessage(message, consumerID, deliveryCount);
+            return targetCallback.sendMessage(message, consumer, deliveryCount);
          }
          finally
          {
@@ -575,18 +582,18 @@ public class HangConsumerTest extends ServiceTestBase
        * @see org.hornetq.spi.core.protocol.SessionCallback#sendLargeMessage(org.hornetq.core.server.ServerMessage, long, long, int)
        */
       @Override
-      public int sendLargeMessage(ServerMessage message, long consumerID, long bodySize, int deliveryCount)
+      public int sendLargeMessage(ServerMessage message, ServerConsumer consumer, long bodySize, int deliveryCount)
       {
-         return targetCallback.sendLargeMessage(message, consumerID, bodySize, deliveryCount);
+         return targetCallback.sendLargeMessage(message, consumer, bodySize, deliveryCount);
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.spi.core.protocol.SessionCallback#sendLargeMessageContinuation(long, byte[], boolean, boolean)
        */
       @Override
-      public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse)
+      public int sendLargeMessageContinuation(ServerConsumer consumer, byte[] body, boolean continues, boolean requiresResponse)
       {
-         return targetCallback.sendLargeMessageContinuation(consumerID, body, continues, requiresResponse);
+         return targetCallback.sendLargeMessageContinuation(consumer, body, continues, requiresResponse);
       }
 
       /* (non-Javadoc)
@@ -617,7 +624,7 @@ public class HangConsumerTest extends ServiceTestBase
       }
 
       @Override
-      public void disconnect(long consumerId, String queueName)
+      public void disconnect(ServerConsumer consumerId, String queueName)
       {
          //To change body of implemented methods use File | Settings | File Templates.
       }
