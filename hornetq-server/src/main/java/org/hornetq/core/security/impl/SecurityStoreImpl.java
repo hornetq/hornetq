@@ -96,6 +96,12 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    // SecurityManager implementation --------------------------------
 
+   @Override
+   public boolean isSecurityEnabled()
+   {
+      return securityEnabled;
+   }
+
    public void stop()
    {
       securityRepository.unRegisterListener(this);

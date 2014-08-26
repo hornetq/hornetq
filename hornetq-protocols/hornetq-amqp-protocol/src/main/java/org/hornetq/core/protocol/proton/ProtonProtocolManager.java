@@ -64,7 +64,7 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
 
       AMQPServerConnectionContext amqpConnection = ProtonServerConnectionContextFactory.getFactory().createConnection(connectionCallback);
 
-      amqpConnection.createServerSASL(new ServerSASL[]{new HornetQPlainSASL(server.getSecurityManager())});
+      amqpConnection.createServerSASL(new ServerSASL[]{new HornetQPlainSASL(server.getSecurityStore(), server.getSecurityManager())});
 
       Executor executor = server.getExecutorFactory().getExecutor();
 

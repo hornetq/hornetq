@@ -13,6 +13,7 @@
 
 package org.hornetq.core.protocol.proton.sasl;
 
+import org.hornetq.core.security.SecurityStore;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.proton.plug.sasl.ServerSASLPlain;
 
@@ -25,16 +26,25 @@ public class HornetQPlainSASL extends ServerSASLPlain
 
    private final HornetQSecurityManager securityManager;
 
+   private final SecurityStore securityStore;
 
-   public HornetQPlainSASL(HornetQSecurityManager securityManager)
+
+   public HornetQPlainSASL(SecurityStore securityStore, HornetQSecurityManager securityManager)
    {
       this.securityManager = securityManager;
+      this.securityStore = securityStore;
    }
 
    @Override
    protected boolean authenticate(String user, String password)
    {
-      new Exception("authenticating " + user + " password=" + password).printStackTrace();
-      return securityManager.validateUser(user, password);
+      if (securityStore.isSecurityEnabled())
+      {
+         return securityManager.validateUser(user, password);
+      }
+      else
+      {
+         return true;
+      }
    }
 }

@@ -1204,6 +1204,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   @Override
    public SecurityStore getSecurityStore()
    {
       return securityStore;
