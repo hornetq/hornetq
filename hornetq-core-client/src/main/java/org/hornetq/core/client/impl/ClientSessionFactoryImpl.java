@@ -183,8 +183,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
-      connectorFactory.setDefaults(connectorConfig);
-
       checkTransportKeys(connectorFactory, connectorConfig);
 
       this.callTimeout = callTimeout;

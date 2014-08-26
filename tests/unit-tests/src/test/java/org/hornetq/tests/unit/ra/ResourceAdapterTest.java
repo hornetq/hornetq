@@ -291,11 +291,11 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertNotNull(configurations);
       assertEquals(3, configurations.length);
       assertEquals(NETTY_CONNECTOR_FACTORY, configurations[0].getFactoryClassName());
-      assertEquals(0, configurations[0].getParams().size());
+      assertEquals(2, configurations[0].getParams().size());
       assertEquals(INVM_CONNECTOR_FACTORY, configurations[1].getFactoryClassName());
-      assertEquals(0, configurations[1].getParams().size());
+      assertEquals(1, configurations[1].getParams().size());
       assertEquals(NETTY_CONNECTOR_FACTORY, configurations[2].getFactoryClassName());
-      assertEquals(0, configurations[2].getParams().size());
+      assertEquals(2, configurations[2].getParams().size());
    }
 
    @Test
@@ -337,11 +337,11 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertNotNull(configurations);
       assertEquals(3, configurations.length);
       assertEquals(INVM_CONNECTOR_FACTORY, configurations[0].getFactoryClassName());
-      assertEquals(0, configurations[0].getParams().size());
+      assertEquals(1, configurations[0].getParams().size());
       assertEquals(NETTY_CONNECTOR_FACTORY, configurations[1].getFactoryClassName());
-      assertEquals(0, configurations[1].getParams().size());
+      assertEquals(2, configurations[1].getParams().size());
       assertEquals(INVM_CONNECTOR_FACTORY, configurations[2].getFactoryClassName());
-      assertEquals(0, configurations[2].getParams().size());
+      assertEquals(1, configurations[2].getParams().size());
    }
 
    @Test
