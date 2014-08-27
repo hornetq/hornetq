@@ -13,6 +13,8 @@
 package org.hornetq.tests.integration.cluster.bridge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,20 +42,42 @@ import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * A BridgeWithDiscoveryGroupStartTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
+@RunWith(value = Parameterized.class)
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 {
+
+   @Parameterized.Parameters(name = "isNetty={0}")
+   public static Collection getParameters()
+   {
+      return Arrays.asList(new Object[][]{
+         {true},
+         {false}
+      });
+   }
+
+   public BridgeWithDiscoveryGroupStartTest(boolean netty)
+   {
+      this.netty = netty;
+   }
+
+
+   private final boolean netty;
+
+
 
    private static final int TIMEOUT = 2000;
 
    protected boolean isNetty()
    {
-      return false;
+      return netty;
    }
 
    @Test

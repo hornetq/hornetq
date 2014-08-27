@@ -13,6 +13,8 @@
 package org.hornetq.tests.integration.cluster.bridge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,8 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * A BridgeStartTest
@@ -44,13 +48,31 @@ import org.junit.Test;
  *         <p/>
  *         Created 14 Jan 2009 14:05:01
  */
+@RunWith(value = Parameterized.class)
 public class BridgeStartTest extends ServiceTestBase
 {
+
+   @Parameterized.Parameters(name = "isNetty={0}")
+   public static Collection getParameters()
+   {
+      return Arrays.asList(new Object[][]{
+         {true},
+         {false}
+      });
+   }
+
+   public BridgeStartTest(boolean netty)
+   {
+      this.netty = netty;
+   }
+
+   private final boolean netty;
+
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
 
    protected boolean isNetty()
    {
-      return false;
+      return netty;
    }
 
    private String getConnector()
