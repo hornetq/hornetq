@@ -275,7 +275,7 @@ public final class TypedProperties
       Object value = doGetProperty(key);
       if (value == null)
       {
-         return Integer.valueOf(null);
+         return null;
       }
       else if (value instanceof Integer)
       {
@@ -304,7 +304,7 @@ public final class TypedProperties
       Object value = doGetProperty(key);
       if (value == null)
       {
-         return Long.valueOf(null);
+         return null;
       }
       else if (value instanceof Long)
       {

@@ -12,10 +12,17 @@
  */
 package org.hornetq.core.protocol.openwire;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.jms.JMSException;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.apache.activemq.command.ActiveMQDestination;
@@ -33,8 +40,11 @@ import org.apache.activemq.command.MessageDispatch;
 import org.apache.activemq.command.MessageId;
 import org.apache.activemq.command.ProducerId;
 import org.apache.activemq.command.TransactionId;
+import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.activemq.util.ByteSequence;
+import org.apache.activemq.util.MarshallingSupport;
 import org.apache.activemq.wireformat.WireFormat;
+import org.fusesource.hawtbuf.UTF8Buffer;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQPropertyConversionException;
@@ -42,6 +52,9 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.openwire.amq.AMQConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.TypedProperties;
+import org.hornetq.utils.UUIDGenerator;
 
 public class OpenWireUtil
 {
@@ -92,13 +105,113 @@ public class OpenWireUtil
       coreMessage.setExpiration(messageSend.getExpiration());
       coreMessage.setPriority(messageSend.getPriority());
       coreMessage.setTimestamp(messageSend.getTimestamp());
-      coreMessage.setType(toCoreType(messageSend.getDataStructureType()));
+
+      byte coreType = toCoreType(messageSend.getDataStructureType());
+      coreMessage.setType(coreType);
 
       ByteSequence contents = messageSend.getContent();
       if (contents != null)
       {
          HornetQBuffer body = coreMessage.getBodyBuffer();
-         body.writeBytes(contents.data, contents.offset, contents.length);
+         switch (coreType)
+         {
+            case org.hornetq.api.core.Message.TEXT_TYPE:
+               ByteArrayInputStream tis = new ByteArrayInputStream(contents);
+               DataInputStream tdataIn = new DataInputStream(tis);
+               String text = MarshallingSupport.readUTF8(tdataIn);
+               tdataIn.close();
+               body.writeNullableSimpleString(new SimpleString(text));
+               break;
+            case org.hornetq.api.core.Message.MAP_TYPE:
+               InputStream mis = new ByteArrayInputStream(contents);
+               DataInputStream mdataIn = new DataInputStream(mis);
+               Map<String, Object> map = MarshallingSupport.unmarshalPrimitiveMap(mdataIn);
+               mdataIn.close();
+               TypedProperties props = new TypedProperties();
+               loadMapIntoProperties(props, map);
+               props.encode(body);
+               break;
+            case org.hornetq.api.core.Message.OBJECT_TYPE:
+               body.writeInt(contents.length);
+               body.writeBytes(contents.data, contents.offset, contents.length);
+               break;
+            case org.hornetq.api.core.Message.STREAM_TYPE:
+               InputStream sis = new ByteArrayInputStream(contents);
+               DataInputStream sdis = new DataInputStream(sis);
+               int stype = sdis.read();
+               while (stype != -1)
+               {
+                  switch (stype)
+                  {
+                     case MarshallingSupport.BOOLEAN_TYPE:
+                        body.writeByte(DataConstants.BOOLEAN);
+                        body.writeBoolean(sdis.readBoolean());
+                        break;
+                     case MarshallingSupport.BYTE_TYPE:
+                        body.writeByte(DataConstants.BYTE);
+                        body.writeByte(sdis.readByte());
+                        break;
+                     case MarshallingSupport.BYTE_ARRAY_TYPE:
+                        body.writeByte(DataConstants.BYTES);
+                        int slen = sdis.readInt();
+                        byte[] sbytes = new byte[slen];
+                        sdis.read(sbytes);
+                        body.writeInt(slen);
+                        body.writeBytes(sbytes);
+                        break;
+                     case MarshallingSupport.CHAR_TYPE:
+                        body.writeByte(DataConstants.CHAR);
+                        char schar = sdis.readChar();
+                        body.writeShort((short)schar);
+                        break;
+                     case MarshallingSupport.DOUBLE_TYPE:
+                        body.writeByte(DataConstants.DOUBLE);
+                        double sdouble = sdis.readDouble();
+                        body.writeLong(Double.doubleToLongBits(sdouble));
+                        break;
+                     case MarshallingSupport.FLOAT_TYPE:
+                        body.writeByte(DataConstants.FLOAT);
+                        float sfloat = sdis.readFloat();
+                        body.writeInt(Float.floatToIntBits(sfloat));
+                        break;
+                     case MarshallingSupport.INTEGER_TYPE:
+                        body.writeByte(DataConstants.INT);
+                        body.writeInt(sdis.readInt());
+                        break;
+                     case MarshallingSupport.LONG_TYPE:
+                        body.writeByte(DataConstants.LONG);
+                        body.writeLong(sdis.readLong());
+                        break;
+                     case MarshallingSupport.SHORT_TYPE:
+                        body.writeByte(DataConstants.SHORT);
+                        body.writeShort(sdis.readShort());
+                        break;
+                     case MarshallingSupport.STRING_TYPE:
+                        body.writeByte(DataConstants.STRING);
+                        String sstring = sdis.readUTF();
+                        body.writeNullableString(sstring);
+                        break;
+                     case MarshallingSupport.BIG_STRING_TYPE:
+                        body.writeByte(DataConstants.STRING);
+                        String sbigString = MarshallingSupport.readUTF8(sdis);
+                        body.writeNullableString(sbigString);
+                        break;
+                     case MarshallingSupport.NULL:
+                        body.writeByte(DataConstants.STRING);
+                        body.writeNullableString(null);
+                        break;
+                     default:
+                        //something we don't know, ignore
+                        break;
+                  }
+                  stype = sdis.read();
+               }
+               sdis.close();
+               break;
+            default:
+               body.writeBytes(contents.data, contents.offset, contents.length);
+               break;
+         }
       }
       //amq specific
       coreMessage.putLongProperty(AMQ_MSG_ARRIVAL, messageSend.getArrival());
@@ -242,6 +355,22 @@ public class OpenWireUtil
       coreMessage.putBooleanProperty(AMQ_MSG_DROPPABLE, messageSend.isDroppable());
    }
 
+   private static void loadMapIntoProperties(TypedProperties props, Map<String, Object> map)
+   {
+      Iterator<Entry<String, Object>> iter = map.entrySet().iterator();
+      while (iter.hasNext())
+      {
+         Entry<String, Object> entry = iter.next();
+         SimpleString key = new SimpleString(entry.getKey());
+         Object value = entry.getValue();
+         if (value instanceof UTF8Buffer)
+         {
+            value = ((UTF8Buffer)value).toString();
+         }
+         TypedProperties.setObjectProperty(key, value, props);
+      }
+   }
+
    public static byte toCoreType(byte amqType)
    {
       switch (amqType)
@@ -295,7 +424,8 @@ public class OpenWireUtil
    private static ActiveMQMessage toAMQMessage(ServerMessage coreMessage, WireFormat marshaller) throws IOException
    {
       ActiveMQMessage amqMsg = null;
-      switch (coreMessage.getType())
+      byte coreType = coreMessage.getType();
+      switch (coreType)
       {
          case org.hornetq.api.core.Message.BYTES_TYPE:
             amqMsg = new ActiveMQBytesMessage();
@@ -329,21 +459,142 @@ public class OpenWireUtil
       amqMsg.setPriority(coreMessage.getPriority());
       amqMsg.setTimestamp(coreMessage.getTimestamp());
 
+      Long brokerInTime = coreMessage.getLongProperty(AMQ_MSG_BROKER_IN_TIME);
+      if (brokerInTime == null)
+      {
+         brokerInTime = 0L;
+      }
+      amqMsg.setBrokerInTime(brokerInTime);
+
       HornetQBuffer buffer = coreMessage.getBodyBuffer();
-      buffer.resetReaderIndex();
       if (buffer != null)
       {
-         int n = buffer.readableBytes();
-         byte[] bytes = new byte[n];
-         buffer.readBytes(bytes);
-         buffer.resetReaderIndex();// this is important for topics as the buffer
-                                   // may be read multiple times
-         ByteSequence content = new ByteSequence(bytes);
-         amqMsg.setContent(content);
+         buffer.resetReaderIndex();
+         byte[] bytes = null;
+         synchronized (buffer)
+         {
+            if (coreType == org.hornetq.api.core.Message.TEXT_TYPE)
+            {
+               SimpleString text = buffer.readNullableSimpleString();
+
+               if (text != null)
+               {
+                  ByteArrayOutputStream out = new ByteArrayOutputStream(text.length() + 4);
+                  DataOutputStream dataOut = new DataOutputStream(out);
+                  MarshallingSupport.writeUTF8(dataOut, text.toString());
+                  bytes = out.toByteArray();
+                  out.close();
+               }
+            }
+            else if (coreType == org.hornetq.api.core.Message.MAP_TYPE)
+            {
+               TypedProperties mapData = new TypedProperties();
+               mapData.decode(buffer);
+
+               Map<String, Object> map = mapData.getMap();
+               ByteArrayOutputStream out = new ByteArrayOutputStream(mapData.getEncodeSize());
+               DataOutputStream dataOut = new DataOutputStream(out);
+               MarshallingSupport.marshalPrimitiveMap(map, dataOut);
+               bytes = out.toByteArray();
+               dataOut.close();
+            }
+            else if (coreType == org.hornetq.api.core.Message.OBJECT_TYPE)
+            {
+               int len = buffer.readInt();
+               bytes = new byte[len];
+               buffer.readBytes(bytes);
+            }
+            else if (coreType == org.hornetq.api.core.Message.STREAM_TYPE)
+            {
+               ByteArrayOutputStream out = new ByteArrayOutputStream(buffer.readableBytes());
+               DataOutputStream dataOut = new DataOutputStream(out);
+
+               boolean stop = false;
+               while (!stop && buffer.readable())
+               {
+                  byte primitiveType = buffer.readByte();
+                  switch (primitiveType)
+                  {
+                     case DataConstants.BOOLEAN:
+                        MarshallingSupport.marshalBoolean(dataOut, buffer.readBoolean());
+                        break;
+                     case DataConstants.BYTE:
+                        MarshallingSupport.marshalByte(dataOut, buffer.readByte());
+                        break;
+                     case DataConstants.BYTES:
+                        int len = buffer.readInt();
+                        byte[] bytesData = new byte[len];
+                        buffer.readBytes(bytesData);
+                        MarshallingSupport.marshalByteArray(dataOut, bytesData);
+                        break;
+                     case DataConstants.CHAR:
+                        char ch = (char)buffer.readShort();
+                        MarshallingSupport.marshalChar(dataOut, ch);
+                        break;
+                     case DataConstants.DOUBLE:
+                        double doubleVal = Double.longBitsToDouble(buffer.readLong());
+                        MarshallingSupport.marshalDouble(dataOut, doubleVal);
+                        break;
+                     case DataConstants.FLOAT:
+                        Float floatVal = Float.intBitsToFloat(buffer.readInt());
+                        MarshallingSupport.marshalFloat(dataOut, floatVal);
+                        break;
+                     case DataConstants.INT:
+                        MarshallingSupport.marshalInt(dataOut, buffer.readInt());
+                        break;
+                     case DataConstants.LONG:
+                        MarshallingSupport.marshalLong(dataOut, buffer.readLong());
+                        break;
+                     case DataConstants.SHORT:
+                        MarshallingSupport.marshalShort(dataOut, buffer.readShort());
+                        break;
+                     case DataConstants.STRING:
+                        String string = buffer.readNullableString();
+                        if (string == null)
+                        {
+                           MarshallingSupport.marshalNull(dataOut);
+                        }
+                        else
+                        {
+                           MarshallingSupport.marshalString(dataOut, string);
+                        }
+                        break;
+                     default:
+                        //now we stop
+                        stop = true;
+                        break;
+                  }
+               }
+               bytes = out.toByteArray();
+               dataOut.close();
+            }
+            else
+            {
+               int n = buffer.readableBytes();
+               bytes = new byte[n];
+               buffer.readBytes(bytes);
+            }
+
+            buffer.resetReaderIndex();// this is important for topics as the buffer
+                                      // may be read multiple times
+         }
+
+         if (bytes != null)
+         {
+            ByteSequence content = new ByteSequence(bytes);
+            amqMsg.setContent(content);
+         }
       }
 
-      amqMsg.setArrival(coreMessage.getLongProperty(AMQ_MSG_ARRIVAL));
-      amqMsg.setBrokerInTime(coreMessage.getLongProperty(AMQ_MSG_BROKER_IN_TIME));
+      //we need check null because messages may come from other clients
+      //and those amq specific attribute may not be set.
+      Long arrival = coreMessage.getLongProperty(AMQ_MSG_ARRIVAL);
+      if (arrival == null)
+      {
+         //messages from other sources (like core client) may not set this prop
+         arrival = 0L;
+      }
+      amqMsg.setArrival(arrival);
 
       String brokerPath = coreMessage.getStringProperty(AMQ_MSG_BROKER_PATH);
       if (brokerPath != null && brokerPath.isEmpty())
@@ -369,7 +620,13 @@ public class OpenWireUtil
          amqMsg.setCluster(bids);
       }
 
-      amqMsg.setCommandId(coreMessage.getIntProperty(AMQ_MSG_COMMAND_ID));
+      Integer commandId = coreMessage.getIntProperty(AMQ_MSG_COMMAND_ID);
+      if (commandId == null)
+      {
+         commandId = -1;
+      }
+      amqMsg.setCommandId(commandId);
+
       String corrId = coreMessage.getStringProperty("JMSCorrelationID");
       if (corrId != null)
       {
@@ -397,11 +654,26 @@ public class OpenWireUtil
       {
          amqMsg.setGroupID(groupId);
       }
-      amqMsg.setGroupSequence(coreMessage.getIntProperty(AMQ_MSG_GROUP_SEQUENCE));
 
+      Integer groupSequence = coreMessage.getIntProperty(AMQ_MSG_GROUP_SEQUENCE);
+      if (groupSequence == null)
+      {
+         groupSequence = -1;
+      }
+      amqMsg.setGroupSequence(groupSequence);
+
+      MessageId mid = null;
       byte[] midBytes = coreMessage.getBytesProperty(AMQ_MSG_MESSAGE_ID);
-      ByteSequence midSeq = new ByteSequence(midBytes);
-      MessageId mid = (MessageId)marshaller.unmarshal(midSeq);
+      if (midBytes != null)
+      {
+         ByteSequence midSeq = new ByteSequence(midBytes);
+         mid = (MessageId)marshaller.unmarshal(midSeq);
+      }
+      else
+      {
+         mid = new MessageId(UUIDGenerator.getInstance().generateStringUUID() + ":-1");
+      }
+
       amqMsg.setMessageId(mid);
 
       byte[] origDestBytes = coreMessage.getBytesProperty(AMQ_MSG_ORIG_DESTINATION);
@@ -431,7 +703,11 @@ public class OpenWireUtil
          amqMsg.setMarshalledProperties(new ByteSequence(marshalledBytes));
       }
 
-      amqMsg.setRedeliveryCounter(coreMessage.getIntProperty(AMQ_MSG_REDELIVER_COUNTER));
+      Integer redeliveryCounter = coreMessage.getIntProperty(AMQ_MSG_REDELIVER_COUNTER);
+      if (redeliveryCounter != null)
+      {
+         amqMsg.setRedeliveryCounter(redeliveryCounter);
+      }
 
       byte[] replyToBytes = coreMessage.getBytesProperty(AMQ_MSG_REPLY_TO);
       if (replyToBytes != null)
@@ -463,6 +739,34 @@ public class OpenWireUtil
       amqMsg.setCompressed(coreMessage.getBooleanProperty(AMQ_MSG_COMPRESSED));
       amqMsg.setDroppable(coreMessage.getBooleanProperty(AMQ_MSG_DROPPABLE));
 
+      Set<SimpleString> props = coreMessage.getPropertyNames();
+      if (props != null)
+      {
+         for (SimpleString s : props)
+         {
+            String keyStr = s.toString();
+            if (keyStr.startsWith("__HQ") || keyStr.startsWith("__HDR_"))
+            {
+               continue;
+            }
+            Object prop = coreMessage.getObjectProperty(s);
+            try
+            {
+               if (prop instanceof SimpleString)
+               {
+                  amqMsg.setObjectProperty(s.toString(), prop.toString());
+               }
+               else
+               {
+                  amqMsg.setObjectProperty(s.toString(), prop);
+               }
+            }
+            catch (JMSException e)
+            {
+               throw new IOException("exception setting property " + s + " : " + prop, e);
+            }
+         }
+      }
       return amqMsg;
    }
 
