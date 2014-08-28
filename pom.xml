@@ -251,28 +251,6 @@
          </dependency>
          <!--needed to compile the bootstrap jar-->
          <dependency>
-            <groupId>org.jboss.microcontainer</groupId>
-            <artifactId>jboss-kernel</artifactId>
-            <version>2.0.6.GA</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>org.jboss.logging</groupId>
-                  <artifactId>jboss-logging-spi</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
-            <version>2.2.14.GA</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>org.jboss.logging</groupId>
-                  <artifactId>jboss-logging-spi</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
             <version>3.3.4.Final</version>
@@ -282,32 +260,6 @@
             <artifactId>airline</artifactId>
             <version>0.6</version>
         </dependency>
-         <!--needed for microntainer deps in distro-->
-         <dependency>
-            <groupId>org.jboss.microcontainer</groupId>
-            <artifactId>jboss-dependency</artifactId>
-            <version>2.0.6.GA</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-reflect</artifactId>
-            <version>2.0.2.GA</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-mdr</artifactId>
-            <version>2.0.1.GA</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jbossxb</artifactId>
-            <version>2.0.1.GA</version>
-         </dependency>
-         <dependency>
-            <groupId>sun-jaxb</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.1.9</version>
-         </dependency>
          <!--needed to compile transport jar-->
          <dependency>
             <groupId>io.netty</groupId>
@@ -454,6 +406,12 @@
             <groupId>org.jboss.javaee</groupId>
             <artifactId>jboss-jca-api</artifactId>
             <version>1.5.0.GA</version>
+            <exclusions>
+               <exclusion>
+                  <groupId>org.jboss.logging</groupId>
+                  <artifactId>jboss-logging-spi</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
 
          <!-- needed for javadoc graphics-->
