@@ -1294,7 +1294,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       {
          return true;
       }
-      else if (isSystemThread && threadName.equals("process reaper"))
+      else if ((javaVendor.contains("IBM") || isSystemThread) && threadName.equals("process reaper"))
       {
          return true;
       }
