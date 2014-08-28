@@ -97,7 +97,7 @@ for i in `ls $HORNETQ_HOME/lib/*.jar`; do
 done
 
 
-JAVA_ARGS="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
+JAVA_ARGS="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces -Djava.library.path=$HORNETQ_HOME/lib/linux-i686:$HORNETQ_HOME/lib/linux-x86_64"
 #JAVA_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
 
 "$JAVACMD" $JAVA_ARGS -classpath $CLASSPATH org.hornetq.cli.HornetQ $@

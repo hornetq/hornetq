@@ -136,7 +136,7 @@ public abstract class HornetQServerTestCase
          // start the servers if needed
          if (!HornetQServerTestCase.servers.get(0).isStarted())
          {
-            HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), true);
+            HornetQServerTestCase.servers.get(0).start(getConfiguration(), true);
          }
          // deploy the objects for this test
          deployAdministeredObjects();
@@ -191,13 +191,13 @@ public abstract class HornetQServerTestCase
    public void start() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), false);
+      HornetQServerTestCase.servers.get(0).start(getConfiguration(), false);
    }
 
    public void startNoDelete() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      HornetQServerTestCase.servers.get(0).start(getContainerConfig(), getConfiguration(), false);
+      HornetQServerTestCase.servers.get(0).start(getConfiguration(), false);
    }
 
    public void stopServerPeer() throws Exception
@@ -286,12 +286,6 @@ public abstract class HornetQServerTestCase
          }
       }
       servers.clear();
-   }
-
-   // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
-   public String[] getContainerConfig()
-   {
-      return new String[]{"test-beans.xml"};
    }
 
    protected HornetQServer getJmsServer() throws Exception
