@@ -52,6 +52,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
+import org.hornetq.spi.core.protocol.MessageConverter;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -79,6 +80,16 @@ class CoreProtocolManager implements ProtocolManager
       this.incomingInterceptors = incomingInterceptors;
 
       this.outgoingInterceptors = outgoingInterceptors;
+   }
+
+   /**
+    * no need to implement this now
+    * @return
+    */
+   @Override
+   public MessageConverter getConverter()
+   {
+      return null;
    }
 
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)

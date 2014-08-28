@@ -10,20 +10,18 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.tests.integration.client;
+
+package org.hornetq.spi.core.protocol;
+
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.utils.TypedProperties;
 
 /**
- * A NettyConsumerTest
- *
- * @author clebertsuconic
- *
- *
+ * @author Clebert Suconic
  */
-public class NettyConsumerTest extends ConsumerTest
-{
-   protected boolean isNetty()
-   {
-      return true;
-   }
 
+public interface MessageConverter
+{
+   ServerMessage convert(TypedProperties properties, HornetQBuffer buffer);
 }
