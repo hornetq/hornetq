@@ -42,6 +42,7 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
+import org.hornetq.spi.core.protocol.MessageConverter;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -90,6 +91,12 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          destinations.add(service.getManagementAddress().toString());
          service.addNotificationListener(this);
       }
+   }
+
+   @Override
+   public MessageConverter getConverter()
+   {
+      return null;
    }
 
    // ProtocolManager implementation --------------------------------

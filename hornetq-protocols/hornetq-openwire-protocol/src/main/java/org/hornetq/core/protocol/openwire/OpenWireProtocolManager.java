@@ -72,6 +72,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
+import org.hornetq.spi.core.protocol.MessageConverter;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -134,6 +135,12 @@ public class OpenWireProtocolManager implements ProtocolManager
 
       return new ConnectionEntry(owConn, null, System.currentTimeMillis(),
             1 * 60 * 1000);
+   }
+
+   @Override
+   public MessageConverter getConverter()
+   {
+      return null;
    }
 
    @Override

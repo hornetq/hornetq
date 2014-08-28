@@ -48,6 +48,7 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
+import org.hornetq.spi.core.protocol.MessageConverter;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
@@ -84,6 +85,13 @@ public class ProtonProtocolManager implements ProtocolManager, NotificationListe
       ProtonRemotingConnection conn = new ProtonRemotingConnection(acceptorUsed, connection, this);
       //todo do we have a ttl?
       return new ConnectionEntry(conn, null, System.currentTimeMillis(), 1 * 60 * 1000);
+   }
+
+
+   @Override
+   public MessageConverter getConverter()
+   {
+      return null;
    }
 
    @Override
