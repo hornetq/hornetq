@@ -37,20 +37,16 @@ public class SoakSender
 
    public static void main(final String[] args)
    {
-      for (int i = 0; i < args.length; i++)
+      String jndiURL = System.getProperty("jndi.address");
+      if(jndiURL == null)
       {
-         System.out.println(i + ":" + args[i]);
-      }
-      String jndiURL = "jndi://localhost:1099";
-      if (args.length > 0)
-      {
-         jndiURL = args[0];
+         jndiURL = args.length > 0 ? args[0] : "jnp://localhost:1099";
       }
 
       System.out.println("Connecting to JNDI at " + jndiURL);
       try
       {
-         String fileName = SoakBase.getPerfFileName(args);
+         String fileName = SoakBase.getPerfFileName();
 
          SoakParams params = SoakBase.getParams(fileName);
 

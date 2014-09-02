@@ -12,6 +12,8 @@
  */
 package org.hornetq.jms.soak.example;
 
+import java.lang.Override;
+import java.lang.Runnable;
 import java.util.Hashtable;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,46 +39,53 @@ public class SoakReceiver
 
    public static void main(final String[] args)
    {
-      for (int i = 0; i < args.length; i++)
+      Runnable runnable = new Runnable()
       {
-         System.out.println(i + ":" + args[i]);
-      }
-      String jndiURL = "jndi://localhost:1099";
-      if (args.length > 0)
-      {
-         jndiURL = args[0];
-      }
-
-      System.out.println("Connecting to JNDI at " + jndiURL);
-
-      try
-      {
-         String fileName = SoakBase.getPerfFileName(args);
-
-         SoakParams params = SoakBase.getParams(fileName);
-
-         Hashtable<String, String> jndiProps = new Hashtable<String, String>();
-         jndiProps.put("java.naming.provider.url", jndiURL);
-         jndiProps.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-         jndiProps.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-
-         final SoakReceiver receiver = new SoakReceiver(jndiProps, params);
-
-         Runtime.getRuntime().addShutdownHook(new Thread()
+         @Override
+         public void run()
          {
-            @Override
-            public void run()
-            {
-               receiver.disconnect();
-            }
-         });
 
-         receiver.run();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+            String jndiURL = System.getProperty("jndi.address");
+            if(jndiURL == null)
+            {
+               jndiURL = args.length > 0 ? args[0] : "jnp://localhost:1099";
+            }
+
+            System.out.println("Connecting to JNDI at " + jndiURL);
+
+            try
+            {
+               String fileName = SoakBase.getPerfFileName();
+
+               SoakParams params = SoakBase.getParams(fileName);
+
+               Hashtable<String, String> jndiProps = new Hashtable<String, String>();
+               jndiProps.put("java.naming.provider.url", jndiURL);
+               jndiProps.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+               jndiProps.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+
+               final SoakReceiver receiver = new SoakReceiver(jndiProps, params);
+
+               Runtime.getRuntime().addShutdownHook(new Thread()
+               {
+                  @Override
+                  public void run()
+                  {
+                     receiver.disconnect();
+                  }
+               });
+
+               receiver.run();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+      Thread t = new Thread(runnable);
+      t.start();
    }
 
    private final Hashtable<String, String> jndiProps;
