@@ -1110,25 +1110,26 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    protected void schedulePing()
    {
-      if (clientFailureCheckPeriod != -1)
+      if (pingerFuture == null)
       {
-         if (pingerFuture == null)
-         {
-            pingRunnable = new ClientSessionFactoryImpl.PingRunnable();
+         pingRunnable = new ClientSessionFactoryImpl.PingRunnable();
 
+         if (clientFailureCheckPeriod != -1)
+         {
             pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ClientSessionFactoryImpl.ActualScheduledPinger(pingRunnable),
                                                                       0,
                                                                       clientFailureCheckPeriod,
                                                                       TimeUnit.MILLISECONDS);
-            // To make sure the first ping will be sent
-            pingRunnable.send();
          }
-         // send a ping every time we create a new remoting connection
-         // to set up its TTL on the server side
-         else
-         {
-            pingRunnable.run();
-         }
+
+         // To make sure the first ping will be sent
+         pingRunnable.send();
+      }
+      // send a ping every time we create a new remoting connection
+      // to set up its TTL on the server side
+      else
+      {
+         pingRunnable.run();
       }
    }
 
