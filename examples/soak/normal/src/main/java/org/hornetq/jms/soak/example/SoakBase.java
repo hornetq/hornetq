@@ -49,15 +49,10 @@ public class SoakBase
       return bytes;
    }
 
-   protected static String getPerfFileName(final String[] args)
+   protected static String getPerfFileName()
    {
-      String fileName;
-
-      if (args.length > 1)
-      {
-         fileName = args[1];
-      }
-      else
+      String fileName = System.getProperty("soak.props");
+      if (fileName == null)
       {
          fileName = SoakBase.DEFAULT_SOAK_PROPERTIES_FILE_NAME;
       }
