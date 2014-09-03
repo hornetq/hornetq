@@ -91,7 +91,7 @@ public class SSLSupport
                                                   final String trustStorePath,
                                                   final String trustStorePassword) throws Exception
    {
-      if (trustStorePath == null && ("JKS".equals(trustStoreProvider) || trustStoreProvider == null))
+      if (trustStorePath == null || trustStoreProvider == null)
       {
          return null;
       }
@@ -107,18 +107,15 @@ public class SSLSupport
 
    private static KeyStore loadKeystore(final String keystoreProvider, final String keystorePath, final String keystorePassword) throws Exception
    {
-      assert keystorePath != null || "JKS".equals(keystoreProvider) == false;
+      assert keystorePath != null;
       assert keystorePassword != null;
 
       KeyStore ks = KeyStore.getInstance(keystoreProvider);
       InputStream in = null;
       try
       {
-         if ("JKS".equals(keystoreProvider))
-         {
-            URL keystoreURL = SSLSupport.validateStoreURL(keystorePath);
-            in = keystoreURL.openStream();
-         }
+         URL keystoreURL = SSLSupport.validateStoreURL(keystorePath);
+         in = keystoreURL.openStream();
          ks.load(in, keystorePassword.toCharArray());
       }
       finally
@@ -139,7 +136,7 @@ public class SSLSupport
 
    private static KeyManager[] loadKeyManagers(final String keyStoreProvider, final String keystorePath, final String keystorePassword) throws Exception
    {
-      if (keystorePath == null && ("JKS".equals(keyStoreProvider) || keyStoreProvider == null))
+      if (keystorePath == null || keyStoreProvider == null)
       {
          return null;
       }
