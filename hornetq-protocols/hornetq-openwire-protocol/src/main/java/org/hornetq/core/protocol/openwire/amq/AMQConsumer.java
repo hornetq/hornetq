@@ -26,7 +26,7 @@ import org.apache.activemq.command.MessageDispatch;
 import org.apache.activemq.command.MessageId;
 import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.protocol.openwire.OpenWireUtil;
+import org.hornetq.core.protocol.openwire.OpenWireMessageConverter;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.jms.client.HornetQDestination;
@@ -176,7 +176,7 @@ public class AMQConsumer implements BrowserListener
       try
       {
          //decrement deliveryCount as AMQ client tends to add 1.
-         dispatch = OpenWireUtil.createMessageDispatch(message, deliveryCount - 1, this);
+         dispatch = OpenWireMessageConverter.createMessageDispatch(message, deliveryCount - 1, this);
          int size = dispatch.getMessage().getSize();
          this.deliveringRefs.add(new MessageInfo(dispatch.getMessage().getMessageId(), message.getMessageID(), size));
          session.deliverMessage(dispatch);

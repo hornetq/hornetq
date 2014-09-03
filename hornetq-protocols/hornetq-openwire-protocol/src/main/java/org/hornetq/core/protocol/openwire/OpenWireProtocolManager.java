@@ -140,7 +140,7 @@ public class OpenWireProtocolManager implements ProtocolManager
    @Override
    public MessageConverter getConverter()
    {
-      return null;
+      return new OpenWireMessageConverter();
    }
 
    @Override
