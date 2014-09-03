@@ -232,7 +232,7 @@ public class SimpleOpenWireTest extends BasicOpenWireTest
 
       try
       {
-         String urlString = "tcp://" + OWHOST + ":" + OWPORT + "?wireFormat.cacheEnabled=false";
+         String urlString = "tcp://" + OWHOST + ":" + OWPORT + "?wireFormat.cacheEnabled=true";
          ActiveMQConnectionFactory exFact = new ActiveMQConnectionFactory(urlString);
 
          // Step 2. Perfom a lookup on the queue
@@ -253,7 +253,7 @@ public class SimpleOpenWireTest extends BasicOpenWireTest
          // Step 7. Create a Text Message
          TextMessage message = session.createTextMessage("This is a text message");
 
-         System.out.println("Sent message: " + message.getText());
+         //System.out.println("Sent message: " + message.getText());
 
          // Step 8. Send the Message
          producer.send(message);

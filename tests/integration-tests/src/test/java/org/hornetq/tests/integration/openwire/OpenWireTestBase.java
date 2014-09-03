@@ -12,15 +12,23 @@
  */
 package org.hornetq.tests.integration.openwire;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.jms.ConnectionFactory;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.After;
 import org.junit.Before;
@@ -31,8 +39,13 @@ public class OpenWireTestBase extends ServiceTestBase
    public static final int OWPORT = 61616;
 
    protected HornetQServer server;
+
+   protected JMSServerManagerImpl jmsServer;
    protected boolean realStore = false;
    protected boolean enableSecurity = false;
+
+   protected ConnectionFactory cf;
+   protected InVMNamingContext namingContext;
 
    @Override
    @Before
@@ -89,9 +102,45 @@ public class OpenWireTestBase extends ServiceTestBase
          anySet.add(guestRole);
          anySet.add(destRole);
       }
+      jmsServer = new JMSServerManagerImpl(server);
+      namingContext = new InVMNamingContext();
+      jmsServer.setContext(namingContext);
+      jmsServer.start();
 
-      server.start();
+      registerConnectionFactory();
       System.out.println("debug: server started");
+   }
+
+   protected void registerConnectionFactory() throws Exception
+   {
+      List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
+      connectorConfigs.add(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      createCF(connectorConfigs, "/cf");
+
+      cf = (ConnectionFactory) namingContext.lookup("/cf");
+   }
+
+   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
+   {
+      final int retryInterval = 1000;
+      final double retryIntervalMultiplier = 1.0;
+      final int reconnectAttempts = -1;
+      final int callTimeout = 30000;
+      final boolean ha = false;
+      List<String> connectorNames = registerConnectors(server, connectorConfigs);
+
+      String cfName = name.getMethodName();
+      if (cfName == null)
+      {
+         cfName = "cfOpenWire";
+      }
+      ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(cfName, ha, connectorNames);
+      configuration.setRetryInterval(retryInterval);
+      configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      configuration.setCallTimeout(callTimeout);
+      configuration.setReconnectAttempts(reconnectAttempts);
+      jmsServer.createConnectionFactory(false, configuration, jndiBindings);
    }
 
    @Override

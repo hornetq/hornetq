@@ -36,6 +36,7 @@ import org.apache.activemq.command.XATransactionId;
 import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.openwire.OpenWireConnection;
+import org.hornetq.core.protocol.openwire.OpenWireMessageConverter;
 import org.hornetq.core.protocol.openwire.OpenWireProtocolManager;
 import org.hornetq.core.protocol.openwire.OpenWireUtil;
 import org.hornetq.core.server.HornetQServer;
@@ -264,7 +265,7 @@ public class AMQSession implements SessionCallback
 
       for (ActiveMQDestination dest : actualDestinations)
       {
-         OpenWireUtil.toCoreMessage(coreMsg, messageSend, connection.getMarshaller());
+         OpenWireMessageConverter.toCoreMessage(coreMsg, messageSend, connection.getMarshaller());
          SimpleString address = OpenWireUtil.toCoreAddress(dest);
          coreMsg.setAddress(address);
          coreSession.send(coreMsg, false);
