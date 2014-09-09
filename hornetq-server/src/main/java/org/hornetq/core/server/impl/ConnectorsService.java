@@ -51,15 +51,19 @@ public final class ConnectorsService implements HornetQComponent
 
    private final Set<ConnectorService> connectors = new HashSet<ConnectorService>();
 
+   private final InjectedObjectRegistry injectedObjectRegistry;
+
    public ConnectorsService(final Configuration configuration,
                             final StorageManager storageManager,
                             final ScheduledExecutorService scheduledPool,
-                            final PostOffice postOffice)
+                            final PostOffice postOffice,
+                            final InjectedObjectRegistry injectedObjectRegistry)
    {
       this.configuration = configuration;
       this.storageManager = storageManager;
       this.scheduledPool = scheduledPool;
       this.postOffice = postOffice;
+      this.injectedObjectRegistry = injectedObjectRegistry;
    }
 
    public void start() throws Exception
@@ -68,7 +72,11 @@ public final class ConnectorsService implements HornetQComponent
 
       for (ConnectorServiceConfiguration info : configurationList)
       {
-         ConnectorServiceFactory factory = (ConnectorServiceFactory)ClassloadingUtil.newInstanceFromClassLoader(info.getFactoryClassName());
+         ConnectorServiceFactory factory = injectedObjectRegistry.getConnectorServiceFactory(info.getFactoryClassName());
+         if (factory == null)
+         {
+            factory = (ConnectorServiceFactory) ClassloadingUtil.newInstanceFromClassLoader(info.getFactoryClassName());
+         }
 
          if (info.getParams() != null)
          {
