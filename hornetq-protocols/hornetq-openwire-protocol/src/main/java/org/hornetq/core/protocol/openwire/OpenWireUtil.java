@@ -43,4 +43,15 @@ public class OpenWireUtil
       }
    }
 
+   /*
+    *This util converts amq wildcards to compatible core wildcards
+    *The conversion is like this:
+    *AMQ * wildcard --> Core * wildcard (no conversion)
+    *AMQ > wildcard --> Core # wildcard
+    */
+   public static String convertWildcard(String physicalName)
+   {
+      return physicalName.replaceAll("(\\.>)+", ".#");
+   }
+
 }
