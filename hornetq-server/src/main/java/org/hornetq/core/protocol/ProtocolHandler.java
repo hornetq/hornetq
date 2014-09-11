@@ -14,6 +14,7 @@ package org.hornetq.core.protocol;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -145,15 +146,25 @@ public class ProtocolHandler
             return;
          }
          String protocolToUse = null;
-         for (String protocol : protocolMap.keySet())
+         Set<String> protocolSet = protocolMap.keySet();
+         if (!protocolSet.isEmpty())
          {
-            ProtocolManager protocolManager = protocolMap.get(protocol);
-            if (protocolManager.isProtocol(in.copy(0, 8).array()))
+            // Use getBytes(...) as this works with direct and heap buffers.
+            // See https://issues.jboss.org/browse/HORNETQ-1406
+            byte[] bytes = new byte[8];
+            in.getBytes(0, bytes);
+
+            for (String protocol : protocolSet)
             {
-               protocolToUse = protocol;
-               break;
+               ProtocolManager protocolManager = protocolMap.get(protocol);
+               if (protocolManager.isProtocol(bytes))
+               {
+                  protocolToUse = protocol;
+                  break;
+               }
             }
          }
+
          //if we get here we assume we use the core protocol as we match nothing else
          if (protocolToUse == null)
          {
