@@ -58,16 +58,16 @@ public class JmsTopicSendReceiveTest extends JmsSendReceiveTestSupport
       if (topic)
       {
          consumerDestination = createDestination(session,
-               ActiveMQDestination.TOPIC_TYPE);
+               ActiveMQDestination.TOPIC_TYPE, getConsumerSubject());
          producerDestination = createDestination(session,
-               ActiveMQDestination.TOPIC_TYPE);
+               ActiveMQDestination.TOPIC_TYPE, getProducerSubject());
       }
       else
       {
          consumerDestination = createDestination(session,
-               ActiveMQDestination.QUEUE_TYPE);
+               ActiveMQDestination.QUEUE_TYPE, getConsumerSubject());
          producerDestination = createDestination(session,
-               ActiveMQDestination.QUEUE_TYPE);
+               ActiveMQDestination.QUEUE_TYPE, getConsumerSubject());
       }
 
       System.out.println("Created  consumer destination: "
@@ -81,6 +81,16 @@ public class JmsTopicSendReceiveTest extends JmsSendReceiveTestSupport
       connection.start();
 
       // log.info("Created connection: " + connection);
+   }
+
+   protected String getConsumerSubject()
+   {
+      return null;
+   }
+
+   protected String getProducerSubject()
+   {
+      return null;
    }
 
    protected MessageConsumer createConsumer() throws JMSException

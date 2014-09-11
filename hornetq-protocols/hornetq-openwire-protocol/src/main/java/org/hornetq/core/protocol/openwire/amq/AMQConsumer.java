@@ -27,6 +27,7 @@ import org.apache.activemq.command.MessageId;
 import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.openwire.OpenWireMessageConverter;
+import org.hornetq.core.protocol.openwire.OpenWireUtil;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.jms.client.HornetQDestination;
@@ -64,8 +65,15 @@ public class AMQConsumer implements BrowserListener
 
       if (this.actualDest.isTopic())
       {
+         String physicalName = this.actualDest.getPhysicalName();
+         if (physicalName.contains(".>"))
+         {
+            //wildcard
+            physicalName = OpenWireUtil.convertWildcard(physicalName);
+         }
+
          // on recreate we don't need to create queues
-         address = new SimpleString("jms.topic." + this.actualDest.getPhysicalName());
+         address = new SimpleString("jms.topic." + physicalName);
          if (info.isDurable())
          {
             subQueueName = new SimpleString(

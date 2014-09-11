@@ -12,6 +12,10 @@
  */
 package org.hornetq.tests.integration.openwire;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -50,6 +54,8 @@ public class BasicOpenWireTest extends OpenWireTestBase
    protected String messageTextPrefix = "";
    protected boolean topic = true;
 
+   protected Map<String, SimpleString> testQueues = new HashMap<String, SimpleString>();
+
    @Override
    @Before
    public void setUp() throws Exception
@@ -57,10 +63,15 @@ public class BasicOpenWireTest extends OpenWireTestBase
       super.setUp();
       SimpleString coreQueue = new SimpleString("jms.queue." + queueName);
       this.server.createQueue(coreQueue, coreQueue, null, false, false);
+      testQueues.put(queueName, coreQueue);
+
       SimpleString coreQueue2 = new SimpleString("jms.queue." + queueName2);
       this.server.createQueue(coreQueue2, coreQueue2, null, false, false);
+      testQueues.put(queueName2, coreQueue2);
+
       SimpleString durableQueue = new SimpleString("jms.queue." + durableQueueName);
       this.server.createQueue(durableQueue, durableQueue, null, true, false);
+      testQueues.put(durableQueueName, durableQueue);
 
       if (!enableSecurity)
       {
@@ -81,13 +92,15 @@ public class BasicOpenWireTest extends OpenWireTestBase
             connection.close();
             System.out.println("connection closed.");
          }
-         SimpleString coreQueue = new SimpleString("jms.queue." + queueName);
-         this.server.destroyQueue(coreQueue);
-         SimpleString coreQueue2 = new SimpleString("jms.queue." + queueName2);
-         this.server.destroyQueue(coreQueue2);
-         SimpleString durableQueue = new SimpleString("jms.queue." + durableQueueName);
-         this.server.destroyQueue(durableQueue);
-         System.out.println("----------------------destroyed queue");
+
+         Iterator<SimpleString> iterQueues = testQueues.values().iterator();
+         while (iterQueues.hasNext())
+         {
+            SimpleString coreQ = iterQueues.next();
+            this.server.destroyQueue(coreQ);
+            System.out.println("Destroyed queue: " + coreQ);
+         }
+         testQueues.clear();
       }
       catch (Throwable e)
       {
@@ -98,6 +111,40 @@ public class BasicOpenWireTest extends OpenWireTestBase
       {
          super.tearDown();
          System.out.println("Super done.");
+      }
+   }
+
+   public ActiveMQDestination createDestination(Session session, byte type, String name) throws Exception
+   {
+      if (name == null)
+      {
+         return createDestination(session, type);
+      }
+
+      switch (type)
+      {
+         case ActiveMQDestination.QUEUE_TYPE:
+            makeSureCoreQueueExist(name);
+            return (ActiveMQDestination) session.createQueue(name);
+         case ActiveMQDestination.TOPIC_TYPE:
+            return (ActiveMQDestination) session.createTopic(name);
+         case ActiveMQDestination.TEMP_QUEUE_TYPE:
+            return (ActiveMQDestination) session.createTemporaryQueue();
+         case ActiveMQDestination.TEMP_TOPIC_TYPE:
+            return (ActiveMQDestination) session.createTemporaryTopic();
+         default:
+            throw new IllegalArgumentException("type: " + type);
+      }
+   }
+
+   public void makeSureCoreQueueExist(String qname) throws Exception
+   {
+      SimpleString coreQ = testQueues.get(qname);
+      if (coreQ == null)
+      {
+         coreQ = new SimpleString("jms.queue." + qname);
+         this.server.createQueue(coreQ, coreQ, null, false, false);
+         testQueues.put(qname, coreQ);
       }
    }
 
