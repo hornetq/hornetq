@@ -313,6 +313,32 @@ public class QueueControlTest extends ManagementTestBase
    }
 
    @Test
+   public void testGetMessagesAcknowledged() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(0, queueControl.getMessagesAcknowledged());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createMessage(false));
+      ManagementTestBase.consumeMessages(1, session, queue);
+      Assert.assertEquals(1, queueControl.getMessagesAcknowledged());
+      producer.send(session.createMessage(false));
+      ManagementTestBase.consumeMessages(1, session, queue);
+      Assert.assertEquals(2, queueControl.getMessagesAcknowledged());
+
+//      ManagementTestBase.consumeMessages(2, session, queue);
+
+//      Assert.assertEquals(2, queueControl.getMessagesAdded());
+
+      session.deleteQueue(queue);
+   }
+
+   @Test
    public void testGetScheduledCount() throws Exception
    {
       long delay = 500;
@@ -1897,6 +1923,32 @@ public class QueueControlTest extends ManagementTestBase
       queueControl.resetMessagesAdded();
 
       Assert.assertEquals(0, queueControl.getMessagesAdded());
+
+      session.deleteQueue(queue);
+   }
+
+   @Test
+   public void testResetMessagesAcknowledged() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(0, queueControl.getMessagesAcknowledged());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createMessage(false));
+      ManagementTestBase.consumeMessages(1, session, queue);
+      Assert.assertEquals(1, queueControl.getMessagesAcknowledged());
+      producer.send(session.createMessage(false));
+      ManagementTestBase.consumeMessages(1, session, queue);
+      Assert.assertEquals(2, queueControl.getMessagesAcknowledged());
+
+      queueControl.resetMessagesAcknowledged();
+
+      Assert.assertEquals(0, queueControl.getMessagesAcknowledged());
 
       session.deleteQueue(queue);
    }

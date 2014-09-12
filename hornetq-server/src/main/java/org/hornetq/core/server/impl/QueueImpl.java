@@ -160,6 +160,8 @@ public class QueueImpl implements Queue
 
    private long messagesAdded;
 
+   private long messagesAcknowledged;
+
    protected final AtomicInteger deliveringCount = new AtomicInteger(0);
 
    private boolean paused;
@@ -1087,6 +1089,8 @@ public class QueueImpl implements Queue
          postAcknowledge(ref);
       }
 
+      messagesAcknowledged++;
+
    }
 
    public void acknowledge(final Transaction tx, final MessageReference ref) throws Exception
@@ -1112,6 +1116,8 @@ public class QueueImpl implements Queue
 
          getRefsOperation(tx).addAck(ref);
       }
+
+      messagesAcknowledged++;
    }
 
    public void reacknowledge(final Transaction tx, final MessageReference ref) throws Exception
@@ -1127,6 +1133,8 @@ public class QueueImpl implements Queue
 
       // https://issues.jboss.org/browse/HORNETQ-609
       incDelivering();
+
+      messagesAcknowledged++;
    }
 
    private RefsOperation getRefsOperation(final Transaction tx)
@@ -1249,6 +1257,10 @@ public class QueueImpl implements Queue
       }
    }
 
+   public long getMessagesAcknowledged()
+   {
+      return messagesAcknowledged;
+   }
 
    public int deleteAllReferences() throws Exception
    {
@@ -2916,6 +2928,11 @@ public class QueueImpl implements Queue
    public synchronized void resetMessagesAdded()
    {
       messagesAdded = 0;
+   }
+
+   public synchronized void resetMessagesAcknowledged()
+   {
+      messagesAcknowledged = 0;
    }
 
    public float getRate()

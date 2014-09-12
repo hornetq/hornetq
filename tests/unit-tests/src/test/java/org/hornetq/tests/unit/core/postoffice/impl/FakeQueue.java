@@ -337,7 +337,21 @@ public class FakeQueue implements Queue
    }
 
    @Override
+   public long getMessagesAcknowledged()
+   {
+      // no-op
+      return 0;
+   }
+
+   @Override
    public void resetMessagesAdded()
+   {
+      // no-op
+
+   }
+
+   @Override
+   public void resetMessagesAcknowledged()
    {
       // no-op
 

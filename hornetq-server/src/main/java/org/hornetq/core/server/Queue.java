@@ -156,6 +156,8 @@ public interface Queue extends Bindable
 
    long getInstantMessagesAdded();
 
+   long getMessagesAcknowledged();
+
    MessageReference removeReferenceWithID(long id) throws Exception;
 
    MessageReference getReference(long id);
@@ -254,6 +256,8 @@ public interface Queue extends Bindable
    void setInternalQueue(boolean internalQueue);
 
    void resetMessagesAdded();
+
+   void resetMessagesAcknowledged();
 
    void incrementMesssagesAdded();
 
