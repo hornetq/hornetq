@@ -1178,18 +1178,6 @@ public class ScheduledDeliveryHandlerTest extends Assert
       }
 
       @Override
-      public long getMessageCount(long timeout)
-      {
-         return 0;
-      }
-
-      @Override
-      public long getInstantMessageCount()
-      {
-         return 0;
-      }
-
-      @Override
       public int getDeliveringCount()
       {
          return 0;
@@ -1221,18 +1209,6 @@ public class ScheduledDeliveryHandlerTest extends Assert
 
       @Override
       public long getMessagesAdded()
-      {
-         return 0;
-      }
-
-      @Override
-      public long getMessagesAdded(long timeout)
-      {
-         return 0;
-      }
-
-      @Override
-      public long getInstantMessagesAdded()
       {
          return 0;
       }

@@ -1003,21 +1003,6 @@ public class QueueImpl implements Queue
 
    public long getMessageCount()
    {
-      return getMessageCount(FLUSH_TIMEOUT);
-   }
-
-   public long getMessageCount(final long timeout)
-   {
-      if (timeout > 0)
-      {
-         internalFlushExecutor(timeout);
-      }
-      return getInstantMessageCount();
-   }
-
-
-   public long getInstantMessageCount()
-   {
       synchronized (this)
       {
          if (pageSubscription != null)
@@ -1235,17 +1220,6 @@ public class QueueImpl implements Queue
    }
 
    public long getMessagesAdded()
-   {
-      return getMessagesAdded(FLUSH_TIMEOUT);
-   }
-
-   public long getMessagesAdded(final long timeout)
-   {
-      if (timeout > 0) internalFlushExecutor(timeout);
-      return getInstantMessagesAdded();
-   }
-
-   public synchronized long getInstantMessagesAdded()
    {
       if (pageSubscription != null)
       {
