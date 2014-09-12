@@ -10,23 +10,18 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package org.hornetq.tests.unit.core.settings.impl;
-import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
-import org.junit.Before;
-
-import org.junit.Test;
+package org.hornetq.core.settings;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-
 import org.hornetq.core.security.Role;
-import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.Mergeable;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -41,7 +36,7 @@ public class RepositoryTest extends UnitTestCase
    {
       super.setUp();
 
-      securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
+      securityRepository = new HierarchicalObjectRepository<>();
    }
 
    @Test
@@ -51,6 +46,21 @@ public class RepositoryTest extends UnitTestCase
       HashSet<Role> roles = securityRepository.getMatch("queues.something");
 
       Assert.assertEquals(roles.size(), 0);
+   }
+
+   @Test
+   public void testMatchingDocs() throws Throwable
+   {
+      HierarchicalObjectRepository<String> repo = new HierarchicalObjectRepository<>();
+
+      repo.addMatch("a.b.#", "ab#");
+      repo.addMatch("a.b.d.#", "abd#");
+      repo.addMatch("#", "root");
+
+      Assert.assertEquals("ab#", repo.getMatch("a.b"));
+      Assert.assertEquals("ab#", repo.getMatch("a.b.c"));
+      Assert.assertEquals("abd#", repo.getMatch("a.b.d.lll"));
+      Assert.assertEquals("root", repo.getMatch("z.z.z.z.z"));
    }
 
    @Test
@@ -157,12 +167,12 @@ public class RepositoryTest extends UnitTestCase
       Assert.assertTrue(DummyMergeable.contains(8));
       DummyMergeable.reset();
       repository.getMatch("a.b.c");
-      Assert.assertEquals(2, DummyMergeable.timesMerged);
+      Assert.assertEquals(3, DummyMergeable.timesMerged);
       Assert.assertTrue(DummyMergeable.contains(1));
       Assert.assertTrue(DummyMergeable.contains(2));
       Assert.assertTrue(DummyMergeable.contains(4));
       DummyMergeable.reset();
-      repository.getMatch("a");
+      repository.getMatch("z");
       Assert.assertEquals(0, DummyMergeable.timesMerged);
       DummyMergeable.reset();
    }
