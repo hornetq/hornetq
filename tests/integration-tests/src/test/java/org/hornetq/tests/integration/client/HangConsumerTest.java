@@ -145,8 +145,8 @@ public class HangConsumerTest extends ServiceTestBase
          sessionProducer.commit();
 
          // These two operations should finish without the test hanging
-         queue.getMessagesAdded(1);
-         queue.getMessageCount(1);
+         queue.getMessagesAdded();
+         queue.getMessageCount();
 
          releaseConsumers();
 

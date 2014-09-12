@@ -265,6 +265,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(numMessages, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -330,6 +331,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -385,6 +387,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -440,6 +443,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -460,6 +464,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(20, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -577,6 +582,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(numMessages, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -897,6 +903,7 @@ public class QueueImplTest extends UnitTestCase
          refs.add(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(numMessages, queue.getMessageCount());
 
       Iterator<MessageReference> iterator = queue.iterator();
@@ -955,6 +962,8 @@ public class QueueImplTest extends UnitTestCase
 
       refs.add(ref2);
 
+      queue.flushExecutor();
+
       Assert.assertEquals(2, queue.getMessageCount());
 
       awaitExecution();
@@ -991,6 +1000,7 @@ public class QueueImplTest extends UnitTestCase
 
       refs.add(ref4);
 
+      queue.flushExecutor();
       Assert.assertEquals(3, queue.getMessageCount());
 
       awaitExecution();
@@ -1036,6 +1046,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -1088,6 +1099,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -1108,6 +1120,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(20, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -1166,6 +1179,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -1286,6 +1300,7 @@ public class QueueImplTest extends UnitTestCase
          queue.deliverNow();
       }
 
+      queue.flushExecutor();
       Assert.assertEquals(6, queue.getMessageCount());
 
       awaitExecution();
@@ -1366,6 +1381,7 @@ public class QueueImplTest extends UnitTestCase
       queue.addTail(messageReference);
       queue.addTail(messageReference2);
       queue.addTail(messageReference3);
+      queue.flushExecutor();
       Assert.assertEquals(queue.getMessagesAdded(), 3);
    }
 
@@ -1452,6 +1468,7 @@ public class QueueImplTest extends UnitTestCase
          queue.addTail(ref);
       }
       // even as this queue is paused, it will receive the messages anyway
+      queue.flushExecutor();
       Assert.assertEquals(10, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -1525,6 +1542,7 @@ public class QueueImplTest extends UnitTestCase
 
       // the queue even if it's paused will receive the message but won't forward
       // directly to the consumer until resumed.
+      queue.flushExecutor();
       Assert.assertEquals(numMessages, queue.getMessageCount());
       Assert.assertEquals(0, queue.getScheduledCount());
       Assert.assertEquals(0, queue.getDeliveringCount());
@@ -1541,6 +1559,31 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(numMessages, queue.getMessageCount());
       Assert.assertEquals(numMessages, queue.getDeliveringCount());
 
+   }
+
+
+   @Test
+   public void testResetMessagesAdded() throws Exception
+   {
+      QueueImpl queue = new QueueImpl(1,
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
+      MessageReference messageReference = generateReference(queue, 1);
+      MessageReference messageReference2 = generateReference(queue, 2);
+      queue.addTail(messageReference);
+      queue.addTail(messageReference2);
+      queue.flushExecutor();
+      Assert.assertEquals(2, queue.getMessagesAdded());
+      queue.resetMessagesAdded();
+      Assert.assertEquals(0, queue.getMessagesAdded());
    }
 
    class AddtoQueueRunner implements Runnable
