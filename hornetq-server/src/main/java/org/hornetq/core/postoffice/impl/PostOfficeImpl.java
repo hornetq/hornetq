@@ -557,6 +557,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          cache.clear();
       }
+
+      cache = duplicateIDCaches.remove(BRIDGE_CACHE_STR.concat(address));
+
+      if (cache != null)
+      {
+         cache.clear();
+      }
    }
 
    @Override

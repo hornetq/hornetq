@@ -30,6 +30,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.transaction.impl.XidImpl;
@@ -170,6 +171,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
 
+      locator.setBlockOnNonDurableSend(true);
+
       ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -210,10 +213,23 @@ public class DuplicateDetectionTest extends ServiceTestBase
          message2 = consumer.receiveImmediate();
          Assert.assertNull(message2);
 
+         message = createMessage(session, 3);
+         message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, dupID.getData());
+         producer.send(message);
+         message2 = consumer.receive(1000);
+         Assert.assertEquals(3, message2.getObjectProperty(propKey));
+
+         message = createMessage(session, 4);
+         message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, dupID.getData());
+         producer.send(message);
+         message2 = consumer.receiveImmediate();
+         Assert.assertNull(message2);
+
          producer.close();
          consumer.close();
 
-         Assert.assertEquals(1, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+         // there will be 2 ID caches, one for messages using "_HQ_DUPL_ID" and one for "_HQ_BRIDGE_DUP"
+         Assert.assertEquals(2, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
          session.deleteQueue(queueName);
          Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
       }
