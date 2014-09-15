@@ -335,6 +335,7 @@ final class PageSubscriptionImpl implements PageSubscription
          }
 
          infoPG.acks.clear();
+         infoPG.removedReferences.clear();
       }
 
       tx.addOperation(new TransactionOperationAbstract()
