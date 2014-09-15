@@ -159,6 +159,8 @@ public class ConnectionFactoryWithJGroupsSerializationTest extends JMSTestBase
       {
          channel.close();
       }
+
+      super.tearDown();
    }
 
    private static <T extends Serializable> byte[] serialize(T obj) throws IOException
