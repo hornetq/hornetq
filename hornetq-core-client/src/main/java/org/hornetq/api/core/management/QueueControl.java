@@ -81,6 +81,11 @@ public interface QueueControl
    long getMessagesAdded();
 
    /**
+    * Returns the number of messages added to this queue since it was created.
+    */
+   long getMessagesAcknowledged();
+
+   /**
     * Returns the first message on the queue as JSON
     */
    String getFirstMessageAsJSON() throws Exception;
@@ -356,4 +361,10 @@ public interface QueueControl
     */
    @Operation(desc = "Resets the MessagesAdded property", impact = MBeanOperationInfo.ACTION)
    void resetMessagesAdded() throws Exception;
+
+   /**
+    * Resets the MessagesAdded property
+    */
+   @Operation(desc = "Resets the MessagesAcknowledged property", impact = MBeanOperationInfo.ACTION)
+   void resetMessagesAcknowledged() throws Exception;
 }

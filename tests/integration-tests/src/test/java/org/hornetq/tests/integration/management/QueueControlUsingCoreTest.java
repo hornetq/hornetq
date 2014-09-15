@@ -106,9 +106,19 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Integer) proxy.retrieveAttributeValue("messagesAdded");
          }
 
+         public long getMessagesAcknowledged()
+         {
+            return (Integer) proxy.retrieveAttributeValue("messagesAcknowledged");
+         }
+
          public void resetMessagesAdded() throws Exception
          {
             proxy.invokeOperation("resetMessagesAdded");
+         }
+
+         public void resetMessagesAcknowledged() throws Exception
+         {
+            proxy.invokeOperation("resetMessagesAcknowledged");
          }
 
          public String getName()

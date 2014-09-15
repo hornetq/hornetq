@@ -428,7 +428,7 @@ public class PagingWithFailoverAndCountersTest extends ServiceTestBase
       Queue queue = server.locateQueue(SimpleString.toSimpleString("cons2"));
 
 
-      int messageCount = (int) queue.getMessageCount(5000);
+      int messageCount = (int) queue.getMessageCount();
 
       assertTrue(messageCount >= 0);
 
