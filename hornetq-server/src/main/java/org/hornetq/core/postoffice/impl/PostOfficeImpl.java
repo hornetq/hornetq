@@ -504,6 +504,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          pagingManager.deletePageStore(binding.getAddress());
 
          managementService.unregisterAddress(binding.getAddress());
+
+         deleteDuplicateCache(binding.getAddress());
       }
 
       if (binding.getType() == BindingType.LOCAL_QUEUE)
@@ -544,6 +546,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       binding.close();
 
       return binding;
+   }
+
+   private void deleteDuplicateCache(SimpleString address) throws Exception
+   {
+      DuplicateIDCache cache = duplicateIDCaches.remove(address);
+
+      if (cache != null)
+      {
+         cache.clear();
+      }
+
+      cache = duplicateIDCaches.remove(BRIDGE_CACHE_STR.concat(address));
+
+      if (cache != null)
+      {
+         cache.clear();
+      }
    }
 
    @Override
@@ -822,6 +841,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       return cache;
+   }
+
+   public ConcurrentMap<SimpleString, DuplicateIDCache> getDuplicateIDCaches()
+   {
+      return duplicateIDCaches;
    }
 
    public Object getNotificationLock()
