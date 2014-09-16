@@ -62,8 +62,8 @@ esac
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
-  [ -n "$APOLLO_HOME" ] &&
-    APOLLO_HOME=`cygpath --unix "$APOLLO_HOME"`
+  [ -n "$HORNETQ_HOME" ] &&
+    HORNETQ_HOME=`cygpath --unix "$HORNETQ_HOME"`
   [ -n "$JAVA_HOME" ] &&
     JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
   [ -n "$CLASSPATH" ] &&
@@ -97,7 +97,7 @@ for i in `ls $HORNETQ_HOME/lib/*.jar`; do
 done
 
 
-JAVA_ARGS="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces -Djava.library.path=$HORNETQ_HOME/lib/linux-i686:$HORNETQ_HOME/lib/linux-x86_64"
+JAVA_ARGS="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces -Dhornetq.home=$HORNETQ_HOME -Ddata.dir=$HORNETQ_HOME/data -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration=file:$HORNETQ_HOME/config/logging.properties -Djava.library.path=$HORNETQ_HOME/lib/linux-i686:$HORNETQ_HOME/lib/linux-x86_64"
 #JAVA_ARGS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
 
 "$JAVACMD" $JAVA_ARGS -classpath $CLASSPATH org.hornetq.cli.HornetQ $@

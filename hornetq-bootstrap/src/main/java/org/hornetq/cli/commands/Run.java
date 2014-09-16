@@ -36,14 +36,19 @@ import java.util.TimerTask;
 public class Run implements Action
 {
 
-   @Arguments(description = "Broker Configuration URI, default 'xml:config/hornetq.xml'")
-   String configuration = "xml:config/hornetq.xml";
+   @Arguments(description = "Broker Configuration URI, default 'xml:${HORNETQ_HOME}/config/hornetq.xml'")
+   String configuration;
    private StandaloneNamingServer namingServer;
    private JMSServerManager jmsServerManager;
 
    @Override
    public Object execute(ActionContext context) throws Exception
    {
+
+      if (configuration == null)
+      {
+         configuration = "xml:" + System.getProperty("hornetq.home") + "/config/hornetq.xml";
+      }
 
       System.out.println("Loading configuration file: " + configuration);
 
