@@ -24,11 +24,14 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -88,9 +91,21 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          configuration.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true, i));
 
          if (isSharedStore())
-            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+         {
+            SharedStoreMasterPolicyConfiguration haPolicyConfiguration = new SharedStoreMasterPolicyConfiguration();
+            configuration.setHAPolicyConfiguration(haPolicyConfiguration);
+            haPolicyConfiguration.setFailbackDelay(1000);
+         }
          else
-            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+         {
+            ReplicatedPolicyConfiguration haPolicyConfiguration = new ReplicatedPolicyConfiguration();
+            configuration.setHAPolicyConfiguration(haPolicyConfiguration);
+            haPolicyConfiguration.setFailbackDelay(1000);
+            if (getNodeGroupName() != null)
+            {
+               haPolicyConfiguration.setGroupName(getNodeGroupName() + "-" + i);
+            }
+         }
 
          if (!isSharedStore())
          {
@@ -102,11 +117,6 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          else
          {
             //todo
-         }
-         configuration.getHAPolicy().setFailbackDelay(1000);
-         if (getNodeGroupName() != null)
-         {
-            configuration.getHAPolicy().setBackupGroupName(getNodeGroupName() + "-" + i);
          }
          createLiveClusterConfiguration(i, configuration, getLiveServerCount());
          liveConfigs.add(configuration);
@@ -122,9 +132,21 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          configuration.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false, i));
 
          if (isSharedStore())
-            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+         {
+            SharedStoreSlavePolicyConfiguration haPolicyConfiguration = new SharedStoreSlavePolicyConfiguration();
+            configuration.setHAPolicyConfiguration(haPolicyConfiguration);
+            haPolicyConfiguration.setFailbackDelay(1000);
+         }
          else
-            configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+         {
+            ReplicaPolicyConfiguration haPolicyConfiguration = new ReplicaPolicyConfiguration();
+            haPolicyConfiguration.setFailbackDelay(1000);
+            if (getNodeGroupName() != null)
+            {
+               haPolicyConfiguration.setGroupName(getNodeGroupName() + "-" + i);
+            }
+            configuration.setHAPolicyConfiguration(haPolicyConfiguration);
+         }
 
          if (!isSharedStore())
          {
@@ -138,11 +160,6 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
             //todo
          }
 
-         configuration.getHAPolicy().setFailbackDelay(1000);
-         if (getNodeGroupName() != null)
-         {
-            configuration.getHAPolicy().setBackupGroupName(getNodeGroupName() + "-" + i);
-         }
          createBackupClusterConfiguration(i, configuration, getBackupServerCount());
          backupConfigs.add(configuration);
          HornetQServer server = createServer(true, configuration);

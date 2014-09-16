@@ -80,7 +80,7 @@ public class BackupManager implements HornetQComponent
       for (BackupConnector conn : backupConnectors)
       {
          conn.start();
-         if (configuration.getHAPolicy().isBackup() && configuration.getHAPolicy().isSharedStore())
+         if (server.getHAPolicy().isBackup() && server.getHAPolicy().isSharedStore())
          {
             conn.informTopology();
             conn.announceBackup();
@@ -260,8 +260,8 @@ public class BackupManager implements HornetQComponent
                      clusterControl.authorize();
                      clusterControl.sendNodeAnnounce(System.currentTimeMillis(),
                                                       nodeManager.getNodeId().toString(),
-                                                      configuration.getHAPolicy().getBackupGroupName(),
-                                                      configuration.getHAPolicy().getScaleDownClustername(),
+                                                      server.getHAPolicy().getBackupGroupName(),
+                                                      server.getHAPolicy().getScaleDownClustername(),
                                                       true,
                                                       connector,
                                                       null);

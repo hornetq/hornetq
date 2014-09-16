@@ -37,13 +37,16 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -527,9 +530,9 @@ public class JMSFailoverTest extends ServiceTestBase
       backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
 
       if (sharedStore)
-         backupConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+         backupConf.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
       else
-         backupConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+         backupConf.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
 
       backupConf.setBindingsDirectory(getBindingsDir());
       backupConf.setJournalMinFiles(2);
@@ -557,9 +560,9 @@ public class JMSFailoverTest extends ServiceTestBase
       basicClusterConnectionConfig(liveConf, livetc.getName());
 
       if (sharedStore)
-         liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+         liveConf.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
       else
-         liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+         liveConf.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
 
       liveConf.setJournalType(getDefaultJournalType());
       liveConf.setBindingsDirectory(getBindingsDir());

@@ -19,6 +19,8 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.ScaleDownConfiguration;
+import org.hornetq.core.config.ha.LiveOnlyPolicyConfiguration;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
@@ -40,20 +42,25 @@ public class ScaleDown3NodeTest extends ClusterTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-      setupServer(0, isFileStorage(), isNetty());
-      setupServer(1, isFileStorage(), isNetty());
-      setupServer(2, isFileStorage(), isNetty());
+      setupLiveServer(0, isFileStorage(), false, isNetty(), true);
+      setupLiveServer(1, isFileStorage(), false, isNetty(), true);
+      setupLiveServer(2, isFileStorage(), false, isNetty(), true);
+      LiveOnlyPolicyConfiguration haPolicyConfiguration0 = (LiveOnlyPolicyConfiguration) servers[0].getConfiguration().getHAPolicyConfiguration();
+      ScaleDownConfiguration scaleDownConfiguration0 = new ScaleDownConfiguration();
+      haPolicyConfiguration0.setScaleDownConfiguration(scaleDownConfiguration0);
+      LiveOnlyPolicyConfiguration haPolicyConfiguration1 = (LiveOnlyPolicyConfiguration) servers[1].getConfiguration().getHAPolicyConfiguration();
+      ScaleDownConfiguration scaleDownConfiguration1 = new ScaleDownConfiguration();
+      haPolicyConfiguration1.setScaleDownConfiguration(scaleDownConfiguration1);
+      scaleDownConfiguration0.setGroupName("bill");
+      scaleDownConfiguration1.setGroupName("bill");
+      scaleDownConfiguration1.setScaleDown(false);
 
-      servers[0].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
-      servers[1].getConfiguration().getHAPolicy().setScaleDownGroupName("bill");
-
-      servers[0].getConfiguration().getHAPolicy().setScaleDown(true);
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 0, 1, 2);
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 1, 0, 2);
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 2, 0, 1);
       String scaleDownConnector = servers[0].getConfiguration().getClusterConfigurations().get(0).getStaticConnectors().get(0);
       Assert.assertEquals(5446, servers[0].getConfiguration().getConnectorConfigurations().get(scaleDownConnector).getParams().get(TransportConstants.PORT_PROP_NAME));
-      servers[0].getConfiguration().getHAPolicy().getScaleDownConnectors().add(scaleDownConnector);
+      scaleDownConfiguration0.getConnectors().add(scaleDownConnector);
       startServers(0, 1, 2);
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -77,9 +84,6 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       closeAllConsumers();
       closeAllSessionFactories();
       closeAllServerLocatorsFactories();
-      servers[0].getConfiguration().getHAPolicy().setScaleDown(false);
-      servers[1].getConfiguration().getHAPolicy().setScaleDown(false);
-      servers[2].getConfiguration().getHAPolicy().setScaleDown(false);
       stopServers(0, 1, 2);
       super.tearDown();
    }

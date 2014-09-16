@@ -47,6 +47,11 @@ import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.LiveOnlyPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -59,7 +64,6 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -1632,13 +1636,19 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void setupServer(final int node, final boolean fileStorage, final boolean netty) throws Exception
    {
-      setupLiveServer(node, fileStorage, false, netty);
+      setupLiveServer(node, fileStorage, false, netty, false);
+   }
+
+   protected void setupLiveServer(final int node, final boolean fileStorage, final boolean netty, boolean isLive) throws Exception
+   {
+      setupLiveServer(node, fileStorage, false, netty, isLive);
    }
 
    protected void setupLiveServer(final int node,
                                   final boolean fileStorage,
                                   final boolean sharedStorage,
-                                  final boolean netty) throws Exception
+                                  final boolean netty,
+                                  boolean liveOnly) throws Exception
    {
       if (servers[node] != null)
       {
@@ -1649,10 +1659,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       configuration.setJournalMaxIO_AIO(1000);
 
-      if (sharedStorage)
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      if (liveOnly)
+      {
+         configuration.setHAPolicyConfiguration(new LiveOnlyPolicyConfiguration());
+      }
       else
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+      {
+         if (sharedStorage)
+            configuration.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
+         else
+            configuration.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
+      }
 
       configuration.setThreadPoolMaxSize(10);
 
@@ -1718,9 +1735,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(sharedStorage ? liveNode : node);
 
       if (sharedStorage)
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+         configuration.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
       else
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+         configuration.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -1765,9 +1782,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.setJournalMaxIO_AIO(1000);
 
       if (sharedStorage)
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+         configuration.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
       else
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+         configuration.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -1840,9 +1857,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
       Configuration configuration = createBasicConfig(sharedStorage ? liveNode : node);
 
       if (sharedStorage)
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+         configuration.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
       else
-         configuration.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+         configuration.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
 
       configuration.getAcceptorConfigurations().clear();
 

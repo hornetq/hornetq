@@ -23,7 +23,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -49,7 +48,7 @@ public interface Configuration extends Serializable
     *
     * @return the name of the group
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getBackupGroupName()}
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getGroupName()}
     */
    @Deprecated
    String getBackupGroupName();
@@ -59,7 +58,7 @@ public interface Configuration extends Serializable
     *
     * @param nodeGroupName the node group name
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setBackupGroupName(String)}
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    void setBackupGroupName(String nodeGroupName);
@@ -76,20 +75,20 @@ public interface Configuration extends Serializable
     *
     * @return {@code true} if the backup will stop when the live server restarts
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#isAllowAutoFailBack()}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
-   boolean isAllowAutoFailBack();
+   boolean isAllowFailBack();
 
    /**
     * whether a backup will automatically stop when a live server is restarting (i.e. failing back).
     *
     * @param allowAutoFailBack true if allowed
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setAllowAutoFailBack(boolean)}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
-   void setAllowAutoFailBack(boolean allowAutoFailBack);
+   void setAllowFailBack(boolean allowAutoFailBack);
 
    /**
     * Returns whether delivery count is persisted before messages are delivered to the consumers. <br>
@@ -116,7 +115,7 @@ public interface Configuration extends Serializable
    /**
     * Formerly set whether this server is a backup or not.
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setPolicyType(org.hornetq.core.server.cluster.ha.HAPolicy.POLICY_TYPE)}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    void setBackup(boolean backup);
@@ -133,7 +132,7 @@ public interface Configuration extends Serializable
    /**
     * Formerly set whether this server shares its data store with a backup or live server.
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setPolicyType(org.hornetq.core.server.cluster.ha.HAPolicy.POLICY_TYPE)}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    void setSharedStore(boolean sharedStore);
@@ -459,7 +458,7 @@ public interface Configuration extends Serializable
     * @return true if clients should failover
     * @see #setFailoverOnServerShutdown(boolean)
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#isFailoverOnServerShutdown()}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    boolean isFailoverOnServerShutdown();
@@ -472,7 +471,7 @@ public interface Configuration extends Serializable
     * case {@code failoverOnServerShutdown} is ignored, and the server will behave as if it was set
     * to {@code true}.
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setFailoverOnServerShutdown(boolean)}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
@@ -897,7 +896,7 @@ public interface Configuration extends Serializable
    /**
     * Returns the delay to wait before fail-back occurs on restart.
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getFailbackDelay()}
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.BackupPolicy#getFailbackDelay()}
     */
    @Deprecated
    long getFailbackDelay();
@@ -905,7 +904,7 @@ public interface Configuration extends Serializable
    /**
     * Sets the fail-back delay.
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setFailbackDelay(long)}
+    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.BackupPolicy#setFailbackDelay(long)}
     */
    @Deprecated
    void setFailbackDelay(long delay);
@@ -920,6 +919,7 @@ public interface Configuration extends Serializable
     *
     * @return true if we want to make the check
     */
+   @Deprecated
    boolean isCheckForLiveServer();
 
    /**
@@ -932,6 +932,7 @@ public interface Configuration extends Serializable
     *
     * @param checkForLiveServer true if we want to make the check
     */
+   @Deprecated
    void setCheckForLiveServer(boolean checkForLiveServer);
 
    /**
@@ -962,8 +963,9 @@ public interface Configuration extends Serializable
     *
     * @param clusterName
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setReplicationClustername(String)}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
+
    @Deprecated
    void setReplicationClustername(String clusterName);
 
@@ -971,31 +973,10 @@ public interface Configuration extends Serializable
     * @return name of the cluster configuration to use
     * @see #setReplicationClustername(String)
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getReplicationClustername()}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    String getReplicationClustername();
-
-   /**
-    * Name of the cluster configuration to use for scaling down.
-    * <p/>
-    * Only applicable for servers with more than one cluster configuration.
-    *
-    * @param clusterName
-    *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setScaleDownClustername(String)}
-    */
-   @Deprecated
-   void setScaleDownClustername(String clusterName);
-
-   /**
-    * @return name of the cluster configuration to use
-    * @see #setScaleDownClustername(String)
-    *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getScaleDownClustername()}
-    */
-   @Deprecated
-   String getScaleDownClustername();
 
    /*
    * Whether or not that HornetQ should use all protocols available on the classpath. If false only the core protocol will
@@ -1018,7 +999,7 @@ public interface Configuration extends Serializable
     *
     * @param maxSavedReplicatedJournalsSize
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getMaxSavedReplicatedJournalsSize()}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize);
@@ -1027,32 +1008,18 @@ public interface Configuration extends Serializable
     * @return the number of backup journals to keep after failback has occurred
     * @see #setMaxSavedReplicatedJournalSize(int)
     *
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getMaxSavedReplicatedJournalsSize()}
+    * @deprecated you should replace by using the correct{@link org.hornetq.core.server.cluster.ha.HAPolicy}
     */
    @Deprecated
    int getMaxSavedReplicatedJournalsSize();
 
-   Set<Configuration> getBackupServerConfigurations();
-
    Configuration copy() throws Exception;
-
-   /**
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#setBackupStrategy(BackupStrategy)}
-    */
-   @Deprecated
-   void setBackupStrategy(BackupStrategy strategy);
-
-   /**
-    * @deprecated replaced by {@link org.hornetq.core.server.cluster.ha.HAPolicy#getBackupStrategy()}
-    */
-   @Deprecated
-   BackupStrategy getBackupStrategy();
 
    void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout);
 
    long getJournalLockAcquisitionTimeout();
 
-   HAPolicy getHAPolicy();
+   HAPolicyConfiguration getHAPolicyConfiguration();
 
-   void setHAPolicy(HAPolicy haPolicy);
+   void setHAPolicyConfiguration(HAPolicyConfiguration haPolicyConfiguration);
 }

@@ -21,7 +21,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
@@ -40,10 +39,6 @@ import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFailedMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupRequestMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.BackupResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterConnectReplyMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
@@ -53,10 +48,10 @@ import org.hornetq.core.protocol.core.impl.wireformat.ScaleDownAnnounceMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.cluster.qourum.QuorumManager;
 import org.hornetq.core.server.cluster.qourum.QuorumVoteHandler;
 import org.hornetq.core.server.cluster.qourum.Vote;
+import org.hornetq.core.server.impl.Activation;
 import org.hornetq.spi.core.remoting.Acceptor;
 
 /**
@@ -83,6 +78,7 @@ public class ClusterController implements HornetQComponent
    private CountDownLatch replicationClusterConnectedLatch;
 
    private boolean started;
+   private SimpleString replicatedClusterName;
 
    public ClusterController(HornetQServer server, ScheduledExecutorService scheduledExecutor)
    {
@@ -99,9 +95,9 @@ public class ClusterController implements HornetQComponent
       //set the default locator that will be used to connecting to the default cluster.
       defaultLocator = locators.get(defaultClusterConnectionName);
       //create a locator for replication, either the default or the specified if not set
-      if (server.getConfiguration().getHAPolicy().getReplicationClustername() != null && !server.getConfiguration().getHAPolicy().getReplicationClustername().equals(defaultClusterConnectionName.toString()))
+      if (replicatedClusterName != null && !replicatedClusterName.equals(defaultClusterConnectionName))
       {
-         replicationLocator = locators.get(server.getConfiguration().getHAPolicy().getReplicationClustername());
+         replicationLocator = locators.get(replicatedClusterName);
          if (replicationLocator == null)
          {
             HornetQServerLogger.LOGGER.noClusterConnectionForReplicationCluster();
@@ -280,14 +276,14 @@ public class ClusterController implements HornetQComponent
 
    /**
     * used to set a channel handler on the connection that can be used by the cluster control
-    *
-    * @param channel the channel to set the handler
+    *  @param channel the channel to set the handler
     * @param acceptorUsed the acceptor used for connection
     * @param remotingConnection the connection itself
+    * @param activation
     */
-   public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection)
+   public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection, Activation activation)
    {
-      channel.setHandler(new ClusterControllerChannelHandler(channel, acceptorUsed, remotingConnection));
+      channel.setHandler(new ClusterControllerChannelHandler(channel, acceptorUsed, remotingConnection, activation.getActivationChannelHandler(channel, acceptorUsed)));
    }
 
    public int getDefaultClusterSize()
@@ -310,6 +306,11 @@ public class ClusterController implements HornetQComponent
       return server.getIdentity();
    }
 
+   public void setReplicatedClusterName(String replicatedClusterName)
+   {
+      this.replicatedClusterName = new SimpleString(replicatedClusterName);
+   }
+
    /**
     * a handler for handling packets sent between the cluster.
     */
@@ -318,13 +319,15 @@ public class ClusterController implements HornetQComponent
       private final Channel clusterChannel;
       private final Acceptor acceptorUsed;
       private final CoreRemotingConnection remotingConnection;
+      private final ChannelHandler channelHandler;
       boolean authorized = false;
 
-      public ClusterControllerChannelHandler(Channel clusterChannel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection)
+      public ClusterControllerChannelHandler(Channel clusterChannel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection, ChannelHandler channelHandler)
       {
          this.clusterChannel = clusterChannel;
          this.acceptorUsed = acceptorUsed;
          this.remotingConnection = remotingConnection;
+         this.channelHandler = channelHandler;
       }
 
       @Override
@@ -387,24 +390,6 @@ public class ClusterController implements HornetQComponent
                   HornetQServerLogger.LOGGER.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
                }
             }
-            else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
-            {
-               BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
-               ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
-               try
-               {
-                  server.startReplication(remotingConnection, clusterConnection, getPair(msg.getConnector(), true),
-                        msg.isFailBackRequest());
-               }
-               catch (HornetQAlreadyReplicatingException are)
-               {
-                  clusterChannel.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.ALREADY_REPLICATING));
-               }
-               catch (HornetQException e)
-               {
-                  clusterChannel.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
-               }
-            }
             else if (packet.getType() == PacketImpl.QUORUM_VOTE)
             {
                QuorumVoteMessage quorumVoteMessage = (QuorumVoteMessage) packet;
@@ -412,31 +397,6 @@ public class ClusterController implements HornetQComponent
                quorumVoteMessage.decode(voteHandler);
                Vote vote = quorumManager.vote(quorumVoteMessage.getHandler(), quorumVoteMessage.getVote());
                clusterChannel.send(new QuorumVoteReplyMessage(quorumVoteMessage.getHandler(), vote));
-            }
-            else if (packet.getType() == PacketImpl.BACKUP_REQUEST)
-            {
-               BackupRequestMessage backupRequestMessage = (BackupRequestMessage) packet;
-               boolean started = false;
-               try
-               {
-                  if (backupRequestMessage.getBackupType() == HAPolicy.POLICY_TYPE.COLOCATED_REPLICATED)
-                  {
-                     started = server.getClusterManager().getHAManager().activateReplicatedBackup(backupRequestMessage.getBackupSize(), backupRequestMessage.getNodeID());
-                  }
-                  else
-                  {
-                     started = server.getClusterManager().getHAManager().activateSharedStoreBackup(backupRequestMessage.getBackupSize(),
-                           backupRequestMessage.getJournalDirectory(),
-                           backupRequestMessage.getBindingsDirectory(),
-                           backupRequestMessage.getLargeMessagesDirectory(),
-                           backupRequestMessage.getPagingDirectory());
-                  }
-               }
-               catch (Exception e)
-               {
-                  //todo log a warning and send false
-               }
-               clusterChannel.send(new BackupResponseMessage(started));
             }
             else if (packet.getType() == PacketImpl.SCALEDOWN_ANNOUNCEMENT)
             {
@@ -447,17 +407,13 @@ public class ClusterController implements HornetQComponent
                   server.addScaledDownNode(message.getScaledDownNodeId());
                }
             }
+            else if (channelHandler != null)
+            {
+               channelHandler.handlePacket(packet);
+            }
          }
       }
-      private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
-                                                                           boolean isBackup)
-      {
-         if (isBackup)
-         {
-            return new Pair<>(null, conn);
-         }
-         return new Pair<>(conn, null);
-      }
+
    }
 
    /**

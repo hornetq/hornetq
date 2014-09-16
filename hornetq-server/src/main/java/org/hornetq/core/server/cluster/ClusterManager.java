@@ -55,6 +55,7 @@ import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.BroadcastGroupImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.cluster.qourum.QuorumManager;
+import org.hornetq.core.server.impl.Activation;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -66,8 +67,8 @@ import org.hornetq.utils.FutureLatch;
 /**
  * A ClusterManager manages {@link ClusterConnection}s, {@link BroadcastGroup}s and {@link Bridge}s.
  * <p/>
- * Note that {@link ClusterConnectionBridge}s extend Bridges but are controlled over through
- * {@link ClusterConnectionImpl}. As a node is discovered a new {@link ClusterConnectionBridge} is
+ * Note that {@link org.hornetq.core.server.cluster.impl.ClusterConnectionBridge}s extend Bridges but are controlled over through
+ * {@link ClusterConnectionImpl}. As a node is discovered a new {@link org.hornetq.core.server.cluster.impl.ClusterConnectionBridge} is
  * deployed.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -112,9 +113,9 @@ public final class ClusterManager implements HornetQComponent
       return haManager;
    }
 
-   public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection)
+   public void addClusterChannelHandler(Channel channel, Acceptor acceptorUsed, CoreRemotingConnection remotingConnection, Activation activation)
    {
-      clusterController.addClusterChannelHandler(channel, acceptorUsed, remotingConnection);
+      clusterController.addClusterChannelHandler(channel, acceptorUsed, remotingConnection, activation);
    }
 
    enum State
@@ -172,7 +173,7 @@ public final class ClusterManager implements HornetQComponent
 
       clusterController = new ClusterController(server, scheduledExecutor);
 
-      haManager = new HAManager(server.getConfiguration().getHAPolicy(), server.getSecurityManager(), server, server.getConfiguration().getBackupServerConfigurations());
+      haManager = server.getActivation().getHAManager();
    }
 
    public String describe()
@@ -235,12 +236,12 @@ public final class ClusterManager implements HornetQComponent
 
    public String getBackupGroupName()
    {
-      return configuration.getHAPolicy().getBackupGroupName();
+      return server.getHAPolicy().getBackupGroupName();
    }
 
    public String getScaleDownGroupName()
    {
-      return haManager.getHAPolicy().getScaleDownGroupName();
+      return server.getHAPolicy().getScaleDownGroupName();
    }
 
    public synchronized void deploy() throws Exception

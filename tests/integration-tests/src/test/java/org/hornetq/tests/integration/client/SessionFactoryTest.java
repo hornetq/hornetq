@@ -29,10 +29,10 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.Assert;
@@ -564,7 +564,7 @@ public class SessionFactoryTest extends ServiceTestBase
       liveTC = new TransportConfiguration(InVMConnectorFactory.class.getName());
       liveConf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       liveConf.getConnectorConfigurations().put(liveTC.getName(), liveTC);
-      liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConf.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
 
       final long broadcastPeriod = 250;
 

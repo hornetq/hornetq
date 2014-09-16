@@ -29,16 +29,19 @@ import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.HAPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressSettings;
 
@@ -200,45 +203,23 @@ public class ConfigurationImpl implements Configuration
 
    protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
 
-   private boolean checkForLiveServer = HornetQDefaultConfiguration.isDefaultCheckForLiveServer();
-
    private boolean maskPassword = HornetQDefaultConfiguration.isDefaultMaskPassword();
 
    private transient String passwordCodec;
 
    private boolean resolveProtocols = HornetQDefaultConfiguration.isDefaultResolveProtocols();
 
-   private Set<Configuration> backupServerConfigurations = new HashSet<>();
-
-   private BackupStrategy backupStrategy;
+   //private BackupStrategy backupStrategy;
 
    private long journalLockAcquisitionTimeout = HornetQDefaultConfiguration.getDefaultJournalLockAcquisitionTimeout();
 
-   private HAPolicy haPolicy = new HAPolicy();
+   private HAPolicyConfiguration haPolicyConfiguration;
 
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
    {
       return !getClusterConfigurations().isEmpty();
-   }
-
-   @Deprecated
-   public boolean isAllowAutoFailBack()
-   {
-      return haPolicy.isAllowAutoFailBack();
-   }
-
-   @Deprecated
-   public void setAllowAutoFailBack(boolean allowAutoFailBack)
-   {
-      haPolicy.setAllowAutoFailBack(allowAutoFailBack);
-   }
-
-   @Deprecated
-   public boolean isBackup()
-   {
-      return haPolicy.isBackup();
    }
 
    public boolean isFileDeploymentEnabled()
@@ -282,24 +263,6 @@ public class ConfigurationImpl implements Configuration
    public void setPersistDeliveryCountBeforeDelivery(final boolean persistDeliveryCountBeforeDelivery)
    {
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
-   }
-
-   @Deprecated
-   public void setBackup(final boolean backup)
-   {
-      // this is done via the haPolicy now
-   }
-
-   @Deprecated
-   public boolean isSharedStore()
-   {
-      return haPolicy.isSharedStore();
-   }
-
-   @Deprecated
-   public void setSharedStore(final boolean sharedStore)
-   {
-      // this is done via the haPolicy now
    }
 
    public int getScheduledThreadPoolMaxSize()
@@ -949,26 +912,24 @@ public class ConfigurationImpl implements Configuration
       return this.connectorServiceConfigurations;
    }
 
-   @Deprecated
-   public long getFailbackDelay()
-   {
-      return haPolicy.getFailbackDelay();
-   }
-
-   @Deprecated
-   public void setFailbackDelay(long failbackDelay)
-   {
-      this.haPolicy.setFailbackDelay(failbackDelay);
-   }
-
    public boolean isCheckForLiveServer()
    {
-      return checkForLiveServer;
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         return ((ReplicatedPolicyConfiguration)haPolicyConfiguration).isCheckForLiveServer();
+      }
+      else
+      {
+         return false;
+      }
    }
 
    public void setCheckForLiveServer(boolean checkForLiveServer)
    {
-      this.checkForLiveServer = checkForLiveServer;
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ((ReplicatedPolicyConfiguration)haPolicyConfiguration).setCheckForLiveServer(checkForLiveServer);
+      }
    }
 
    public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
@@ -977,35 +938,10 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public String getName()
-   {
-      return name;
-   }
-
-   @Override
-   public void setName(String name)
-   {
-      this.name = name;
-   }
-
-   @Deprecated
-   public String getBackupGroupName()
-   {
-      return haPolicy.getBackupGroupName();
-   }
-
-   @Deprecated
-   public void setBackupGroupName(String nodeGroupName)
-   {
-      haPolicy.setBackupGroupName(nodeGroupName);
-   }
-
-   @Override
    public String toString()
    {
       StringBuilder sb = new StringBuilder("HornetQ Configuration (");
       sb.append("clustered=").append(isClustered()).append(",");
-      sb.append("ha-policy-type=").append(haPolicy.getPolicyType()).append(",");
       sb.append("journalDirectory=").append(journalDirectory).append(",");
       sb.append("bindingsDirectory=").append(bindingsDirectory).append(",");
       sb.append("largeMessagesDirectory=").append(largeMessagesDirectory).append(",");
@@ -1035,45 +971,210 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
+   public String getName()
+   {
+      return name;
+   }
+
+   @Override
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+
+   /*
+   * All these operations are now deprecated and may or my not work, best efforts is all we can do, an HA Policy needs to be used
+   * */
+   @Deprecated
+   public void setBackup(final boolean backup)
+   {
+   }
+
+   @Deprecated
+   public boolean isSharedStore()
+   {
+      return haPolicyConfiguration instanceof SharedStoreMasterPolicyConfiguration || haPolicyConfiguration instanceof SharedStoreSlavePolicyConfiguration;
+   }
+
+   @Deprecated
+   public void setSharedStore(final boolean sharedStore)
+   {
+   }
+
+   @Deprecated
+   public long getFailbackDelay()
+   {
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getFailbackDelay();
+      }
+      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
+      {
+         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getFailbackDelay();
+      }
+      else if (haPolicyConfiguration instanceof SharedStoreMasterPolicyConfiguration)
+      {
+         SharedStoreMasterPolicyConfiguration hapc = (SharedStoreMasterPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getFailbackDelay();
+      }
+      else if (haPolicyConfiguration instanceof SharedStoreSlavePolicyConfiguration)
+      {
+         SharedStoreSlavePolicyConfiguration hapc = (SharedStoreSlavePolicyConfiguration) haPolicyConfiguration;
+         return hapc.getFailbackDelay();
+      }
+      return -1;
+   }
+
+   @Deprecated
+   public void setFailbackDelay(long failbackDelay)
+   {
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         hapc.setFailbackDelay(failbackDelay);
+      }
+      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
+      {
+         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
+         hapc.setFailbackDelay(failbackDelay);
+      }
+      else if (haPolicyConfiguration instanceof SharedStoreMasterPolicyConfiguration)
+      {
+         SharedStoreMasterPolicyConfiguration hapc = (SharedStoreMasterPolicyConfiguration) haPolicyConfiguration;
+         hapc.setFailbackDelay(failbackDelay);
+      }
+      else if (haPolicyConfiguration instanceof SharedStoreSlavePolicyConfiguration)
+      {
+         SharedStoreSlavePolicyConfiguration hapc = (SharedStoreSlavePolicyConfiguration) haPolicyConfiguration;
+         hapc.setFailbackDelay(failbackDelay);
+      }
+   }
+
+   @Deprecated
+   public String getBackupGroupName()
+   {
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getGroupName();
+      }
+      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
+      {
+         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getGroupName();
+      }
+      return null;
+   }
+
+   @Deprecated
+   public void setBackupGroupName(String nodeGroupName)
+   {
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         hapc.setGroupName(nodeGroupName);
+      }
+      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
+      {
+         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
+         hapc.setGroupName(nodeGroupName);
+      }
+   }
+
+   @Override
    @Deprecated
    public void setReplicationClustername(String clusterName)
    {
-      this.haPolicy.setReplicationClustername(clusterName);
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         hapc.setClusterName(clusterName);
+      }
+      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
+      {
+         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
+         hapc.setClusterName(clusterName);
+      }
    }
 
    @Override
    @Deprecated
    public String getReplicationClustername()
    {
-      return haPolicy.getReplicationClustername();
-   }
-
-   @Override
-   @Deprecated
-   public void setScaleDownClustername(String clusterName)
-   {
-      this.haPolicy.setScaleDownClustername(clusterName);
-   }
-
-   @Override
-   @Deprecated
-   public String getScaleDownClustername()
-   {
-      return haPolicy.getScaleDownClustername();
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getClusterName();
+      }
+      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
+      {
+         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getClusterName();
+      }
+      return null;
    }
 
    @Override
    @Deprecated
    public void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize)
    {
-      this.haPolicy.setMaxSavedReplicatedJournalSize(maxSavedReplicatedJournalsSize);
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         hapc.setMaxSavedReplicatedJournalsSize(maxSavedReplicatedJournalsSize);
+      }
    }
 
    @Override
    @Deprecated
    public int getMaxSavedReplicatedJournalsSize()
    {
-      return haPolicy.getMaxSavedReplicatedJournalsSize();
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         return hapc.getMaxSavedReplicatedJournalsSize();
+      }
+      return -1;
+   }
+
+   @Deprecated
+   public boolean isAllowFailBack()
+   {
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         return hapc.isAllowFailBack();
+      }
+      else if (haPolicyConfiguration instanceof SharedStoreSlavePolicyConfiguration)
+      {
+         SharedStoreSlavePolicyConfiguration hapc = (SharedStoreSlavePolicyConfiguration) haPolicyConfiguration;
+         return hapc.isAllowFailBack();
+      }
+      return false;
+   }
+
+   @Deprecated
+   public void setAllowFailBack(boolean allowAutoFailBack)
+   {
+      if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
+      {
+         ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
+         hapc.setAllowFailBack(allowAutoFailBack);
+      }
+      else if (haPolicyConfiguration instanceof SharedStoreSlavePolicyConfiguration)
+      {
+         SharedStoreSlavePolicyConfiguration hapc = (SharedStoreSlavePolicyConfiguration) haPolicyConfiguration;
+         hapc.setAllowFailBack(allowAutoFailBack);
+      }
+   }
+
+   @Deprecated
+   public boolean isBackup()
+   {
+      return haPolicyConfiguration instanceof ReplicaPolicyConfiguration || haPolicyConfiguration instanceof SharedStoreSlavePolicyConfiguration;
    }
 
    @Override
@@ -1095,13 +1196,10 @@ public class ConfigurationImpl implements Configuration
       int result = 1;
       result = prime * result + ((acceptorConfigs == null) ? 0 : acceptorConfigs.hashCode());
       result = prime * result + ((addressesSettings == null) ? 0 : addressesSettings.hashCode());
-      result = prime * result + (haPolicy.isAllowAutoFailBack() ? 1231 : 1237);
       result = prime * result + (asyncConnectionExecutionEnabled ? 1231 : 1237);
-      result = prime * result + (haPolicy.isBackup() ? 1231 : 1237);
       result = prime * result + ((bindingsDirectory == null) ? 0 : bindingsDirectory.hashCode());
       result = prime * result + ((bridgeConfigurations == null) ? 0 : bridgeConfigurations.hashCode());
       result = prime * result + ((broadcastGroupConfigurations == null) ? 0 : broadcastGroupConfigurations.hashCode());
-      result = prime * result + (checkForLiveServer ? 1231 : 1237);
       result = prime * result + ((clusterConfigurations == null) ? 0 : clusterConfigurations.hashCode());
       result = prime * result + ((clusterPassword == null) ? 0 : clusterPassword.hashCode());
       result = prime * result + ((clusterUser == null) ? 0 : clusterUser.hashCode());
@@ -1114,7 +1212,6 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (createJournalDir ? 1231 : 1237);
       result = prime * result + ((discoveryGroupConfigurations == null) ? 0 : discoveryGroupConfigurations.hashCode());
       result = prime * result + ((divertConfigurations == null) ? 0 : divertConfigurations.hashCode());
-      result = prime * result + (int)(haPolicy.getFailbackDelay() ^ (haPolicy.getFailbackDelay() >>> 32));
       result = prime * result + (failoverOnServerShutdown ? 1231 : 1237);
       result = prime * result + (fileDeploymentEnabled ? 1231 : 1237);
       result = prime * result + (int)(fileDeploymentScanPeriod ^ (fileDeploymentScanPeriod >>> 32));
@@ -1156,7 +1253,6 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (int)(messageExpiryScanPeriod ^ (messageExpiryScanPeriod >>> 32));
       result = prime * result + messageExpiryThreadPriority;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
-      result = prime * result + ((haPolicy.getBackupGroupName() == null) ? 0 : haPolicy.getBackupGroupName().hashCode());
       result =
                prime * result +
                         ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
@@ -1165,15 +1261,12 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (persistIDCache ? 1231 : 1237);
       result = prime * result + (persistenceEnabled ? 1231 : 1237);
       result = prime * result + ((queueConfigurations == null) ? 0 : queueConfigurations.hashCode());
-      result = prime * result + ((haPolicy.getReplicationClustername() == null) ? 0 : haPolicy.getReplicationClustername().hashCode());
-      result = prime * result + ((haPolicy.getScaleDownClustername() == null) ? 0 : haPolicy.getScaleDownClustername().hashCode());
       result = prime * result + (runSyncSpeedTest ? 1231 : 1237);
       result = prime * result + scheduledThreadPoolMaxSize;
       result = prime * result + (securityEnabled ? 1231 : 1237);
       result = prime * result + (int)(securityInvalidationInterval ^ (securityInvalidationInterval >>> 32));
       result = prime * result + ((securitySettings == null) ? 0 : securitySettings.hashCode());
       result = prime * result + (int)(serverDumpInterval ^ (serverDumpInterval >>> 32));
-      result = prime * result + (haPolicy.isSharedStore() ? 1231 : 1237);
       result = prime * result + threadPoolMaxSize;
       result = prime * result + (int)(transactionTimeout ^ (transactionTimeout >>> 32));
       result = prime * result + (int)(transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
@@ -1207,12 +1300,9 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!addressesSettings.equals(other.addressesSettings))
          return false;
-      if (haPolicy.isAllowAutoFailBack() != other.getHAPolicy().isAllowAutoFailBack())
-         return false;
       if (asyncConnectionExecutionEnabled != other.asyncConnectionExecutionEnabled)
          return false;
-      if (haPolicy.isBackup() != other.getHAPolicy().isBackup())
-         return false;
+
       if (bindingsDirectory == null)
       {
          if (other.bindingsDirectory != null)
@@ -1233,8 +1323,6 @@ public class ConfigurationImpl implements Configuration
             return false;
       }
       else if (!broadcastGroupConfigurations.equals(other.broadcastGroupConfigurations))
-         return false;
-      if (checkForLiveServer != other.checkForLiveServer)
          return false;
       if (clusterConfigurations == null)
       {
@@ -1290,8 +1378,6 @@ public class ConfigurationImpl implements Configuration
             return false;
       }
       else if (!divertConfigurations.equals(other.divertConfigurations))
-         return false;
-      if (haPolicy.getFailbackDelay() != other.getHAPolicy().getFailbackDelay())
          return false;
       if (failoverOnServerShutdown != other.failoverOnServerShutdown)
          return false;
@@ -1407,13 +1493,7 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!name.equals(other.name))
          return false;
-      if (haPolicy.getBackupGroupName() == null)
-      {
-         if (other.getHAPolicy().getBackupGroupName() != null)
-            return false;
-      }
-      else if (!haPolicy.getBackupGroupName().equals(other.getHAPolicy().getBackupGroupName()))
-         return false;
+
       if (outgoingInterceptorClassNames == null)
       {
          if (other.outgoingInterceptorClassNames != null)
@@ -1441,20 +1521,6 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!queueConfigurations.equals(other.queueConfigurations))
          return false;
-      if (haPolicy.getReplicationClustername() == null)
-      {
-         if (other.getHAPolicy().getReplicationClustername() != null)
-            return false;
-      }
-      else if (!haPolicy.getReplicationClustername().equals(other.getHAPolicy().getReplicationClustername()))
-         return false;
-      if (haPolicy.getScaleDownClustername() == null)
-      {
-         if (other.getHAPolicy().getScaleDownClustername() != null)
-            return false;
-      }
-      else if (!haPolicy.getScaleDownClustername().equals(other.getHAPolicy().getScaleDownClustername()))
-         return false;
       if (runSyncSpeedTest != other.runSyncSpeedTest)
          return false;
       if (scheduledThreadPoolMaxSize != other.scheduledThreadPoolMaxSize)
@@ -1471,8 +1537,6 @@ public class ConfigurationImpl implements Configuration
       else if (!securitySettings.equals(other.securitySettings))
          return false;
       if (serverDumpInterval != other.serverDumpInterval)
-         return false;
-      if (haPolicy.isSharedStore() != other.getHAPolicy().isSharedStore())
          return false;
       if (threadPoolMaxSize != other.threadPoolMaxSize)
          return false;
@@ -1499,23 +1563,6 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public Set<Configuration> getBackupServerConfigurations()
-   {
-      return backupServerConfigurations;
-   }
-
-   @Override
-   public void setBackupStrategy(BackupStrategy backupStrategy)
-   {
-      this.backupStrategy = backupStrategy;
-   }
-
-   public BackupStrategy getBackupStrategy()
-   {
-      return backupStrategy;
-   }
-
-   @Override
    public void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout)
    {
       this.journalLockAcquisitionTimeout = journalLockAcquisitionTimeout;
@@ -1528,14 +1575,14 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public HAPolicy getHAPolicy()
+   public HAPolicyConfiguration getHAPolicyConfiguration()
    {
-      return haPolicy;
+      return haPolicyConfiguration;
    }
 
    @Override
-   public void setHAPolicy(HAPolicy haPolicy)
+   public void setHAPolicyConfiguration(HAPolicyConfiguration haPolicyConfiguration)
    {
-      this.haPolicy = haPolicy;
+      this.haPolicyConfiguration = haPolicyConfiguration;
    }
 }

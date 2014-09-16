@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.jms;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -714,7 +714,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       connectors.put(liveTC.getName(), liveTC);
       liveConf.setConnectorConfigurations(connectors);
-      liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      liveConf.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
       List<String> connectorNames = new ArrayList<String>();
       connectorNames.add(liveTC.getName());
 
