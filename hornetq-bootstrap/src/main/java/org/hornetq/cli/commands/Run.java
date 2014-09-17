@@ -14,6 +14,7 @@ package org.hornetq.cli.commands;
 
 import io.airlift.command.Arguments;
 import io.airlift.command.Command;
+import org.hornetq.cli.HornetQ;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.dto.BrokerDTO;
@@ -44,6 +45,8 @@ public class Run implements Action
    @Override
    public Object execute(ActionContext context) throws Exception
    {
+
+      HornetQ.printBanner();
 
       if (configuration == null)
       {

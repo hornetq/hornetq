@@ -20,6 +20,9 @@ import org.hornetq.cli.commands.HelpAction;
 import org.hornetq.cli.commands.Run;
 import org.hornetq.cli.commands.Stop;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 public class HornetQ
 {
 
@@ -51,6 +54,23 @@ public class HornetQ
          System.out.println("Configuration should be specified as 'schema:location'. Default configuration is 'xml:config/hornetq.xml'");
       }
 
+   }
+
+   public static void printBanner() throws Exception
+   {
+      copy(HornetQ.class.getResourceAsStream("banner.txt"), System.out);
+   }
+
+   private static long copy(InputStream in, OutputStream out) throws Exception
+   {
+      byte[] buffer = new byte[1024];
+      int len = in.read(buffer);
+      while (len != -1)
+      {
+         out.write(buffer, 0, len);
+         len = in.read(buffer);
+      }
+      return len;
    }
 
 }
