@@ -44,7 +44,7 @@ import org.hornetq.utils.UUID;
  * </pre>
  * <p>
  * If conversion is not allowed (for example calling {@code getFloatProperty} on a property set a
- * {@code boolean}), a {@link PropertyConversionException} will be thrown.
+ * {@code boolean}), a {@link HornetQPropertyConversionException} will be thrown.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">ClebertSuconic</a>
