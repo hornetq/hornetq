@@ -58,7 +58,8 @@ import org.hornetq.utils.UUIDGenerator;
 
 public class OpenWireMessageConverter implements MessageConverter
 {
-   private static final String AMQ_PREFIX = "__HDR_";
+   public static final String AMQ_PREFIX = "__HDR_";
+   public static final String AMQ_MSG_DLQ_DELIVERY_FAILURE_CAUSE_PROPERTY = AMQ_PREFIX + "dlqDeliveryFailureCause";
 
    private static final String AMQ_MSG_ARRIVAL = AMQ_PREFIX + "ARRIVAL";
    private static final String AMQ_MSG_BROKER_IN_TIME = AMQ_PREFIX + "BROKER_IN_TIME";
@@ -734,6 +735,18 @@ public class OpenWireMessageConverter implements MessageConverter
          amqMsg.setDroppable(isDroppable);
       }
 
+      SimpleString dlqCause = (SimpleString) coreMessage.getObjectProperty(AMQ_MSG_DLQ_DELIVERY_FAILURE_CAUSE_PROPERTY);
+      if (dlqCause != null)
+      {
+         try
+         {
+            amqMsg.setStringProperty(ActiveMQMessage.DLQ_DELIVERY_FAILURE_CAUSE_PROPERTY, dlqCause.toString());
+         }
+         catch (JMSException e)
+         {
+            throw new IOException("failure to set dlq property " + dlqCause, e);
+         }
+      }
       Set<SimpleString> props = coreMessage.getPropertyNames();
       if (props != null)
       {

@@ -15,9 +15,12 @@ package org.hornetq.core.protocol.openwire.amq;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.QueueBinding;
+import org.hornetq.core.protocol.openwire.OpenWireMessageConverter;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.server.impl.ServerConsumerImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -135,6 +138,26 @@ public class AMQServerConsumer extends ServerConsumerImpl
       {
          ref.incrementDeliveryCount();
          deliveringRefs.add(ref);
+      }
+   }
+
+   public void moveToDeadLetterAddress(long mid, Throwable cause) throws Exception
+   {
+      MessageReference ref = removeReferenceByID(mid);
+
+      if (ref == null)
+      {
+         throw new IllegalStateException("Cannot find ref to ack " + mid);
+      }
+
+      ServerMessage coreMsg = ref.getMessage();
+      coreMsg.putStringProperty(OpenWireMessageConverter.AMQ_MSG_DLQ_DELIVERY_FAILURE_CAUSE_PROPERTY, cause.toString());
+
+      QueueImpl queue = (QueueImpl)ref.getQueue();
+      synchronized (queue)
+      {
+         queue.sendToDeadLetterAddress(ref);
+         queue.decDelivering();
       }
    }
 

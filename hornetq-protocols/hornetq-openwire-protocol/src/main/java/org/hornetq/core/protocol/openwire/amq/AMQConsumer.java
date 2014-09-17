@@ -218,7 +218,30 @@ public class AMQConsumer implements BrowserListener
             mi = iter.next();
             if (mi.amqId.equals(last))
             {
+               iter.remove();
                session.getCoreSession().individualAcknowledge(nativeId, mi.nativeId);
+               session.getCoreSession().commit();
+               break;
+            }
+         }
+      }
+      else if (ackType == MessageAck.REDELIVERED_ACK_TYPE)
+      {
+         //client tells that this message is for redlivery.
+         //do nothing until poisoned.
+      }
+      else if (ackType == MessageAck.POSION_ACK_TYPE)
+      {
+         //send to dlq
+         n = 1;
+         Iterator<MessageInfo> iter = deliveringRefs.iterator();
+         while (iter.hasNext())
+         {
+            mi = iter.next();
+            if (mi.amqId.equals(last))
+            {
+               iter.remove();
+               session.getCoreSession().moveToDeadLetterAddress(nativeId, mi.nativeId, ack.getPoisonCause());
                session.getCoreSession().commit();
                break;
             }
