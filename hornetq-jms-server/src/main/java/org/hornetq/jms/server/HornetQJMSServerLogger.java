@@ -59,7 +59,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void bridgeReconnected();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 121002, value = "Succeeded in connecting to servers" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 121002, value = "JMS Bridge Succeeded in connecting to servers" , format = Message.Format.MESSAGE_FORMAT)
    void bridgeConnected();
 
    @LogMessage(level = Logger.Level.INFO)
@@ -161,7 +161,7 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void jmsConfigMissingKey(Node e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 124001, value = "Failed to start source connection" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 124001, value = "Failed to start JMS Bridge Source connection" , format = Message.Format.MESSAGE_FORMAT)
    void jmsBridgeSrcConnectError(@Cause Exception e);
 
    @LogMessage(level = Logger.Level.ERROR)
