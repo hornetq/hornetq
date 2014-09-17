@@ -336,7 +336,7 @@ public interface StorageManager extends HornetQComponent
    Journal getMessageJournal();
 
    /**
-    * @see JournalStorageManager#startReplication(ReplicationManager, PagingManager, String,
+    * @see org.hornetq.core.persistence.impl.journal.JournalStorageManager#startReplication(ReplicationManager, PagingManager, String,
     * boolean)
     */
    void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
@@ -397,10 +397,10 @@ public interface StorageManager extends HornetQComponent
    void readUnLock();
 
    /**
-    * Closes the {@link IDGenerator} persisting the current record ID.
+    * Closes the {@link org.hornetq.utils.IDGenerator} persisting the current record ID.
     * <p/>
     * Effectively a "pre-stop" method. Necessary due to the "stop"-order at
-    * {@link HornetQServerImpl}
+    * {@link org.hornetq.core.server.impl.HornetQServerImpl}
     */
    void persistIdGenerator();
 }

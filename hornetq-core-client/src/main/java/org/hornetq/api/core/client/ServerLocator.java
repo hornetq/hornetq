@@ -161,7 +161,7 @@ public interface ServerLocator extends AutoCloseable
     * Returns the blocking calls timeout.
     * <p>
     * If client's blocking calls to the server take more than this timeout, the call will throw a
-    * {@link HornetQException} with the code {@link HornetQExceptionType#CONNECTION_TIMEDOUT}. Value
+    * {@link org.hornetq.api.core.HornetQException} with the code {@link org.hornetq.api.core.HornetQExceptionType#CONNECTION_TIMEDOUT}. Value
     * is in milliseconds, default value is {@link HornetQClient#DEFAULT_CALL_TIMEOUT}.
     *
     * @return the blocking calls timeout
@@ -631,7 +631,7 @@ public interface ServerLocator extends AutoCloseable
    /**
     * Sets the class name of the connection load balancing policy.
     * <p>
-    * Value must be the name of a class implementing {@link ConnectionLoadBalancingPolicy}.
+    * Value must be the name of a class implementing {@link org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy}.
     *
     * @param loadBalancingPolicyClassName class name of the connection load balancing policy
     */

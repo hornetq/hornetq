@@ -38,7 +38,7 @@ public interface HornetQServerControl
     * Returns the list of interceptors used by this server. Invoking this method is the same as invoking
     * <code>getIncomingInterceptorClassNames().</code>
     *
-    * @see Interceptor
+    * @see org.hornetq.api.core.Interceptor
     * @deprecated As of HornetQ 2.3.0.Final, replaced by
     * {@link #getIncomingInterceptorClassNames()} and
     * {@link #getOutgoingInterceptorClassNames()}
@@ -49,14 +49,14 @@ public interface HornetQServerControl
    /**
     * Returns the list of interceptors used by this server for incoming messages.
     *
-    * @see Interceptor
+    * @see org.hornetq.api.core.Interceptor
     */
    String[] getIncomingInterceptorClassNames();
 
    /**
     * Returns the list of interceptors used by this server for outgoing messages.
     *
-    * @see Interceptor
+    * @see org.hornetq.api.core.Interceptor
     */
    String[] getOutgoingInterceptorClassNames();
 
