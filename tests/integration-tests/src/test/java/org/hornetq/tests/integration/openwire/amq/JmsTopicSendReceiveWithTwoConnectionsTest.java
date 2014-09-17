@@ -104,5 +104,7 @@ public class JmsTopicSendReceiveWithTwoConnectionsTest extends JmsSendReceiveTes
       receiveSession.close();
       sendConnection.close();
       receiveConnection.close();
+
+      super.tearDown();
    }
 }
