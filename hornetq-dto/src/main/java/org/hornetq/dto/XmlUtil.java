@@ -15,14 +15,69 @@ package org.hornetq.dto;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.util.StreamReaderDelegate;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class XmlUtil
 {
+
+   /**
+    * Changes ${property} with values from a properties object
+    */
+   static class PropertiesFilter extends StreamReaderDelegate
+   {
+
+      static final Pattern pattern = Pattern.compile("\\$\\{([^\\}]+)\\}");
+      private final Properties props;
+
+      public PropertiesFilter(XMLStreamReader parent, Properties props)
+      {
+         super(parent);
+         this.props = props;
+      }
+
+      public String getAttributeValue(int index)
+      {
+         return filter(super.getAttributeValue(index));
+      }
+
+      public String filter(String str)
+      {
+         int start = 0;
+         while (true)
+         {
+            Matcher matcher = pattern.matcher(str);
+            if (!matcher.find(start))
+            {
+               break;
+            }
+            String group = matcher.group(1);
+            String property = props.getProperty(group);
+            if (property != null)
+            {
+               str = matcher.replaceFirst(Matcher.quoteReplacement(property));
+            }
+            else
+            {
+               start = matcher.end();
+            }
+         }
+         return str;
+      }
+
+   }
+
+   private static final XMLInputFactory factory = XMLInputFactory.newInstance();
 
    public static <T> T decode(Class<T> clazz, File configuration) throws Exception
    {
@@ -36,7 +91,16 @@ public class XmlUtil
       Schema schema = sf.newSchema(xsdSource);
       unmarshaller.setSchema(schema);
 
-      return clazz.cast(unmarshaller.unmarshal(configuration));
+      XMLStreamReader reader = factory.createXMLStreamReader(new FileInputStream(configuration));
+      //TODO - support properties files
+      Properties props = System.getProperties();
+
+      if (props != null)
+      {
+         reader = new PropertiesFilter(reader, props);
+      }
+
+      return clazz.cast(unmarshaller.unmarshal(reader));
    }
 
 }

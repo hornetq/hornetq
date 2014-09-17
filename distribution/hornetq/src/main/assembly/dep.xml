@@ -130,7 +130,6 @@
        </includes>
        <excludes>
          <exclude>config/**/trunk/**</exclude>
-         <exclude>config/*.properties</exclude>
        </excludes>
      </fileSet>
      <fileSet>
