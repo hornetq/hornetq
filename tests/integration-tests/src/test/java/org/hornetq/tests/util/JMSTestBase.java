@@ -31,6 +31,8 @@ import java.util.Random;
 import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -104,6 +106,20 @@ public class JMSTestBase extends ServiceTestBase
    protected Topic createTopic(final String topicName) throws Exception
    {
       return createTopic(false, topicName);
+   }
+
+
+   protected long getMessageCount(JMSQueueControl control) throws Exception
+   {
+      control.flushExecutor();
+      return control.getMessageCount();
+   }
+
+
+   protected long getMessageCount(QueueControl control) throws Exception
+   {
+      control.flushExecutor();
+      return control.getMessageCount();
    }
 
    /**

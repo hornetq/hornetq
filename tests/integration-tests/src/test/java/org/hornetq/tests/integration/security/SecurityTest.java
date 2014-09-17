@@ -507,7 +507,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
 
       Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
-      Assert.assertEquals(0, binding.getMessageCount());
+      Assert.assertEquals(0, getMessageCount(binding));
    }
 
    @Test
@@ -886,7 +886,7 @@ public class SecurityTest extends ServiceTestBase
       session.close();
 
       Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
-      Assert.assertEquals(0, binding.getMessageCount());
+      Assert.assertEquals(0, getMessageCount(binding));
 
    }
 

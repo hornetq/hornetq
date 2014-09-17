@@ -1659,10 +1659,17 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
       for (QueueBinding qBinding : bindings)
       {
-         messageCount += qBinding.getQueue().getMessageCount();
+         qBinding.getQueue().flushExecutor();
+         messageCount += getMessageCount(qBinding.getQueue());
       }
 
       return messageCount;
+   }
+
+   protected int getMessageCount(final Queue queue)
+   {
+      queue.flushExecutor();
+      return (int)queue.getMessageCount();
    }
 
    protected List<QueueBinding> getLocalQueueBindings(final PostOffice postOffice, final String address) throws Exception

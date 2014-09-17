@@ -565,6 +565,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       //server may be closed
       if (queueControl != null)
       {
+         queueControl.flushExecutor();
          Long messageCount = queueControl.getMessageCount();
 
          if (messageCount > 0)

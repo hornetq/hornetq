@@ -135,7 +135,7 @@ public class ConsumerTest extends ServiceTestBase
       }
       // assert that all the messages are there and none have been acked
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue) server.getPostOffice().getBinding(QUEUE).getBindable())));
 
       session.close();
    }
@@ -170,7 +170,7 @@ public class ConsumerTest extends ServiceTestBase
       }
       // assert that all the messages are there and none have been acked
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue) server.getPostOffice().getBinding(QUEUE).getBindable())));
 
       session.close();
    }
@@ -209,7 +209,7 @@ public class ConsumerTest extends ServiceTestBase
       }
       // assert that all the messages are there and none have been acked
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue) server.getPostOffice().getBinding(QUEUE).getBindable())));
 
       session.close();
    }
@@ -248,12 +248,12 @@ public class ConsumerTest extends ServiceTestBase
       }
       // assert that all the messages are there and none have been acked
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue) server.getPostOffice().getBinding(QUEUE).getBindable())));
 
       session.close();
 
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue) server.getPostOffice().getBinding(QUEUE).getBindable())));
    }
 
    @Test

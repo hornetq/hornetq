@@ -150,8 +150,8 @@ public class ConsumerTest extends JMSTestBase
       }
 
       SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount((Queue) server.getPostOffice().getBinding(queueName).getBindable()));
+      Assert.assertEquals(0, getMessageCount((Queue) server.getPostOffice().getBinding(queueName).getBindable()));
    }
 
    @Test
@@ -203,7 +203,7 @@ public class ConsumerTest extends JMSTestBase
 
       SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount((Queue) server.getPostOffice().getBinding(queueName).getBindable()));
       conn.close();
    }
 
@@ -288,7 +288,7 @@ public class ConsumerTest extends JMSTestBase
 
       SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount((Queue) server.getPostOffice().getBinding(queueName).getBindable()));
       conn.close();
    }
 
@@ -318,7 +318,7 @@ public class ConsumerTest extends JMSTestBase
       // Messages should all have been acked since we set pre ack on the cf
       SimpleString queueName = new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + ConsumerTest.Q_NAME);
       Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      Assert.assertEquals(0, ((Queue) server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount((Queue) server.getPostOffice().getBinding(queueName).getBindable()));
    }
 
    @Test

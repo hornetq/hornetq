@@ -304,9 +304,9 @@ public class PagingOrderTest extends ServiceTestBase
 
       assertEquals(0, errors.get());
 
-      assertEquals(numberOfMessages, q2.getMessageCount());
+      assertEquals(numberOfMessages, getMessageCount(q2));
       assertEquals(numberOfMessages, q2.getMessagesAdded());
-      assertEquals(0, q1.getMessageCount());
+      assertEquals(0, getMessageCount(q1));
       assertEquals(numberOfMessages, q1.getMessagesAdded());
 
       session.close();
@@ -343,9 +343,9 @@ public class PagingOrderTest extends ServiceTestBase
 
       assertNotNull(q2);
 
-      assertEquals("q2 msg count", numberOfMessages, q2.getMessageCount());
+      assertEquals("q2 msg count", numberOfMessages, getMessageCount(q2));
       assertEquals("q2 msgs added", numberOfMessages, q2.getMessagesAdded());
-      assertEquals("q1 msg count", 0, q1.getMessageCount());
+      assertEquals("q1 msg count", 0, getMessageCount(q1));
       // 0, since nothing was sent to the queue after the server was restarted
       assertEquals("q1 msgs added", 0, q1.getMessagesAdded());
 
@@ -455,15 +455,15 @@ public class PagingOrderTest extends ServiceTestBase
 
       assertEquals(0, errors.get());
       long timeout = System.currentTimeMillis() + 10000;
-      while (numberOfMessages - 100 != q1.getMessageCount() && System.currentTimeMillis() < timeout)
+      while (numberOfMessages - 100 != getMessageCount(q1) && System.currentTimeMillis() < timeout)
       {
          Thread.sleep(500);
 
       }
 
-      assertEquals(numberOfMessages, q2.getMessageCount());
+      assertEquals(numberOfMessages, getMessageCount(q2));
       assertEquals(numberOfMessages, q2.getMessagesAdded());
-      assertEquals(numberOfMessages - 100, q1.getMessageCount());
+      assertEquals(numberOfMessages - 100, getMessageCount(q1));
       assertEquals(numberOfMessages, q2.getMessagesAdded());
    }
 

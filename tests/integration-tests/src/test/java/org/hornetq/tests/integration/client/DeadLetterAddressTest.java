@@ -327,12 +327,12 @@ public class DeadLetterAddressTest extends ServiceTestBase
       long timeout = System.currentTimeMillis() + 5000;
 
       // DLA transfer is asynchronous fired on the rollback
-      while (System.currentTimeMillis() < timeout && ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount() != 0)
+      while (System.currentTimeMillis() < timeout && getMessageCount(((Queue)server.getPostOffice().getBinding(qName).getBindable())) != 0)
       {
          Thread.sleep(1);
       }
 
-      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue)server.getPostOffice().getBinding(qName).getBindable())));
       ClientMessage m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
       // All the messages should now be in the DLQ

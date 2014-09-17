@@ -58,8 +58,6 @@ public class ExpiryMessageTest extends JMSTestBase
       Topic topic = createTopic("test-topic");
       TopicControl control = ManagementControlHelper.createTopicControl(topic, mbeanServer);
 
-      System.out.println("size = " + control.getMessageCount());
-
       Connection conn2 = cf.createConnection();
 
       conn2.setClientID("client1");

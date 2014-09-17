@@ -2504,7 +2504,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          Assert.assertEquals(0,
                              ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
-                             ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                             getMessageCount(((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
       }
       finally
@@ -2609,7 +2609,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          Assert.assertEquals(0,
                              ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
-                             ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                             getMessageCount(((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
       }
       finally
@@ -2942,7 +2942,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          Assert.assertEquals(0,
                              ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          Assert.assertEquals(0,
-                             ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                             getMessageCount(((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
       }
       finally
@@ -3028,7 +3028,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       Assert.assertEquals(0,
                           ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
       Assert.assertEquals(0,
-                          ((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                          getMessageCount(((Queue) server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
       log.debug("Thread done");
    }

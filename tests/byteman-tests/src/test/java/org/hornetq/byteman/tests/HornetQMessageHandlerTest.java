@@ -132,7 +132,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
 
       Binding binding = server.getPostOffice().getBinding(SimpleString.toSimpleString(MDBQUEUEPREFIXED));
-      assertEquals(1, ((Queue) binding.getBindable()).getMessageCount());
+      assertEquals(1, getMessageCount(((Queue) binding.getBindable())));
 
       server.stop();
       server.start();
@@ -212,7 +212,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
 
       Binding binding = server.getPostOffice().getBinding(SimpleString.toSimpleString(MDBQUEUEPREFIXED));
-      assertEquals(1, ((Queue) binding.getBindable()).getMessageCount());
+      assertEquals(1, getMessageCount(((Queue) binding.getBindable())));
+
 
       server.stop();
       server.start();

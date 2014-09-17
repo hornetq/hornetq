@@ -147,9 +147,10 @@ public class HangConsumerTest extends ServiceTestBase
          producer.send(sessionProducer.createMessage(true));
          sessionProducer.commit();
 
-         // These two operations should finish without the test hanging
+         // These three operations should finish without the test hanging
+         queue.flushExecutor();
          queue.getMessagesAdded();
-         queue.getMessageCount();
+         getMessageCount(queue);
 
          releaseConsumers();
 
@@ -160,7 +161,7 @@ public class HangConsumerTest extends ServiceTestBase
 
          // a flush to guarantee any pending task is finished on flushing out delivery and pending msgs
          queue.flushExecutor();
-         Assert.assertEquals(2, queue.getMessageCount());
+         Assert.assertEquals(2, getMessageCount(queue));
          Assert.assertEquals(2, queue.getMessagesAdded());
 
          ClientMessage msg = consumer.receive(5000);

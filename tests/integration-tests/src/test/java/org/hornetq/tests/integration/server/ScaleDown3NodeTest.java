@@ -177,7 +177,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       while (System.currentTimeMillis() - start < timeout)
       {
          // ensure the message is not in the queue on node 2
-         messageCount = snfQueue.getMessageCount();
+         messageCount = getMessageCount(snfQueue);
          if (messageCount < TEST_SIZE)
          {
             Thread.sleep(200);
@@ -189,7 +189,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       }
 
       // ensure the message is in the SnF queue
-      Assert.assertEquals(TEST_SIZE, snfQueue.getMessageCount());
+      Assert.assertEquals(TEST_SIZE, getMessageCount(snfQueue));
 
       // trigger scaleDown from node 0 to node 1
       IntegrationTestLogger.LOGGER.info("============ Stopping " + servers[0].getNodeID());
@@ -201,7 +201,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       while (System.currentTimeMillis() - start < timeout)
       {
          // ensure the message is not in the queue on node 2
-         messageCount = ((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount();
+         messageCount = getMessageCount(((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue());
          if (messageCount > 0)
          {
             Thread.sleep(200);
@@ -222,7 +222,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       while (System.currentTimeMillis() - start < timeout)
       {
          // ensure the message is not in the queue on node 2
-         messageCount = ((LocalQueueBinding) servers[1].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount();
+         messageCount = getMessageCount(((LocalQueueBinding) servers[1].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue());
          if (messageCount < TEST_SIZE)
          {
             Thread.sleep(200);
@@ -317,7 +317,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       while (System.currentTimeMillis() - start < timeout)
       {
          // ensure the message is not in the queue on node 2
-         messageCount = snfQueue.getMessageCount();
+         messageCount = getMessageCount(snfQueue);
          if (messageCount < TEST_SIZE * 2)
          {
             Thread.sleep(200);
@@ -329,7 +329,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       }
 
       // ensure the message is in the SnF queue
-      Assert.assertEquals(TEST_SIZE * 2, snfQueue.getMessageCount());
+      Assert.assertEquals(TEST_SIZE * 2, getMessageCount(snfQueue));
 
       // trigger scaleDown from node 0 to node 1
       IntegrationTestLogger.LOGGER.info("============ Stopping " + servers[0].getNodeID());
@@ -342,8 +342,8 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       while (System.currentTimeMillis() - start < timeout)
       {
          // ensure the messages are not in the queues on node 2
-         messageCount = ((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount();
-         messageCount += ((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName3))).getQueue().getMessageCount();
+         messageCount = getMessageCount(((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue());
+         messageCount += getMessageCount(((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName3))).getQueue());
          if (messageCount > 0)
          {
             Thread.sleep(200);
@@ -356,7 +356,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
 
       Assert.assertEquals(0, messageCount);
 
-      Assert.assertEquals(TEST_SIZE, ((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue().getMessageCount());
+      Assert.assertEquals(TEST_SIZE, getMessageCount(((LocalQueueBinding) servers[2].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue()));
 
       // get the messages from queue 1 on node 1
       addConsumer(0, 1, queueName1, null);
@@ -367,8 +367,8 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       while (System.currentTimeMillis() - start < timeout)
       {
          // ensure the message is not in the queue on node 2
-         messageCount = ((LocalQueueBinding) servers[1].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount();
-         messageCount += ((LocalQueueBinding) servers[1].getPostOffice().getBinding(new SimpleString(queueName3))).getQueue().getMessageCount();
+         messageCount = getMessageCount(((LocalQueueBinding) servers[1].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue());
+         messageCount += getMessageCount(((LocalQueueBinding) servers[1].getPostOffice().getBinding(new SimpleString(queueName3))).getQueue());
          if (messageCount < TEST_SIZE * 2)
          {
             Thread.sleep(200);

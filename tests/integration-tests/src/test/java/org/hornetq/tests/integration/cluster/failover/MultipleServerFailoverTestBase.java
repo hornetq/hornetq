@@ -276,7 +276,7 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
       do
       {
 
-         if (q.getMessageCount() >= messageCount)
+         if (getMessageCount(q) >= messageCount)
          {
             return;
          }
