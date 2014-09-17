@@ -49,6 +49,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.impl.InjectedObjectRegistry;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -109,6 +110,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private HornetQPrincipal defaultInvmSecurityPrincipal;
 
+   private InjectedObjectRegistry injectedObjectRegistry;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -117,38 +120,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                               final Configuration config,
                               final HornetQServer server,
                               final ManagementService managementService,
-                              final ScheduledExecutorService scheduledThreadPool, List<ProtocolManagerFactory> protocolManagerFactories,
-                              final Executor flushExecutor)
+                              final ScheduledExecutorService scheduledThreadPool,
+                              List<ProtocolManagerFactory> protocolManagerFactories,
+                              final Executor flushExecutor,
+                              final InjectedObjectRegistry injectedObjectRegistry)
    {
+      this.injectedObjectRegistry = injectedObjectRegistry;
+
       acceptorsConfig = config.getAcceptorConfigurations();
 
       this.server = server;
 
       this.clusterManager = clusterManager;
 
-      for (String interceptorClass : config.getIncomingInterceptorClassNames())
-      {
-         try
-         {
-            incomingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorCreatingRemotingInterceptor(e, interceptorClass);
-         }
-      }
+      setInterceptors(config);
 
-      for (String interceptorClass : config.getOutgoingInterceptorClassNames())
-      {
-         try
-         {
-            outgoingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorCreatingRemotingInterceptor(e, interceptorClass);
-         }
-      }
       this.managementService = managementService;
 
       this.scheduledThreadPool = scheduledThreadPool;
@@ -189,6 +175,51 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                protocolMap.put(protocol, protocolManagerFactory.createProtocolManager(server, incomingInterceptors, outgoingInterceptors));
             }
          }
+      }
+   }
+
+   private void setInterceptors(Configuration config)
+   {
+      for (String interceptorClass : config.getIncomingInterceptorClassNames())
+      {
+         Interceptor interceptor = getInterceptorImplementation(injectedObjectRegistry.getIncomingInterceptors(),
+                                                                incomingInterceptors,
+                                                                interceptorClass);
+         if (interceptor != null) incomingInterceptors.add(interceptor);
+      }
+
+      for (String interceptorClass : config.getOutgoingInterceptorClassNames())
+      {
+         Interceptor interceptor = getInterceptorImplementation(injectedObjectRegistry.getOutgoingInterceptors(),
+                                                                outgoingInterceptors,
+                                                                interceptorClass);
+         if (interceptor != null) outgoingInterceptors.add(interceptor);
+      }
+   }
+
+   private Interceptor getInterceptorImplementation(List<Interceptor> injectedInterceptors,
+                                                    List<Interceptor> existingInterceptors,
+                                                    String className)
+   {
+      try
+      {
+         Interceptor interceptor = null;
+         for (Interceptor injectedInterceptor : injectedInterceptors)
+         {
+            if (injectedInterceptor.getClass().getCanonicalName().equals(className) &&
+               !existingInterceptors.contains(injectedInterceptor))
+            {
+               interceptor = injectedInterceptor;
+               break;
+            }
+         }
+         if (interceptor == null) interceptor = ((Interceptor) safeInitNewInstance(className));
+         return interceptor;
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.errorCreatingRemotingInterceptor(e, className);
+         return null;
       }
    }
 

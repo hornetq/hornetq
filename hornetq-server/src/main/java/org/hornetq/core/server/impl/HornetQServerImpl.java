@@ -325,6 +325,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private boolean scheduledPoolSupplied = false;
 
+   private InjectedObjectRegistry injectedObjectRegistry;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -365,6 +367,15 @@ public class HornetQServerImpl implements HornetQServer
                             final HornetQSecurityManager securityManager,
                             final HornetQServer parentServer)
    {
+      this(configuration, mbeanServer, securityManager, parentServer, null);
+   }
+
+   public HornetQServerImpl(Configuration configuration,
+                            MBeanServer mbeanServer,
+                            final HornetQSecurityManager securityManager,
+                            final HornetQServer parentServer,
+                            final InjectedObjectRegistry injectedObjectRegistry)
+   {
       if (configuration == null)
       {
          configuration = new ConfigurationImpl();
@@ -396,39 +407,7 @@ public class HornetQServerImpl implements HornetQServer
 
       this.parentServer = parentServer;
 
-   }
-
-
-   public HornetQServerImpl(Configuration configuration,
-                            MBeanServer mbeanServer,
-                            final HornetQSecurityManager securityManager,
-                            final HornetQServer parentServer,
-                            final ExecutorService threadPool,
-                            final ScheduledExecutorService scheduledPool)
-   {
-      this(configuration, mbeanServer, securityManager, parentServer);
-
-      if (threadPool != null)
-      {
-         this.threadPool = threadPool;
-         this.executorFactory = new OrderedExecutorFactory(threadPool);
-         this.threadPoolSupplied = true;
-      }
-
-      if (scheduledPool != null)
-      {
-         this.scheduledPool = scheduledPool;
-         this.scheduledPoolSupplied = true;
-      }
-   }
-
-   public HornetQServerImpl(Configuration configuration,
-                            MBeanServer mbeanServer,
-                            final HornetQSecurityManager securityManager,
-                            final ExecutorService threadPool,
-                            final ScheduledExecutorService scheduledPool)
-   {
-      this(configuration, mbeanServer, securityManager, null, threadPool, scheduledPool);
+      this.injectedObjectRegistry = injectedObjectRegistry == null ?  new InjectedObjectRegistry() : injectedObjectRegistry;
    }
 
    // life-cycle methods
@@ -537,7 +516,7 @@ public class HornetQServerImpl implements HornetQServer
                                                      identity != null ? identity : "");
          }
          // start connector service
-         connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice);
+         connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice, injectedObjectRegistry);
          connectorsService.start();
       }
       finally
@@ -1694,6 +1673,48 @@ public class HornetQServerImpl implements HornetQServer
 
 
    /**
+    * Sets up HornetQ Executor Services.
+    */
+   private void initializeExecutorServices()
+   {
+      /* We check to see if a Thread Pool is supplied in the InjectedObjectRegistry.  If so we created a new Ordered
+       * Executor based on the provided Thread pool.  Otherwise we create a new ThreadPool.
+       */
+      if (injectedObjectRegistry.getExecutorService() == null)
+      {
+         ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(), false, getThisClassLoader());
+         if (configuration.getThreadPoolMaxSize() == -1)
+         {
+            threadPool = Executors.newCachedThreadPool(tFactory);
+         }
+         else
+         {
+            threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), tFactory);
+         }
+      }
+      else
+      {
+         threadPool = injectedObjectRegistry.getExecutorService();
+         this.threadPoolSupplied = true;
+      }
+      this.executorFactory = new OrderedExecutorFactory(threadPool);
+
+       /* We check to see if a Scheduled Executor Service is provided in the InjectedObjectRegistry.  If so we use this
+       * Scheduled ExecutorService otherwise we create a new one.
+       */
+      if (injectedObjectRegistry.getScheduledExecutorService() == null)
+      {
+         ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-scheduled-threads", false, getThisClassLoader());
+         scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(), tFactory);
+      }
+      else
+      {
+         this.scheduledPoolSupplied = true;
+         this.scheduledPool = injectedObjectRegistry.getScheduledExecutorService();
+      }
+   }
+
+   /**
     * Starts everything apart from RemotingService and loading the data.
     * <p/>
     * After optional intermediary steps, Part 1 is meant to be followed by part 2
@@ -1704,38 +1725,14 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (state == SERVER_STATE.STOPPED)
          return false;
+
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
-
-      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(),
-                                                        false,
-                                                        getThisClassLoader());
-
+      initializeExecutorServices();
 
       if (configuration.getJournalType() == JournalType.ASYNCIO && !AIOSequentialFileFactory.isSupported())
       {
          HornetQServerLogger.LOGGER.switchingNIO();
          configuration.setJournalType(JournalType.NIO);
-      }
-
-      if (!threadPoolSupplied)
-      {
-         if (configuration.getThreadPoolMaxSize() == -1)
-         {
-            threadPool = Executors.newCachedThreadPool(tFactory);
-         }
-         else
-         {
-            threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), tFactory);
-         }
-         executorFactory = new OrderedExecutorFactory(threadPool);
-      }
-
-      if (!scheduledPoolSupplied)
-      {
-         scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                         new HornetQThreadFactory("HornetQ-scheduled-threads",
-                                                                                  false,
-                                                                                  getThisClassLoader()));
       }
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
@@ -1802,7 +1799,14 @@ public class HornetQServerImpl implements HornetQServer
 
       clusterManager.deploy();
 
-      remotingService = new RemotingServiceImpl(clusterManager, configuration, this, managementService, scheduledPool, protocolManagerFactories,  executorFactory.getExecutor());
+      remotingService = new RemotingServiceImpl(clusterManager,
+                                                configuration,
+                                                this,
+                                                managementService,
+                                                scheduledPool,
+                                                protocolManagerFactories,
+                                                executorFactory.getExecutor(),
+                                                injectedObjectRegistry);
 
       messagingServerControl = managementService.registerServer(postOffice,
                                                                 storageManager,
