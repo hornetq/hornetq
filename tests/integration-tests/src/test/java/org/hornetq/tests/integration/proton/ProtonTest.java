@@ -143,7 +143,7 @@ public class ProtonTest extends ServiceTestBase
 
             connection.close();
             Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
-            assertEquals(q.getMessageCount(), numMessages);
+            assertEquals(getMessageCount(q), numMessages);
 
             connection = createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -161,7 +161,7 @@ public class ProtonTest extends ServiceTestBase
             }
             assertEquals(count, numMessages);
             connection.close();
-            assertEquals(q.getMessageCount(), numMessages);
+            assertEquals(getMessageCount(q), numMessages);
          }
       }, 5000);
    }
@@ -184,7 +184,7 @@ public class ProtonTest extends ServiceTestBase
       session.commit();
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
-      assertEquals(q.getMessageCount(), numMessages);
+      assertEquals(getMessageCount(q), numMessages);
    }
 
    @Test
@@ -204,7 +204,7 @@ public class ProtonTest extends ServiceTestBase
       }
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
-      assertEquals(q.getMessageCount(), 0);
+      assertEquals(getMessageCount(q), 0);
    }
 
    @Test
@@ -225,7 +225,7 @@ public class ProtonTest extends ServiceTestBase
       }
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
-      assertEquals(q.getMessageCount(), numMessages);
+      assertEquals(getMessageCount(q), numMessages);
       //now create a new connection and receive
       connection = createConnection();
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -233,7 +233,7 @@ public class ProtonTest extends ServiceTestBase
       Thread.sleep(1000);
       consumer.close();
       connection.close();
-      assertEquals(numMessages, q.getMessageCount());
+      assertEquals(numMessages, getMessageCount(q));
       long taken = (System.currentTimeMillis() - time) / 1000;
       System.out.println("taken = " + taken);
    }
@@ -256,7 +256,7 @@ public class ProtonTest extends ServiceTestBase
       }
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
-      assertEquals(q.getMessageCount(), numMessages);
+      assertEquals(getMessageCount(q), numMessages);
       //now create a new connection and receive
       connection = createConnection();
       session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
@@ -278,7 +278,7 @@ public class ProtonTest extends ServiceTestBase
 
       consumer.close();
       connection.close();
-      assertEquals(0, q.getMessageCount());
+      assertEquals(0, getMessageCount(q));
       long taken = (System.currentTimeMillis() - time) / 1000;
       System.out.println("taken = " + taken);
 
@@ -326,7 +326,7 @@ public class ProtonTest extends ServiceTestBase
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(address)).getBindable();
 
       connection.close();
-      assertEquals(0, q.getMessageCount());
+      assertEquals(0, getMessageCount(q));
       long taken = (System.currentTimeMillis() - time) / 1000;
       System.out.println("taken = " + taken);
    }

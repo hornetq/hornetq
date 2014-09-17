@@ -125,8 +125,8 @@ public class ScaleDownTest extends ClusterTestBase
 //      removeConsumer(1);
 
       // at this point on node 0 there should be 2 messages in testQueue1 and 1 message in testQueue2
-      Assert.assertEquals(TEST_SIZE, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount());
-      Assert.assertEquals(TEST_SIZE - 1, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue().getMessageCount());
+      Assert.assertEquals(TEST_SIZE, getMessageCount(((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue()));
+      Assert.assertEquals(TEST_SIZE - 1, getMessageCount(((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue()));
 
       // trigger scaleDown from node 0 to node 1
       servers[0].stop();
@@ -200,9 +200,9 @@ public class ScaleDownTest extends ClusterTestBase
       removeConsumer(1);
 
       // at this point on node 0 there should be 0 messages in testQueue and TEST_SIZE messages in the sfQueue
-      Assert.assertEquals(0, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue().getMessageCount());
-      Assert.assertEquals(0, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue().getMessageCount());
-      Assert.assertEquals(TEST_SIZE * 2, ((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(sfQueueName))).getQueue().getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName1))).getQueue()));
+      Assert.assertEquals(0, getMessageCount(((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(queueName2))).getQueue()));
+      Assert.assertEquals(TEST_SIZE * 2, getMessageCount(((LocalQueueBinding) servers[0].getPostOffice().getBinding(new SimpleString(sfQueueName))).getQueue()));
 
       // trigger scaleDown from node 0 to node 1
       servers[0].stop();

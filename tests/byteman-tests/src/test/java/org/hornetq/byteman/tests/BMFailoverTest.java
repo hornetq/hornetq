@@ -170,7 +170,7 @@ public class BMFailoverTest extends FailoverTestBase
       //let's close the consumer so anything pending is handled
       consumer.close();
 
-      assertTrue("actual message count=" + inQ.getMessageCount(), inQ.getMessageCount() == 1);
+      assertEquals(1, getMessageCount(inQ));
    }
 
 
@@ -212,7 +212,7 @@ public class BMFailoverTest extends FailoverTestBase
       sendMessages(session, producer, 10);
       session.commit();
       Queue bindable = (Queue) backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
-      assertTrue(bindable.getMessageCount() == 10);
+      assertEquals(10, getMessageCount(bindable));
    }
 
    @Test
@@ -266,7 +266,8 @@ public class BMFailoverTest extends FailoverTestBase
          //pass
       }
       Queue bindable = (Queue) backupServer.getServer().getPostOffice().getBinding(FailoverTestBase.ADDRESS).getBindable();
-      assertTrue("messager count = " + bindable.getMessageCount(), bindable.getMessageCount() == 10);
+      assertEquals(10, getMessageCount(bindable));
+
    }
 
    @Override

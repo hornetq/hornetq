@@ -350,9 +350,9 @@ public class SessionTest extends ServiceTestBase
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-      Assert.assertEquals(0, q.getMessageCount());
+      Assert.assertEquals(0, getMessageCount(q));
       clientSession.commit();
-      Assert.assertEquals(10, q.getMessageCount());
+      Assert.assertEquals(10, getMessageCount(q));
       clientSession.close();
    }
 
@@ -374,12 +374,12 @@ public class SessionTest extends ServiceTestBase
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-      Assert.assertEquals(0, q.getMessageCount());
+      Assert.assertEquals(0, getMessageCount(q));
       clientSession.rollback();
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       clientSession.commit();
-      Assert.assertEquals(2, q.getMessageCount());
+      Assert.assertEquals(2, getMessageCount(q));
       clientSession.close();
    }
 
@@ -404,7 +404,7 @@ public class SessionTest extends ServiceTestBase
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-      Assert.assertEquals(10, q.getMessageCount());
+      Assert.assertEquals(10, getMessageCount(q));
       ClientConsumer cc = clientSession.createConsumer(queueName);
       clientSession.start();
       ClientMessage m = cc.receive(5000);
@@ -438,7 +438,7 @@ public class SessionTest extends ServiceTestBase
       Assert.assertNotNull(m);
       m.acknowledge();
       clientSession.commit();
-      Assert.assertEquals(0, q.getMessageCount());
+      Assert.assertEquals(0, getMessageCount(q));
       clientSession.close();
       sendSession.close();
    }
@@ -464,7 +464,7 @@ public class SessionTest extends ServiceTestBase
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-      Assert.assertEquals(10, q.getMessageCount());
+      Assert.assertEquals(10, getMessageCount(q));
       ClientConsumer cc = clientSession.createConsumer(queueName);
       clientSession.start();
       ClientMessage m = cc.receive(5000);
@@ -498,7 +498,7 @@ public class SessionTest extends ServiceTestBase
       Assert.assertNotNull(m);
       m.acknowledge();
       clientSession.rollback();
-      Assert.assertEquals(10, q.getMessageCount());
+      Assert.assertEquals(10, getMessageCount(q));
       clientSession.close();
       sendSession.close();
    }

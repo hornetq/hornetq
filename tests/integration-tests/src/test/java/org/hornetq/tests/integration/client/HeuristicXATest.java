@@ -155,7 +155,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       if (isCommit)
       {
-         Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(1, getMessageCount(((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
          session = sf.createSession(false, false, false);
 
@@ -170,7 +170,7 @@ public class HeuristicXATest extends ServiceTestBase
          session.close();
       }
 
-      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable())));
    }
 
    @Test
@@ -237,7 +237,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       if (isCommit)
       {
-         Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(1, getMessageCount(((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
          session = sf.createSession(false, false, false);
 
@@ -252,7 +252,7 @@ public class HeuristicXATest extends ServiceTestBase
          session.close();
       }
 
-      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
       server.stop();
 
@@ -337,7 +337,7 @@ public class HeuristicXATest extends ServiceTestBase
 
       if (heuristicCommit)
       {
-         Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         Assert.assertEquals(1, getMessageCount(((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
          session = sf.createSession(false, false, false);
 
@@ -352,7 +352,7 @@ public class HeuristicXATest extends ServiceTestBase
          session.close();
       }
 
-      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+      Assert.assertEquals(0, getMessageCount(((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable())));
 
       server.stop();
 

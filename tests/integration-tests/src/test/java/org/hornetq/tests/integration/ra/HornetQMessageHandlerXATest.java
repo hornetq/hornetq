@@ -114,7 +114,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
 
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
-      long messageCount = ((Queue) binding.getBindable()).getMessageCount();
+      long messageCount = getMessageCount((Queue) binding.getBindable());
       assertEquals(1, messageCount);
    }
 
@@ -154,7 +154,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
 
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
-      long messageCount = ((Queue) binding.getBindable()).getMessageCount();
+      long messageCount = getMessageCount((Queue) binding.getBindable());
       assertEquals(1, messageCount);
    }
 

@@ -420,6 +420,7 @@ public class LocalTestServer implements Server, Runnable
                                                                  .getResource(ResourceNames.JMS_QUEUE + queueName);
       if (queue != null)
       {
+         queue.flushExecutor();
          return queue.getMessageCount();
       }
       else
