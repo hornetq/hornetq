@@ -42,7 +42,7 @@ public class BasicOpenWireTest extends OpenWireTestBase
 {
    @Rule public TestName name = new TestName();
 
-   protected String urlString = "tcp://" + OWHOST + ":" + OWPORT + "?wireFormat.cacheEnabled=true";
+   protected static final String urlString = "tcp://" + OWHOST + ":" + OWPORT + "?wireFormat.cacheEnabled=true";
    protected ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(urlString);
    protected ActiveMQConnection connection;
    protected String topicName = "amqTestTopic1";

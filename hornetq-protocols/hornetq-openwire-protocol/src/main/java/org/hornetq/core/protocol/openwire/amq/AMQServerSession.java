@@ -413,4 +413,10 @@ public class AMQServerSession extends ServerSessionImpl
       return this.internal;
    }
 
+   public void moveToDeadLetterAddress(long consumerId, long mid, Throwable cause) throws Exception
+   {
+      AMQServerConsumer consumer = getConsumer(consumerId);
+      consumer.moveToDeadLetterAddress(mid, cause);
+   }
+
 }

@@ -21,10 +21,13 @@ import java.util.Set;
 
 import javax.jms.ConnectionFactory;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -58,8 +61,17 @@ public class OpenWireTestBase extends ServiceTestBase
       params.put(TransportConstants.PROTOCOLS_PROP_NAME, "OPENWIRE");
       TransportConfiguration transportConfiguration = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
 
-      server.getConfiguration().getAcceptorConfigurations().add(transportConfiguration);
-      server.getConfiguration().setSecurityEnabled(enableSecurity);
+      Configuration serverConfig = server.getConfiguration();
+
+      Map<String, AddressSettings> addressSettings = serverConfig.getAddressesSettings();
+      String match = "jms.queue.#";
+      AddressSettings dlaSettings = new AddressSettings();
+      SimpleString dla = new SimpleString("jms.queue.ActiveMQ.DLQ");
+      dlaSettings.setDeadLetterAddress(dla);
+      addressSettings.put(match, dlaSettings);
+
+      serverConfig.getAcceptorConfigurations().add(transportConfiguration);
+      serverConfig.setSecurityEnabled(enableSecurity);
 
       if (enableSecurity)
       {

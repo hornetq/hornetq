@@ -2594,7 +2594,7 @@ public class QueueImpl implements Queue
    }
 
 
-   private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
+   public void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
       sendToDeadLetterAddress(ref, addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress());
    }
@@ -3156,7 +3156,7 @@ public class QueueImpl implements Queue
       return deliveringCount.incrementAndGet();
    }
 
-   private void decDelivering()
+   public void decDelivering()
    {
       deliveringCount.decrementAndGet();
    }
