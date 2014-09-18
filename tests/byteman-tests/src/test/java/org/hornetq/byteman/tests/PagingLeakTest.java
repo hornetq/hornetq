@@ -62,9 +62,6 @@ public class PagingLeakTest extends ServiceTestBase
       pagePosInstances.set(0);
    }
 
-   /*
-   * simple test to make sure connect still works with some network latency  built into netty
-   * */
    @Test
    @BMRules
       (
