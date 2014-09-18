@@ -1672,6 +1672,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       return (int)queue.getMessageCount();
    }
 
+   protected int getMessagesAdded(final Queue queue)
+   {
+      queue.flushExecutor();
+      return (int)queue.getMessagesAdded();
+   }
+
    protected List<QueueBinding> getLocalQueueBindings(final PostOffice postOffice, final String address) throws Exception
    {
       ArrayList<QueueBinding> bindingsFound = new ArrayList<QueueBinding>();
