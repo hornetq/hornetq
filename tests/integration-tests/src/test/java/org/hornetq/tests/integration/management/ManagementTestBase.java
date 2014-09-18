@@ -128,11 +128,22 @@ public abstract class ManagementTestBase extends ServiceTestBase
       return control.getMessageCount();
    }
 
+   protected long getMessagesAdded(JMSQueueControl control) throws Exception
+   {
+      control.flushExecutor();
+      return control.getMessagesAdded();
+   }
 
    protected long getMessageCount(QueueControl control) throws Exception
    {
       control.flushExecutor();
       return control.getMessageCount();
+   }
+
+   protected long getMessagesAdded(QueueControl control) throws Exception
+   {
+      control.flushExecutor();
+      return control.getMessagesAdded();
    }
 
    // Private -------------------------------------------------------

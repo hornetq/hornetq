@@ -297,17 +297,17 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
 
       QueueControl queueControl = createManagementControl(address, queue);
-      Assert.assertEquals(0, queueControl.getMessagesAdded());
+      Assert.assertEquals(0, getMessagesAdded(queueControl));
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createMessage(false));
-      Assert.assertEquals(1, queueControl.getMessagesAdded());
+      Assert.assertEquals(1, getMessagesAdded(queueControl));
       producer.send(session.createMessage(false));
-      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       ManagementTestBase.consumeMessages(2, session, queue);
 
-      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       session.deleteQueue(queue);
    }
@@ -333,7 +333,7 @@ public class QueueControlTest extends ManagementTestBase
 
 //      ManagementTestBase.consumeMessages(2, session, queue);
 
-//      Assert.assertEquals(2, queueControl.getMessagesAdded());
+//      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       session.deleteQueue(queue);
    }
@@ -1908,21 +1908,21 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
 
       QueueControl queueControl = createManagementControl(address, queue);
-      Assert.assertEquals(0, queueControl.getMessagesAdded());
+      Assert.assertEquals(0, getMessagesAdded(queueControl));
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createMessage(false));
-      Assert.assertEquals(1, queueControl.getMessagesAdded());
+      Assert.assertEquals(1, getMessagesAdded(queueControl));
       producer.send(session.createMessage(false));
-      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       ManagementTestBase.consumeMessages(2, session, queue);
 
-      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       queueControl.resetMessagesAdded();
 
-      Assert.assertEquals(0, queueControl.getMessagesAdded());
+      Assert.assertEquals(0, getMessagesAdded(queueControl));
 
       session.deleteQueue(queue);
    }
