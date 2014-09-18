@@ -67,8 +67,8 @@ public class HeuristicXATest extends ServiceTestBase
    @Test
    public void testInvalidCall() throws Exception
    {
-      Configuration configuration = createDefaultConfig();
-      configuration.setJMXManagementEnabled(true);
+      Configuration configuration = createDefaultConfig()
+         .setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       server.start();
@@ -92,8 +92,8 @@ public class HeuristicXATest extends ServiceTestBase
 
    private void internalTest(final boolean isCommit) throws Exception
    {
-      Configuration configuration = createDefaultConfig();
-      configuration.setJMXManagementEnabled(true);
+      Configuration configuration = createDefaultConfig()
+         .setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       server.start();
@@ -187,8 +187,8 @@ public class HeuristicXATest extends ServiceTestBase
 
    private void doHeuristicCompletionWithRestart(final boolean isCommit) throws Exception
    {
-      Configuration configuration = createDefaultConfig();
-      configuration.setJMXManagementEnabled(true);
+      Configuration configuration = createDefaultConfig()
+         .setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(true, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       server.start();
@@ -287,8 +287,8 @@ public class HeuristicXATest extends ServiceTestBase
 
    private void doRecoverHeuristicCompletedTxWithRestart(final boolean heuristicCommit) throws Exception
    {
-      Configuration configuration = createDefaultConfig();
-      configuration.setJMXManagementEnabled(true);
+      Configuration configuration = createDefaultConfig()
+         .setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(true, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       server.start();
@@ -396,8 +396,8 @@ public class HeuristicXATest extends ServiceTestBase
 
    private void doForgetHeuristicCompletedTxAndRestart(final boolean heuristicCommit) throws Exception
    {
-      Configuration configuration = createDefaultConfig();
-      configuration.setJMXManagementEnabled(true);
+      Configuration configuration = createDefaultConfig()
+         .setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(true, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       server.start();

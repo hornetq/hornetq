@@ -148,11 +148,11 @@ public class SecurityNotificationTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration conf = createBasicConfig();
-      conf.setSecurityEnabled(true);
-      // the notifications are independent of JMX
-      conf.setJMXManagementEnabled(false);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      Configuration conf = createBasicConfig()
+         .setSecurityEnabled(true)
+         // the notifications are independent of JMX
+         .setJMXManagementEnabled(false)
+         .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       server = HornetQServers.newHornetQServer(conf, false);
       server.start();
 

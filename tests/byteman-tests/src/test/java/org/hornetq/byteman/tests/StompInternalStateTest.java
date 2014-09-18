@@ -88,9 +88,9 @@ public class StompInternalStateTest extends ServiceTestBase
    @Override
    protected Configuration createDefaultConfig(final boolean netty) throws Exception
    {
-      Configuration config = super.createDefaultConfig(netty);
-      config.setSecurityEnabled(false);
-      config.setPersistenceEnabled(false);
+      Configuration config = super.createDefaultConfig(netty)
+         .setSecurityEnabled(false)
+         .setPersistenceEnabled(false);
 
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PROTOCOLS_PROP_NAME, StompProtocolManagerFactory.STOMP_PROTOCOL_NAME);

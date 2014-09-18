@@ -113,7 +113,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected void setBackupIdentity()
    {
-      backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServers");
+      backupServer.setIdentity(this.getClass()
+                                  .getSimpleName() + "/backupServers");
    }
 
    protected void setLiveIdentity()
@@ -171,36 +172,33 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void createConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager(false);
-
-      backupConfig = super.createDefaultConfig();
-      backupConfig.getAcceptorConfigurations().clear();
-      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      SharedStoreSlavePolicyConfiguration haPolicyConfiguration = new SharedStoreSlavePolicyConfiguration();
-      backupConfig.setHAPolicyConfiguration(haPolicyConfiguration);
-      haPolicyConfiguration.setFailbackDelay(1000);
-
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
-      backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
+
+      backupConfig = super.createDefaultConfig()
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(false))
+         .setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration()
+                                      .setFailbackDelay(1000))
+         .addConnectorConfiguration(liveConnector.getName(), liveConnector)
+         .addConnectorConfiguration(backupConnector.getName(), backupConnector)
+         .addClusterConfiguration(basicClusterConnectionConfig(backupConnector.getName(), liveConnector.getName()));
+
       backupServer = createTestableServer(backupConfig);
 
-      liveConfig = super.createDefaultConfig();
-      liveConfig.getAcceptorConfigurations().clear();
-      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      SharedStoreMasterPolicyConfiguration haPolicyConfiguration1 = new SharedStoreMasterPolicyConfiguration();
-      liveConfig.setHAPolicyConfiguration(haPolicyConfiguration1);
-      haPolicyConfiguration1.setFailbackDelay(1000);
+      liveConfig = super.createDefaultConfig()
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(true))
+         .setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration()
+                                      .setFailbackDelay(1000))
+         .addClusterConfiguration(basicClusterConnectionConfig(liveConnector.getName()))
+         .addConnectorConfiguration(liveConnector.getName(), liveConnector);
 
-      basicClusterConnectionConfig(liveConfig, liveConnector.getName());
-      liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createTestableServer(liveConfig);
    }
 
    protected void createReplicatedConfigs() throws Exception
    {
-
       final TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       final TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
@@ -208,31 +206,32 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig = createDefaultConfig();
       liveConfig = createDefaultConfig();
 
-      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
-                                                     liveConnector);
+      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig, liveConnector);
 
       final String suffix = "_backup";
-      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix);
-      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + suffix);
-      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + suffix);
-      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix);
-      backupConfig.setSecurityEnabled(false);
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix)
+         .setJournalDirectory(backupConfig.getJournalDirectory() + suffix)
+         .setPagingDirectory(backupConfig.getPagingDirectory() + suffix)
+         .setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix)
+         .setSecurityEnabled(false);
+
       setupHAPolicyConfiguration();
       nodeManager = new InVMNodeManager(true, backupConfig.getJournalDirectory());
 
       backupServer = createTestableServer(backupConfig);
-      liveConfig.getAcceptorConfigurations().clear();
-      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
+
+      liveConfig.clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(true));
 
       liveServer = createTestableServer(liveConfig);
    }
 
    protected void setupHAPolicyConfiguration()
    {
-      ReplicaPolicyConfiguration haPolicyConfiguration = (ReplicaPolicyConfiguration) backupConfig.getHAPolicyConfiguration();
-      haPolicyConfiguration.setMaxSavedReplicatedJournalsSize(0);
-      haPolicyConfiguration.setAllowFailBack(true);
-      haPolicyConfiguration.setFailbackDelay(5000);
+      ((ReplicaPolicyConfiguration) backupConfig.getHAPolicyConfiguration())
+         .setMaxSavedReplicatedJournalsSize(0)
+         .setAllowFailBack(true)
+         .setFailbackDelay(5000);
    }
 
    protected final void adaptLiveConfigForReplicatedFailBack(TestableServer server)

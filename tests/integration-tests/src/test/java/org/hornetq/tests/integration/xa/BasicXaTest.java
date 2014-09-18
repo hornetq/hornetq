@@ -69,10 +69,10 @@ public class BasicXaTest extends ServiceTestBase
       super.setUp();
 
       addressSettings.clear();
-      configuration = createDefaultConfig(true);
-      configuration.setSecurityEnabled(false);
-      configuration.setJournalMinFiles(2);
-      configuration.setPagingDirectory(getPageDir());
+      configuration = createDefaultConfig(true)
+         .setSecurityEnabled(false)
+         .setJournalMinFiles(2)
+         .setPagingDirectory(getPageDir());
 
       messagingService = createServer(false, configuration, -1, -1, addressSettings);
 

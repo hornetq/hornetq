@@ -387,11 +387,11 @@ public class ExpiryAddressTest extends ServiceTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-
-      Configuration configuration = createDefaultConfig();
-      configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
+
+      Configuration configuration = createDefaultConfig()
+         .setSecurityEnabled(false)
+         .addAcceptorConfiguration(transportConfig);
       server = addServer(HornetQServers.newHornetQServer(configuration, false));
       // start the server
       server.start();

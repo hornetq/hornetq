@@ -38,19 +38,6 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
 
    private HAPolicyConfiguration backupConfig;
 
-   public ColocatedPolicyConfiguration(boolean requestBackup, int backupRequestRetries, long backupRequestRetryInterval, int maxBackups, int backupPortOffset, List<String> remoteConnectors, int portOffset, HAPolicyConfiguration liveConfig, HAPolicyConfiguration backupConfig)
-   {
-      this.requestBackup = requestBackup;
-      this.backupRequestRetries = backupRequestRetries;
-      this.backupRequestRetryInterval = backupRequestRetryInterval;
-      this.maxBackups = maxBackups;
-      this.backupPortOffset = backupPortOffset;
-      this.remoteConnectors = remoteConnectors;
-      this.portOffset = portOffset;
-      this.liveConfig = liveConfig;
-      this.backupConfig = backupConfig;
-   }
-
    public ColocatedPolicyConfiguration()
    {
    }
@@ -66,9 +53,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return requestBackup;
    }
 
-   public void setRequestBackup(boolean requestBackup)
+   public ColocatedPolicyConfiguration setRequestBackup(boolean requestBackup)
    {
       this.requestBackup = requestBackup;
+      return this;
    }
 
    public int getBackupRequestRetries()
@@ -76,9 +64,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return backupRequestRetries;
    }
 
-   public void setBackupRequestRetries(int backupRequestRetries)
+   public ColocatedPolicyConfiguration setBackupRequestRetries(int backupRequestRetries)
    {
       this.backupRequestRetries = backupRequestRetries;
+      return this;
    }
 
    public long getBackupRequestRetryInterval()
@@ -86,9 +75,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return backupRequestRetryInterval;
    }
 
-   public void setBackupRequestRetryInterval(long backupRequestRetryInterval)
+   public ColocatedPolicyConfiguration setBackupRequestRetryInterval(long backupRequestRetryInterval)
    {
       this.backupRequestRetryInterval = backupRequestRetryInterval;
+      return this;
    }
 
    public int getMaxBackups()
@@ -96,9 +86,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return maxBackups;
    }
 
-   public void setMaxBackups(int maxBackups)
+   public ColocatedPolicyConfiguration setMaxBackups(int maxBackups)
    {
       this.maxBackups = maxBackups;
+      return this;
    }
 
    public int getBackupPortOffset()
@@ -106,9 +97,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return backupPortOffset;
    }
 
-   public void setBackupPortOffset(int backupPortOffset)
+   public ColocatedPolicyConfiguration setBackupPortOffset(int backupPortOffset)
    {
       this.backupPortOffset = backupPortOffset;
+      return this;
    }
 
    public List<String> getRemoteConnectors()
@@ -116,9 +108,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return remoteConnectors;
    }
 
-   public void setRemoteConnectors(List<String> remoteConnectors)
+   public ColocatedPolicyConfiguration setRemoteConnectors(List<String> remoteConnectors)
    {
       this.remoteConnectors = remoteConnectors;
+      return this;
    }
 
    public int getPortOffset()
@@ -126,9 +119,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return portOffset;
    }
 
-   public void setPortOffset(int portOffset)
+   public ColocatedPolicyConfiguration setPortOffset(int portOffset)
    {
       this.portOffset = portOffset;
+      return this;
    }
 
    public HAPolicyConfiguration getLiveConfig()
@@ -136,9 +130,10 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return liveConfig;
    }
 
-   public void setLiveConfig(HAPolicyConfiguration liveConfig)
+   public ColocatedPolicyConfiguration setLiveConfig(HAPolicyConfiguration liveConfig)
    {
       this.liveConfig = liveConfig;
+      return this;
    }
 
    public HAPolicyConfiguration getBackupConfig()
@@ -146,8 +141,9 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return backupConfig;
    }
 
-   public void setBackupConfig(HAPolicyConfiguration backupConfig)
+   public ColocatedPolicyConfiguration setBackupConfig(HAPolicyConfiguration backupConfig)
    {
       this.backupConfig = backupConfig;
+      return this;
    }
 }

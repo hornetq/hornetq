@@ -92,9 +92,8 @@ public class PagingOrderTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
@@ -202,9 +201,8 @@ public class PagingOrderTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
@@ -356,9 +354,8 @@ public class PagingOrderTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
@@ -471,9 +468,8 @@ public class PagingOrderTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
@@ -572,9 +568,8 @@ public class PagingOrderTest extends ServiceTestBase
    {
       boolean persistentMessages = true;
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
@@ -720,9 +715,8 @@ public class PagingOrderTest extends ServiceTestBase
    public void testPagingOverCreatedDestinationTopics() throws Exception
    {
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, PAGE_SIZE, -1, new HashMap<String, AddressSettings>());
 
@@ -798,9 +792,8 @@ public class PagingOrderTest extends ServiceTestBase
    public void testPagingOverCreatedDestinationQueues() throws Exception
    {
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true, config, -1, -1, AddressFullMessagePolicy.BLOCK, new HashMap<String, AddressSettings>());
 

@@ -36,10 +36,8 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.CoreNotificationType;
@@ -1791,13 +1789,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         DivertConfiguration config = new DivertConfiguration(name,
-               routingName,
-               address,
-               forwardingAddress,
-               exclusive,
-               filterString,
-               transformerClassName);
+         DivertConfiguration config = new DivertConfiguration()
+            .setName(name)
+            .setRoutingName(routingName)
+            .setAddress(address)
+            .setForwardingAddress(forwardingAddress)
+            .setExclusive(exclusive)
+            .setFilterString(filterString)
+            .setTransformerClassName(transformerClassName);
          server.deployDivert(config);
       }
       finally
@@ -1856,7 +1855,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                             final boolean useDuplicateDetection,
                             final int confirmationWindowSize,
                             final long clientFailureCheckPeriod,
-                            final String connectorNames,
+                            final String staticConnectorsOrDiscoveryGroup,
                             boolean useDiscoveryGroup,
                             final boolean ha,
                             final String user,
@@ -1866,57 +1865,34 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
 
       clearIO();
 
-
       try
       {
-         BridgeConfiguration config = null;
+         BridgeConfiguration config = new BridgeConfiguration()
+               .setName(name)
+               .setQueueName(queueName)
+               .setForwardingAddress(forwardingAddress)
+               .setFilterString(filterString)
+               .setTransformerClassName(transformerClassName)
+               .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+               .setRetryInterval(retryInterval)
+               .setRetryIntervalMultiplier(retryIntervalMultiplier)
+               .setInitialConnectAttempts(initialConnectAttempts)
+               .setReconnectAttempts(reconnectAttempts)
+               .setUseDuplicateDetection(useDuplicateDetection)
+               .setConfirmationWindowSize(confirmationWindowSize)
+               .setHA(ha)
+               .setUser(user)
+               .setPassword(password);
+
          if (useDiscoveryGroup)
          {
-            config = new BridgeConfiguration(name,
-                  queueName,
-                  forwardingAddress,
-                  filterString,
-                  transformerClassName,
-                  HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                  clientFailureCheckPeriod,
-                  HornetQClient.DEFAULT_CONNECTION_TTL,
-                  retryInterval,
-                  HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                  retryIntervalMultiplier,
-                  initialConnectAttempts,
-                  reconnectAttempts,
-                  HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
-                  useDuplicateDetection,
-                  confirmationWindowSize,
-                  connectorNames,
-                  ha,
-                  user,
-                  password);
+            config.setDiscoveryGroupName(staticConnectorsOrDiscoveryGroup);
          }
          else
          {
-            List<String> connectors = toList(connectorNames);
-            config = new BridgeConfiguration(name,
-                  queueName,
-                  forwardingAddress,
-                  filterString,
-                  transformerClassName,
-                  HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                  clientFailureCheckPeriod,
-                  HornetQClient.DEFAULT_CONNECTION_TTL,
-                  retryInterval,
-                  HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                  retryIntervalMultiplier,
-                  initialConnectAttempts,
-                  reconnectAttempts,
-                  HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode(),
-                  useDuplicateDetection,
-                  confirmationWindowSize,
-                  connectors,
-                  ha,
-                  user,
-                  password);
+            config.setStaticConnectors(toList(staticConnectorsOrDiscoveryGroup));
          }
+
          server.deployBridge(config);
       }
       finally

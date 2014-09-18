@@ -113,9 +113,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server =
          createServer(true, config,
@@ -253,9 +252,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server =
          createServer(true, config,
@@ -374,9 +372,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -592,14 +589,11 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalDirectory(getJournalDir());
-
-      config.setJournalSyncNonTransactional(false);
-      config.setJournalCompactMinFiles(0); // disable compact
-
-      config.setMessageExpiryScanPeriod(500);
+      Configuration config = createDefaultConfig()
+         .setJournalDirectory(getJournalDir())
+         .setJournalSyncNonTransactional(false)
+         .setJournalCompactMinFiles(0) // disable compact
+         .setMessageExpiryScanPeriod(500);
 
       server = createServer(true,
                             config,
@@ -737,12 +731,10 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalDirectory(getJournalDir());
-
-      config.setJournalSyncNonTransactional(false);
-      config.setJournalCompactMinFiles(0); // disable compact
+      Configuration config = createDefaultConfig()
+         .setJournalDirectory(getJournalDir())
+         .setJournalSyncNonTransactional(false)
+         .setJournalCompactMinFiles(0); // disable compact
 
       HornetQServer server =
          createServer(true, config,
@@ -923,9 +915,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -1131,9 +1122,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -1219,9 +1209,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -1349,8 +1338,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-      config.setPersistDeliveryCountBeforeDelivery(true);
+      Configuration config = createDefaultConfig()
+         .setPersistDeliveryCountBeforeDelivery(true);
 
       config.setJournalSyncNonTransactional(false);
 
@@ -1567,9 +1556,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -1753,9 +1741,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -1913,9 +1900,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -2032,9 +2018,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -2044,21 +2029,19 @@ public class PagingTest extends ServiceTestBase
 
       if (divert)
       {
-         DivertConfiguration divert1 = new DivertConfiguration("dv1",
-                                                               "nm1",
-                                                               PagingTest.ADDRESS.toString(),
-                                                               PagingTest.ADDRESS.toString() + "-1",
-                                                               true,
-                                                               null,
-                                                               null);
+         DivertConfiguration divert1 = new DivertConfiguration()
+            .setName("dv1")
+            .setRoutingName("nm1")
+            .setAddress(PagingTest.ADDRESS.toString())
+            .setForwardingAddress(PagingTest.ADDRESS.toString() + "-1")
+            .setExclusive(true);
 
-         DivertConfiguration divert2 = new DivertConfiguration("dv2",
-                                                               "nm2",
-                                                               PagingTest.ADDRESS.toString(),
-                                                               PagingTest.ADDRESS.toString() + "-2",
-                                                               true,
-                                                               null,
-                                                               null);
+         DivertConfiguration divert2 = new DivertConfiguration()
+            .setName("dv2")
+            .setRoutingName("nm2")
+            .setAddress(PagingTest.ADDRESS.toString())
+            .setForwardingAddress(PagingTest.ADDRESS.toString() + "-2")
+            .setExclusive(true);
 
          ArrayList<DivertConfiguration> divertList = new ArrayList<DivertConfiguration>();
          divertList.add(divert1);
@@ -2331,9 +2314,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -2499,9 +2481,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -3236,9 +3217,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -4230,10 +4210,9 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
-      config.setJournalFileSize(10 * 1024 * 1024);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false)
+         .setJournalFileSize(10 * 1024 * 1024);
 
       server = createServer(true, config, 512 * 1024, 1024 * 1024, new HashMap<String, AddressSettings>());
 
@@ -4353,9 +4332,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -4459,9 +4437,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -4579,9 +4556,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -4679,9 +4655,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -4804,10 +4779,9 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-      config.setThreadPoolMaxSize(5);
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setThreadPoolMaxSize(5)
+         .setJournalSyncNonTransactional(false);
 
       Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
       AddressSettings dla = new AddressSettings();
@@ -5049,10 +5023,9 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-      config.setMessageExpiryScanPeriod(500);
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setMessageExpiryScanPeriod(500)
+         .setJournalSyncNonTransactional(false);
 
       Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
       AddressSettings dla = new AddressSettings();
@@ -5511,9 +5484,8 @@ public class PagingTest extends ServiceTestBase
    public void testRouteOnTopWithMultipleQueues() throws Exception
    {
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -5586,9 +5558,8 @@ public class PagingTest extends ServiceTestBase
 
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -5789,9 +5760,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -5890,9 +5860,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -5992,9 +5961,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -6077,9 +6045,8 @@ public class PagingTest extends ServiceTestBase
    @Test
    public void testNoCursors() throws Exception
    {
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -6123,9 +6090,8 @@ public class PagingTest extends ServiceTestBase
    {
       clearDataRecreateServerDirs();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(false);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
 
       server = createServer(true,
                             config,
@@ -6240,9 +6206,8 @@ public class PagingTest extends ServiceTestBase
    @Override
    protected Configuration createDefaultConfig() throws Exception
    {
-      Configuration config = super.createDefaultConfig();
-      config.setJournalSyncNonTransactional(false);
-      return config;
+      return super.createDefaultConfig()
+         .setJournalSyncNonTransactional(false);
    }
 
    private static final class DummyOperationContext implements OperationContext

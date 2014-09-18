@@ -294,7 +294,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       try
       {
          /**
-          * (xa|nonXA)Session.close() may NOT be called BEFORE connection.close().
+          * (xa|nonXA)Session.close() may NOT be called BEFORE connection.close()
           * <p>
           * If the ClientSessionFactory is trying to fail-over or reconnect with -1 attempts, and
           * one calls session.close() it may effectively dead-lock.

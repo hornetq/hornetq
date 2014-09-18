@@ -73,7 +73,6 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       connector0.setHost("localhost");
       jetty.addConnector(connector0);
       jetty.start();
-      Configuration configuration = createDefaultConfig();
       HashMap<String, Object> params = new HashMap();
       params.put(AeroGearConstants.QUEUE_NAME, "testQueue");
       params.put(AeroGearConstants.ENDPOINT_NAME, "http://localhost:8080");
@@ -86,10 +85,15 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       params.put(AeroGearConstants.DEVICE_TYPE_NAME, "android,ipad");
       params.put(AeroGearConstants.SOUND_NAME, "sound1");
       params.put(AeroGearConstants.VARIANTS_NAME, "variant1,variant2");
-      configuration.getConnectorServiceConfigurations().add(
-         new ConnectorServiceConfiguration(AeroGearConnectorServiceFactory.class.getName(), params, "TestAeroGearService"));
-
-      configuration.getQueueConfigurations().add(new CoreQueueConfiguration("testQueue", "testQueue", null, true));
+      Configuration configuration = createDefaultConfig()
+         .addConnectorServiceConfiguration(
+            new ConnectorServiceConfiguration()
+               .setFactoryClassName(AeroGearConnectorServiceFactory.class.getName())
+               .setParams(params)
+               .setName("TestAeroGearService"))
+         .addQueueConfiguration(new CoreQueueConfiguration()
+                                   .setAddress("testQueue")
+                                   .setName("testQueue"));
       server = createServer(configuration);
       server.start();
 

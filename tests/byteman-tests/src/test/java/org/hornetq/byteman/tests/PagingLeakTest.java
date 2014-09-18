@@ -117,9 +117,9 @@ public class PagingLeakTest extends ServiceTestBase
 
       final ArrayList<Exception> errors = new ArrayList<Exception>();
       // A backup that will be waiting to be activated
-      Configuration conf = createDefaultConfig(true);
-      conf.setSecurityEnabled(false);
-      conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      Configuration conf = createDefaultConfig(true)
+         .setSecurityEnabled(false)
+         .addConnectorConfiguration("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       final HornetQServer server = HornetQServers.newHornetQServer(conf, true);
       addServer(server);

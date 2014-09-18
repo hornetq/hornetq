@@ -885,9 +885,8 @@ public class PageCursorStressTest extends ServiceTestBase
    {
       OperationContextImpl.clearContext();
 
-      Configuration config = createDefaultConfig();
-
-      config.setJournalSyncNonTransactional(true);
+      Configuration config = createDefaultConfig()
+         .setJournalSyncNonTransactional(true);
 
       server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 

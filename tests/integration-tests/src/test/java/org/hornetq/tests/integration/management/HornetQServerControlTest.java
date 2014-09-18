@@ -999,7 +999,6 @@ public class HornetQServerControlTest extends ManagementTestBase
       SimpleString address = new SimpleString("testQueue");
       Configuration conf = createDefaultConfig(false, 2);
       conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().clear();
       HashMap<String, Object> params = new HashMap<String, Object>();
       params.put("server-id", "2");
@@ -1061,13 +1060,13 @@ public class HornetQServerControlTest extends ManagementTestBase
                                                    params,
                                                    RandomUtil.randomString());
 
-      conf = createDefaultConfig(false);
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().clear();
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf = createDefaultConfig(false)
+         .setSecurityEnabled(false)
+         .setJMXManagementEnabled(true)
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName()))
+         .addConnectorConfiguration(connectorConfig.getName(), connectorConfig);
       server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
-      conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();
    }
 

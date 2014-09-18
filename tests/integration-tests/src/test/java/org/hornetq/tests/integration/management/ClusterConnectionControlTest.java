@@ -219,46 +219,55 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                           acceptorParams,
                                                                           RandomUtil.randomString());
 
-      CoreQueueConfiguration queueConfig = new CoreQueueConfiguration(RandomUtil.randomString(),
-                                                              RandomUtil.randomString(),
-                                                              null,
-                                                              false);
+      CoreQueueConfiguration queueConfig = new CoreQueueConfiguration()
+         .setAddress(RandomUtil.randomString())
+         .setName(RandomUtil.randomString())
+         .setDurable(false);
       List<String> connectors = new ArrayList<String>();
       connectors.add(connectorConfig.getName());
 
 
       String discoveryGroupName = RandomUtil.randomString();
-      DiscoveryGroupConfiguration discoveryGroupConfig =
-               new DiscoveryGroupConfiguration(discoveryGroupName, 500, 0,
-                     new UDPBroadcastGroupConfiguration("230.1.2.3", 6745, null, -1));
+      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration()
+         .setName(discoveryGroupName)
+         .setRefreshTimeout(500)
+         .setDiscoveryInitialWaitTimeout(0)
+         .setBroadcastEndpointFactoryConfiguration(new UDPBroadcastGroupConfiguration()
+                                                      .setGroupAddress("230.1.2.3")
+                                                      .setGroupPort(6745));
 
-      Configuration conf_1 = createBasicConfig();
-      conf_1.setSecurityEnabled(false);
-      conf_1.setJMXManagementEnabled(true);
-      conf_1.getAcceptorConfigurations().add(acceptorConfig);
-      conf_1.getQueueConfigurations().add(queueConfig);
+      Configuration conf_1 = createBasicConfig()
+         .addAcceptorConfiguration(acceptorConfig)
+         .addQueueConfiguration(queueConfig);
 
-      Configuration conf_0 = createBasicConfig();
-      clusterConnectionConfig1 =
-               new ClusterConnectionConfiguration(RandomUtil.randomString(), queueConfig.getAddress(),
-                                                  connectorConfig.getName(), RandomUtil.randomPositiveLong(),
-                                                  RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
-                                                  RandomUtil.randomPositiveInt(), RandomUtil.randomPositiveInt(),
-                                                  connectors, false);
-      clusterConnectionConfig2 =
-               new ClusterConnectionConfiguration(RandomUtil.randomString(), queueConfig.getAddress(),
-                                                  connectorConfig.getName(), RandomUtil.randomPositiveLong(),
-                                                  RandomUtil.randomBoolean(), RandomUtil.randomBoolean(),
-                                                  RandomUtil.randomPositiveInt(), RandomUtil.randomPositiveInt(),
-                                                  discoveryGroupName);
+      clusterConnectionConfig1 = new ClusterConnectionConfiguration()
+         .setName(RandomUtil.randomString())
+         .setAddress(queueConfig.getAddress())
+         .setConnectorName(connectorConfig.getName())
+         .setRetryInterval(RandomUtil.randomPositiveLong())
+         .setDuplicateDetection(RandomUtil.randomBoolean())
+         .setForwardWhenNoConsumers(RandomUtil.randomBoolean())
+         .setMaxHops(RandomUtil.randomPositiveInt())
+         .setConfirmationWindowSize(RandomUtil.randomPositiveInt())
+         .setStaticConnectors(connectors);
 
-      conf_0.setSecurityEnabled(false);
-      conf_0.setJMXManagementEnabled(true);
-      conf_0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      conf_0.getClusterConfigurations().add(clusterConnectionConfig1);
-      conf_0.getClusterConfigurations().add(clusterConnectionConfig2);
-      conf_0.getDiscoveryGroupConfigurations().put(discoveryGroupName, discoveryGroupConfig);
+      clusterConnectionConfig2 = new ClusterConnectionConfiguration()
+         .setName(RandomUtil.randomString())
+         .setAddress(queueConfig.getAddress())
+         .setConnectorName(connectorConfig.getName())
+         .setRetryInterval(RandomUtil.randomPositiveLong())
+         .setDuplicateDetection(RandomUtil.randomBoolean())
+         .setForwardWhenNoConsumers(RandomUtil.randomBoolean())
+         .setMaxHops(RandomUtil.randomPositiveInt())
+         .setConfirmationWindowSize(RandomUtil.randomPositiveInt())
+         .setDiscoveryGroupName(discoveryGroupName);
+
+      Configuration conf_0 = createBasicConfig()
+         .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName()))
+         .addConnectorConfiguration(connectorConfig.getName(), connectorConfig)
+         .addClusterConfiguration(clusterConnectionConfig1)
+         .addClusterConfiguration(clusterConnectionConfig2)
+         .addDiscoveryGroupConfiguration(discoveryGroupName, discoveryGroupConfig);
 
       mbeanServer_1 = MBeanServerFactory.createMBeanServer();
       server_1 = addServer(HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false));

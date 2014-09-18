@@ -92,9 +92,8 @@ public class HangConsumerTest extends ServiceTestBase
    {
       super.setUp();
 
-      Configuration config = createDefaultConfig(false);
-
-      config.setMessageExpiryScanPeriod(10);
+      Configuration config = createDefaultConfig(false)
+         .setMessageExpiryScanPeriod(10);
 
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
