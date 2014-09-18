@@ -206,12 +206,22 @@ public class SessionTest extends ServiceTestBase
       ClientProducer cp = clientSession.createProducer("a1");
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
+
+      flushQueue();
+
       QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
       Assert.assertEquals(new SimpleString("a1"), resp.getAddress());
       Assert.assertEquals(2, resp.getConsumerCount());
       Assert.assertEquals(2, resp.getMessageCount());
       Assert.assertEquals(null, resp.getFilterString());
       clientSession.close();
+   }
+
+   private void flushQueue() throws Exception
+   {
+      Queue queue = server.locateQueue(SimpleString.toSimpleString(queueName));
+      assertNotNull(queue);
+      queue.flushExecutor();
    }
 
    @Test
@@ -222,6 +232,7 @@ public class SessionTest extends ServiceTestBase
       clientSession.createQueue("a1", queueName, "foo=bar", false);
       clientSession.createConsumer(queueName);
       clientSession.createConsumer(queueName);
+
       QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
       Assert.assertEquals(new SimpleString("a1"), resp.getAddress());
       Assert.assertEquals(2, resp.getConsumerCount());

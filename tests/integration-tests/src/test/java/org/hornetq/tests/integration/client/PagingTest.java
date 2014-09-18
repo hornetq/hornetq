@@ -2098,10 +2098,9 @@ public class PagingTest extends ServiceTestBase
             {
                while (running.get())
                {
-                  // log.info("Message count = " + getMessageCount(queue) + " on queue " + queue.getName());
-                  queue.getMessagesAdded();
+                  // this will be overusing what some users do. flush / getCount
+                  getMessagesAdded(queue);
                   getMessageCount(queue);
-                  // log.info("Message added = " + queue.getMessagesAdded() + " on queue " + queue.getName());
                   Thread.sleep(10);
                }
             }

@@ -760,7 +760,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(getMessageCount(q), 0);
-      assertEquals(q.getMessagesAdded(), 1);
+      assertEquals(getMessagesAdded(q), 1);
    }
 
    @Test
@@ -794,7 +794,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(getMessageCount(q), 1);
-      assertEquals(q.getMessagesAdded(), 1);
+      assertEquals(getMessagesAdded(q), 1);
       ClientConsumer consumer1 = session2.createConsumer(queue);
       session2.start();
       ClientMessage clientMessage = consumer1.receiveImmediate();
@@ -834,7 +834,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(getMessageCount(q), 1);
-      assertEquals(q.getMessagesAdded(), 1);
+      assertEquals(getMessagesAdded(q), 1);
       liveServer2.stop();
       liveServer2.start();
       ClientConsumer consumer1 = session2.createConsumer(queue);
@@ -884,7 +884,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(500, getMessageCount(q));
-      assertEquals(1000, q.getMessagesAdded());
+      assertEquals(1000, getMessagesAdded(q));
    }
 
    @Test
@@ -926,7 +926,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1000, getMessageCount(q));
-      assertEquals(1000, q.getMessagesAdded());
+      assertEquals(1000, getMessagesAdded(q));
    }
 
    @Test
@@ -970,7 +970,7 @@ public class ColocatedFailoverTest extends ServiceTestBase
       liveServer2.start();
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1000, getMessageCount(q));
-      assertEquals(1000, q.getMessagesAdded());
+      assertEquals(1000, getMessagesAdded(q));
    }
 
    @Test
@@ -1006,10 +1006,10 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(0, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
       q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue2).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
    }
 
    @Test
@@ -1045,10 +1045,10 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
       q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue2).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
    }
 
    @Test
@@ -1086,10 +1086,10 @@ public class ColocatedFailoverTest extends ServiceTestBase
       liveServer2.start();
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
       q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue2).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
    }
 
    @Test
@@ -1129,10 +1129,10 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(2, q.getMessagesAdded());
+      assertEquals(2, getMessagesAdded(q));
       q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue2).getBindable();
       assertEquals(2, getMessageCount(q));
-      assertEquals(2, q.getMessagesAdded());
+      assertEquals(2, getMessagesAdded(q));
    }
 
    @Test
@@ -1172,10 +1172,10 @@ public class ColocatedFailoverTest extends ServiceTestBase
       }
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
       q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue2).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
    }
 
    @Test
@@ -1217,10 +1217,10 @@ public class ColocatedFailoverTest extends ServiceTestBase
       liveServer2.start();
       Queue q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
       q = (Queue) liveServer2.getServer().getPostOffice().getBinding(queue2).getBindable();
       assertEquals(1, getMessageCount(q));
-      assertEquals(1, q.getMessagesAdded());
+      assertEquals(1, getMessagesAdded(q));
    }
 
    @Test

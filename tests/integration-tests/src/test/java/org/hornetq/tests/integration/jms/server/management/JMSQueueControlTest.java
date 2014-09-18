@@ -112,7 +112,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSUtil.sendMessages(queue, 2);
 
       Assert.assertEquals(2, getMessageCount(queueControl));
-      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       connection.start();
 
@@ -120,7 +120,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertNotNull(consumer.receive(500));
 
       Assert.assertEquals(0, getMessageCount(queueControl));
-      Assert.assertEquals(2, queueControl.getMessagesAdded());
+      Assert.assertEquals(2, getMessagesAdded(queueControl));
 
       consumer.close();
 
