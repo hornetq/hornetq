@@ -2403,8 +2403,19 @@ public final class JMSBridgeImpl implements JMSBridge
             return false;
          }
 
+         /*
+         * make sure we reset the connected flags
+         * */
          if (result == FailoverEventType.FAILOVER_COMPLETED)
          {
+            if (isSource)
+            {
+               connectedSource = true;
+            }
+            else
+            {
+               connectedTarget = true;
+            }
             return true;
          }
          //failover failed, need retry.
