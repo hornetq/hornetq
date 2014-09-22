@@ -12,12 +12,26 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
+import org.hornetq.jms.client.HornetQXAConnectionFactory;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.integration.ra.DummyTransactionManager;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.xa.XAResource;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -334,6 +348,146 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       assertTrue(!clientThread.isAlive());
    }
 
+   @Test
+   public void performCrashAndReconnect() throws Exception
+   {
+      performCrashAndReconnect(true);
+   }
+
+   @Test
+   public void performCrashAndNoReconnect() throws Exception
+   {
+      performCrashAndReconnect(false);
+   }
+
+
+   private void performCrashAndReconnect(boolean restart) throws Exception
+   {
+      cff1xa = new ConnectionFactoryFactory()
+      {
+         public Object createConnectionFactory() throws Exception
+         {
+            HornetQXAConnectionFactory cf = (HornetQXAConnectionFactory) HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF,
+                  new TransportConfiguration(
+                        INVM_CONNECTOR_FACTORY,
+                        params1));
+
+            // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
+            cf.setReconnectAttempts(-1);
+            cf.setBlockOnNonDurableSend(true);
+            cf.setBlockOnDurableSend(true);
+            cf.setCacheLargeMessagesClient(true);
+
+            return cf;
+         }
+
+      };
+
+      DummyTransactionManager tm = new DummyTransactionManager();
+      DummyTransaction tx = new DummyTransaction();
+      tm.tx = tx;
+
+      JMSBridgeImpl bridge =
+            new JMSBridgeImpl(cff0xa,
+                  cff1xa,
+                  sourceQueueFactory,
+                  targetQueueFactory,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  1000,
+                  -1,
+                  QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
+                  10,
+                  5000,
+                  null,
+                  null,
+                  false);
+      addHornetQComponent(bridge);
+      bridge.setTransactionManager(tm);
+
+      bridge.start();
+
+      // Now crash the dest server
+
+      JMSBridgeReconnectionTest.log.info("About to crash server");
+
+      jmsServer1.stop();
+
+      if (restart)
+      {
+         jmsServer1.start();
+      }
+      // Wait a while before starting up to simulate the dest being down for a while
+      JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
+      Thread.sleep(TIME_WAIT);
+      JMSBridgeReconnectionTest.log.info("Done wait");
+
+      bridge.stop();
+
+      if (restart)
+      {
+         assertTrue(tx.rolledback);
+         assertTrue(tx.targetConnected);
+      }
+      else
+      {
+         assertTrue(tx.rolledback);
+         assertFalse(tx.targetConnected);
+      }
+   }
+
+   private class DummyTransaction implements Transaction
+   {
+      boolean rolledback = false;
+      ClientSession targetSession;
+      boolean targetConnected = false;
+      @Override
+      public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, SystemException
+      {
+
+      }
+
+      @Override
+      public void rollback() throws IllegalStateException, SystemException
+      {
+         rolledback = true;
+         targetConnected = !targetSession.isClosed();
+      }
+
+      @Override
+      public void setRollbackOnly() throws IllegalStateException, SystemException
+      {
+
+      }
+
+      @Override
+      public int getStatus() throws SystemException
+      {
+         return 0;
+      }
+
+      @Override
+      public boolean enlistResource(XAResource xaResource) throws RollbackException, IllegalStateException, SystemException
+      {
+         targetSession = (ClientSession) xaResource;
+         return false;
+      }
+
+      @Override
+      public boolean delistResource(XAResource xaResource, int i) throws IllegalStateException, SystemException
+      {
+         return false;
+      }
+
+      @Override
+      public void registerSynchronization(Synchronization synchronization) throws RollbackException, IllegalStateException, SystemException
+      {
+
+      }
+   }
    /*
     * Send some messages
     * Crash the destination server
