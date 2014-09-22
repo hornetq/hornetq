@@ -49,6 +49,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.impl.ServiceRegistry;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -68,6 +69,7 @@ import org.hornetq.utils.HornetQThreadFactory;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:mtaylor@redhat.com">Martyn Taylor</a>
  */
 public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycleListener
 {
@@ -109,6 +111,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private HornetQPrincipal defaultInvmSecurityPrincipal;
 
+   private ServiceRegistry serviceRegistry;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -117,38 +121,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                               final Configuration config,
                               final HornetQServer server,
                               final ManagementService managementService,
-                              final ScheduledExecutorService scheduledThreadPool, List<ProtocolManagerFactory> protocolManagerFactories,
-                              final Executor flushExecutor)
+                              final ScheduledExecutorService scheduledThreadPool,
+                              List<ProtocolManagerFactory> protocolManagerFactories,
+                              final Executor flushExecutor,
+                              final ServiceRegistry serviceRegistry)
    {
+      this.serviceRegistry = serviceRegistry;
+
       acceptorsConfig = config.getAcceptorConfigurations();
 
       this.server = server;
 
       this.clusterManager = clusterManager;
 
-      for (String interceptorClass : config.getIncomingInterceptorClassNames())
-      {
-         try
-         {
-            incomingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorCreatingRemotingInterceptor(e, interceptorClass);
-         }
-      }
+      setInterceptors(config);
 
-      for (String interceptorClass : config.getOutgoingInterceptorClassNames())
-      {
-         try
-         {
-            outgoingInterceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorCreatingRemotingInterceptor(e, interceptorClass);
-         }
-      }
       this.managementService = managementService;
 
       this.scheduledThreadPool = scheduledThreadPool;
@@ -193,6 +180,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    // RemotingService implementation -------------------------------
+
+   private void setInterceptors(Configuration configuration)
+   {
+      addReflectivelyInstantiatedInterceptors(configuration.getIncomingInterceptorClassNames(), incomingInterceptors);
+      addReflectivelyInstantiatedInterceptors(configuration.getOutgoingInterceptorClassNames(), outgoingInterceptors);
+      incomingInterceptors.addAll(serviceRegistry.getIncomingInterceptors());
+      outgoingInterceptors.addAll(serviceRegistry.getOutgoingInterceptors());
+   }
+
+   private void addReflectivelyInstantiatedInterceptors(List<String> classNames, List<Interceptor> interceptors)
+   {
+      for (String className : classNames)
+      {
+         Interceptor interceptor = ((Interceptor) safeInitNewInstance(className));
+         interceptors.add(interceptor);
+      }
+   }
 
    public synchronized void start() throws Exception
    {
