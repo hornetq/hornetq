@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.core.server.impl.ServiceRegistry;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -36,18 +37,16 @@ public class SuppliedThreadPoolTest extends UnitTestCase
 {
    private HornetQServer server;
 
-   private ExecutorService threadPool;
-
-   private ScheduledExecutorService scheduledExecutorService;
-
    private Thread serverThread;
 
+   private ServiceRegistry serviceRegistry;
    @Before
    public void setup() throws Exception
    {
-      threadPool = Executors.newFixedThreadPool(1);
-      scheduledExecutorService = Executors.newScheduledThreadPool(1);
-      server = new HornetQServerImpl(null, null, null, null, threadPool, scheduledExecutorService);
+      serviceRegistry = new ServiceRegistry();
+      serviceRegistry.setExecutorService(Executors.newFixedThreadPool(1));
+      serviceRegistry.setScheduledExecutorService(Executors.newScheduledThreadPool(1));
+      server = new HornetQServerImpl(null, null, null, null, serviceRegistry);
       server.start();
       server.waitForActivation(100, TimeUnit.MILLISECONDS);
    }
@@ -64,12 +63,12 @@ public class SuppliedThreadPoolTest extends UnitTestCase
    @Test
    public void testSuppliedThreadPoolsAreCorrectlySet() throws Exception
    {
-      assertEquals(scheduledExecutorService, server.getScheduledPool());
+      assertEquals(serviceRegistry.getScheduledExecutorService(), server.getScheduledPool());
 
       // To check the Executor is what we expect we must reflectively inspect the OrderedExecutorFactory.
       Field field = server.getExecutorFactory().getClass().getDeclaredField("parent");
       field.setAccessible(true);
-      assertEquals(threadPool, field.get(server.getExecutorFactory()));
+      assertEquals(serviceRegistry.getExecutorService(), field.get(server.getExecutorFactory()));
    }
 
    @Test
