@@ -28,7 +28,7 @@ import javax.transaction.TransactionManager;
 * Time: 15:13
 * To change this template use File | Settings | File Templates.
 */
-class DummyTransactionManager implements TransactionManager
+public class DummyTransactionManager implements TransactionManager
 {
    protected static DummyTransactionManager tm = new DummyTransactionManager();
 
