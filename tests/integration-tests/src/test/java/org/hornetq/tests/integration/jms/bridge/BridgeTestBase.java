@@ -98,7 +98,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected InVMContext context1;
 
-   private HashMap<String, Object> params1;
+   protected HashMap<String, Object> params1;
 
    protected ConnectionFactoryFactory cff0LowProducerWindow;
 
