@@ -13,6 +13,8 @@
 
 package org.hornetq.core.paging.cursor.impl;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.hornetq.core.paging.cursor.PagePosition;
 
 /**
@@ -24,6 +26,19 @@ import org.hornetq.core.paging.cursor.PagePosition;
  */
 public class PagePositionImpl implements PagePosition
 {
+   
+   // This is for tests validating memory leaks
+   private static final AtomicLong counter = new AtomicLong(0);
+   public static long getCount()
+   {
+      return counter.get();
+   }
+   
+   public static void resetCount()
+   {
+      counter.set(0);
+   }
+   
    private long pageNr;
 
    /**
@@ -44,7 +59,8 @@ public class PagePositionImpl implements PagePosition
     */
    public PagePositionImpl(long pageNr, int messageNr)
    {
-      super();
+      //super();
+      this();
       this.pageNr = pageNr;
       this.messageNr = messageNr;
    }
@@ -55,7 +71,8 @@ public class PagePositionImpl implements PagePosition
     */
    public PagePositionImpl()
    {
-
+        super();
+        counter.incrementAndGet();
    }
 
    /**
@@ -171,6 +188,9 @@ public class PagePositionImpl implements PagePosition
       return "PagePositionImpl [pageNr=" + pageNr + ", messageNr=" + messageNr + ", recordID=" + recordID + "]";
    }
 
-
+   protected void finalize()
+   {
+       counter.decrementAndGet();
+   }
 
 }

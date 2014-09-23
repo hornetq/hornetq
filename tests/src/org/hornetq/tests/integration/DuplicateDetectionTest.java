@@ -25,6 +25,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -121,7 +123,120 @@ public class DuplicateDetectionTest extends ServiceTestBase
       locator.close();
    }
 
-   public void testSimpleDuplicateDetectionWithString() throws Exception
+    //@Test
+    public void testDuplicateIDCacheMemoryRetentionForNonTemporaryQueues() throws Exception
+    {
+        testDuplicateIDCacheMemoryRetention(false);
+    }
+
+
+    public void testDuplicateIDCacheMemoryRetentionForTemporaryQueues() throws Exception
+    {
+        testDuplicateIDCacheMemoryRetention(true);
+    }
+
+
+    public void testDuplicateIDCacheJournalRetentionForNonTemporaryQueues() throws Exception
+    {
+        testDuplicateIDCacheMemoryRetention(false);
+
+        messagingService.stop();
+
+        messagingService.start();
+
+        Assert.assertEquals(0, ((PostOfficeImpl) messagingService.getPostOffice()).getDuplicateIDCaches().size());
+    }
+
+
+    public void testDuplicateIDCacheJournalRetentionForTemporaryQueues() throws Exception
+    {
+        testDuplicateIDCacheMemoryRetention(true);
+
+        messagingService.stop();
+
+        messagingService.start();
+
+        Assert.assertEquals(0, ((PostOfficeImpl) messagingService.getPostOffice()).getDuplicateIDCaches().size());
+    }
+
+    public void testDuplicateIDCacheMemoryRetention(boolean temporary) throws Exception
+    {
+        final int TEST_SIZE = 100;
+
+        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+        locator.setBlockOnNonDurableSend(true);
+
+        ClientSessionFactory sf = createSessionFactory(locator);
+
+        ClientSession session = sf.createSession(false, true, true);
+
+        session.start();
+
+        Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+
+        final SimpleString addressName = new SimpleString("DuplicateDetectionTestAddress");
+
+        for (int i = 0; i < TEST_SIZE; i)
+        {
+            final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue_"  i);
+
+            if (temporary)
+            {
+                session.createTemporaryQueue(addressName, queueName, null);
+            }
+            else
+            {
+                session.createQueue(addressName, queueName, null, true);
+            }
+
+            ClientProducer producer = session.createProducer(addressName);
+
+            ClientConsumer consumer = session.createConsumer(queueName);
+
+            ClientMessage message = createMessage(session, 1);
+            SimpleString dupID = new SimpleString("abcdefg");
+            message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+            producer.send(message);
+            ClientMessage message2 = consumer.receive(1000);
+            Assert.assertEquals(1, message2.getObjectProperty(propKey));
+
+            message = createMessage(session, 2);
+            message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+            producer.send(message);
+            message2 = consumer.receiveImmediate();
+            Assert.assertNull(message2);
+
+            message = createMessage(session, 3);
+            message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, dupID.getData());
+            producer.send(message);
+            message2 = consumer.receive(1000);
+            Assert.assertEquals(3, message2.getObjectProperty(propKey));
+
+            message = createMessage(session, 4);
+            message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, dupID.getData());
+            producer.send(message);
+            message2 = consumer.receiveImmediate();
+            Assert.assertNull(message2);
+
+            producer.close();
+            consumer.close();
+
+            Assert.assertEquals(1, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+            session.deleteQueue(queueName);
+            Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+        }
+
+        session.close();
+
+        sf.close();
+
+        locator.close();
+
+        Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+    }
+
+    public void testSimpleDuplicateDetectionWithString() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
