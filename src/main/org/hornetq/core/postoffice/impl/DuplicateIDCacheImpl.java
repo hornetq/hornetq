@@ -125,7 +125,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
    }
 
 
-   public void deleteFromCache(byte [] duplicateID) throws Exception
+   public void deleteFromCache(byte[] duplicateID) throws Exception
    {
       ByteArrayHolder bah = new ByteArrayHolder(duplicateID);
 
@@ -150,6 +150,25 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
    }
 
+	public void clear() throws Exception
+ 	{
+      synchronized (this)
+      {
+          if (ids.size() > 0)
+          {
+              long tx = storageManager.generateUniqueID();
+              for (Pair<ByteArrayHolder, Long> id : ids){
+                  storageManager.deleteDuplicateIDTransactional(tx, id.getB());
+              }
+
+              storageManager.commit(tx);
+
+          }
+         ids.clear();
+         cache.clear();
+         pos = 0;
+      }
+   }
 
    public boolean contains(final byte[] duplID)
    {
