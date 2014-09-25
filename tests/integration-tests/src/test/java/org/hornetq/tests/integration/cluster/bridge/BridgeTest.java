@@ -41,6 +41,7 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -302,6 +303,7 @@ public class BridgeTest extends ServiceTestBase
          public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             if (ignoreSends && packet instanceof SessionSendMessage ||
+               ignoreSends && packet instanceof SessionSendLargeMessage ||
                ignoreSends && packet instanceof SessionSendContinuationMessage && !((SessionSendContinuationMessage) packet).isContinues())
             {
                System.out.println("Ignored");
@@ -310,6 +312,7 @@ public class BridgeTest extends ServiceTestBase
             }
             else
             {
+               System.out.println(packet);
                return true;
             }
          }
