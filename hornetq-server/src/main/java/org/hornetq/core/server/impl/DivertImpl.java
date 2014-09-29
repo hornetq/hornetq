@@ -100,6 +100,8 @@ public class DivertImpl implements Divert
 
          copy.setAddress(forwardAddress);
 
+         copy.setExpiration(message.getExpiration());
+
          if (transformer != null)
          {
             copy = transformer.transform(copy);
