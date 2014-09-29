@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jms.JMSSecurityException;
+import javax.jms.ResourceAllocationException;
 
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -256,7 +257,26 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
                   || command.getClass() == DestinationInfo.class
                   || command.getClass() == ShutdownInfo.class)
             {
-               Response response = ((Command) command).visit(this);
+               Response response = null;
+
+               if (pendingStop)
+               {
+                  response = new ExceptionResponse(this.stopError);
+               }
+               else
+               {
+                  response = ((Command) command).visit(this);
+
+                  if (response instanceof ExceptionResponse)
+                  {
+                     if (!responseRequired)
+                     {
+                        Throwable cause = ((ExceptionResponse)response).getException();
+                        serviceException(cause);
+                        response = null;
+                     }
+                  }
+               }
 
                if (responseRequired)
                {
@@ -264,8 +284,8 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
                   {
                      response = new Response();
                   }
-                  response.setCorrelationId(commandId);
                }
+
                // The context may have been flagged so that the response is not
                // sent.
                if (context != null)
@@ -280,6 +300,7 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
 
                if (response != null && !protocolManager.isStopping())
                {
+                  response.setCorrelationId(commandId);
                   dispatchSync(response);
                }
 
@@ -1340,11 +1361,48 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
       {
          ProducerId producerId = messageSend.getProducerId();
          AMQProducerBrokerExchange producerExchange = getProducerBrokerExchange(producerId);
+         final AMQConnectionContext pcontext = producerExchange.getConnectionContext();
+         final ProducerInfo producerInfo = producerExchange.getProducerState().getInfo();
+         boolean sendProducerAck = !messageSend.isResponseRequired() && producerInfo.getWindowSize() > 0
+               && !pcontext.isInRecoveryMode();
+
          AMQSession session = protocolManager.getSession(producerId.getParentId());
 
          if (producerExchange.canDispatch(messageSend))
          {
-            session.send(producerExchange, messageSend);
+            SendingResult result = session.send(producerExchange, messageSend, sendProducerAck);
+            if (result.isBlockNextSend())
+            {
+               if (!context.isNetworkConnection() && result.isSendFailIfNoSpace())
+               {
+                  throw new ResourceAllocationException("Usage Manager Memory Limit reached. Stopping producer ("
+                     + producerId + ") to prevent flooding "
+                     + result.getBlockingAddress() + "."
+                     + " See http://activemq.apache.org/producer-flow-control.html for more info");
+               }
+
+               if (producerInfo.getWindowSize() > 0 || messageSend.isResponseRequired())
+               {
+                  //in that case don't send the response
+                  //this will force the client to wait until
+                  //the response is got.
+                  if (context == null)
+                  {
+                     this.context = new AMQConnectionContext();
+                  }
+                  context.setDontSendReponse(true);
+               }
+               else
+               {
+                  //hang the connection until the space is available
+                  session.blockingWaitForSpace(producerExchange, result);
+               }
+            }
+            else if (sendProducerAck)
+            {
+               ProducerAck ack = new ProducerAck(producerInfo.getProducerId(), messageSend.getSize());
+               this.dispatchAsync(ack);
+            }
          }
       }
       catch (Exception e)

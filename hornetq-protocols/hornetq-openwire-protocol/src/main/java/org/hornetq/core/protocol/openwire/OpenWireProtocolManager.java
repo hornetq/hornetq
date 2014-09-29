@@ -383,7 +383,7 @@ public class OpenWireProtocolManager implements ProtocolManager
          AMQSession sess = context.getConnection().getAdvisorySession();
          if (sess != null)
          {
-            sess.send(producerExchange, advisoryMessage);
+            sess.send(producerExchange, advisoryMessage, false);
          }
       }
       finally

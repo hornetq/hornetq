@@ -12,10 +12,13 @@
  */
 package org.hornetq.core.protocol.openwire.amq;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.transaction.xa.Xid;
@@ -24,21 +27,26 @@ import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ConnectionInfo;
 import org.apache.activemq.command.ConsumerId;
 import org.apache.activemq.command.ConsumerInfo;
+import org.apache.activemq.command.ExceptionResponse;
 import org.apache.activemq.command.Message;
 import org.apache.activemq.command.MessageAck;
 import org.apache.activemq.command.MessageDispatch;
+import org.apache.activemq.command.ProducerAck;
 import org.apache.activemq.command.ProducerId;
 import org.apache.activemq.command.ProducerInfo;
+import org.apache.activemq.command.Response;
 import org.apache.activemq.command.SessionInfo;
 import org.apache.activemq.command.TransactionId;
 import org.apache.activemq.command.TransactionInfo;
 import org.apache.activemq.command.XATransactionId;
 import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.protocol.openwire.OpenWireConnection;
 import org.hornetq.core.protocol.openwire.OpenWireMessageConverter;
 import org.hornetq.core.protocol.openwire.OpenWireProtocolManager;
 import org.hornetq.core.protocol.openwire.OpenWireUtil;
+import org.hornetq.core.protocol.openwire.SendingResult;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.ServerMessage;
@@ -240,9 +248,10 @@ public class AMQSession implements SessionCallback
       producers.remove(id.getValue());
    }
 
-   public void send(AMQProducerBrokerExchange producerExchange,
-         Message messageSend) throws Exception
+   public SendingResult send(AMQProducerBrokerExchange producerExchange,
+         Message messageSend, boolean sendProducerAck) throws Exception
    {
+      SendingResult result = new SendingResult();
       TransactionId tid = messageSend.getTransactionId();
       if (tid != null)
       {
@@ -251,7 +260,6 @@ public class AMQSession implements SessionCallback
 
       messageSend.setBrokerInTime(System.currentTimeMillis());
 
-      ServerMessageImpl coreMsg = new ServerMessageImpl(-1, 1024);
       ActiveMQDestination destination = messageSend.getDestination();
       ActiveMQDestination[] actualDestinations = null;
       if (destination.isComposite())
@@ -265,11 +273,30 @@ public class AMQSession implements SessionCallback
 
       for (ActiveMQDestination dest : actualDestinations)
       {
+         ServerMessageImpl coreMsg = new ServerMessageImpl(-1, 1024);
          OpenWireMessageConverter.toCoreMessage(coreMsg, messageSend, connection.getMarshaller());
          SimpleString address = OpenWireUtil.toCoreAddress(dest);
          coreMsg.setAddress(address);
-         coreSession.send(coreMsg, false);
+
+         PagingStoreImpl store = (PagingStoreImpl)server.getPagingManager().getPageStore(address);
+         if (store.isFull())
+         {
+            result.setBlockNextSend(true);
+            result.setBlockPagingStore(store);
+            result.setBlockingAddress(address);
+            //now we hold this message send until the store has space.
+            //we do this by put it in a scheduled task
+            ScheduledExecutorService scheduler = server.getScheduledPool();
+            Runnable sendRetryTask = new SendRetryTask(coreMsg, producerExchange, sendProducerAck,
+                                                       messageSend.getSize(), messageSend.getCommandId());
+            scheduler.schedule(sendRetryTask, 10, TimeUnit.MILLISECONDS);
+         }
+         else
+         {
+            coreSession.send(coreMsg, false);
+         }
       }
+      return result;
    }
 
    public WireFormat getMarshaller()
@@ -439,4 +466,102 @@ public class AMQSession implements SessionCallback
       this.coreSession.close(false);
    }
 
+   private class SendRetryTask implements Runnable
+   {
+      private ServerMessage coreMsg;
+      private AMQProducerBrokerExchange producerExchange;
+      private boolean sendProducerAck;
+      private int msgSize;
+      private int commandId;
+
+      public SendRetryTask(ServerMessage coreMsg, AMQProducerBrokerExchange producerExchange,
+            boolean sendProducerAck, int msgSize, int commandId)
+      {
+         this.coreMsg = coreMsg;
+         this.producerExchange = producerExchange;
+         this.sendProducerAck = sendProducerAck;
+         this.msgSize = msgSize;
+         this.commandId = commandId;
+      }
+
+      @Override
+      public void run()
+      {
+         synchronized (AMQSession.this)
+         {
+            try
+            {
+               // check pageStore
+               SimpleString address = coreMsg.getAddress();
+               PagingStoreImpl store = (PagingStoreImpl) server
+                     .getPagingManager().getPageStore(address);
+               if (store.isFull())
+               {
+                  // if store is still full, schedule another
+                  server.getScheduledPool().schedule(this, 10, TimeUnit.MILLISECONDS);
+               }
+               else
+               {
+                  // now send the message again.
+                  coreSession.send(coreMsg, false);
+
+                  if (sendProducerAck)
+                  {
+                     ProducerInfo producerInfo = producerExchange
+                           .getProducerState().getInfo();
+                     ProducerAck ack = new ProducerAck(
+                           producerInfo.getProducerId(), msgSize);
+                     connection.dispatchAsync(ack);
+                  }
+                  else
+                  {
+                     Response response = new Response();
+                     response.setCorrelationId(commandId);
+                     connection.dispatchAsync(response);
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               ExceptionResponse response = new ExceptionResponse(e);
+               response.setCorrelationId(commandId);
+               connection.dispatchAsync(response);
+            }
+         }
+
+      }
+   }
+
+   public void blockingWaitForSpace(AMQProducerBrokerExchange producerExchange, SendingResult result) throws IOException
+   {
+      long start = System.currentTimeMillis();
+      long nextWarn = start;
+      producerExchange.blockingOnFlowControl(true);
+
+      AMQConnectionContext context = producerExchange.getConnectionContext();
+      PagingStoreImpl store = result.getBlockPagingStore();
+
+      //Destination.DEFAULT_BLOCKED_PRODUCER_WARNING_INTERVAL
+      long blockedProducerWarningInterval = 30000;
+      ProducerId producerId = producerExchange.getProducerState().getInfo().getProducerId();
+
+      while (store.isFull())
+      {
+         if (context.getStopping().get())
+         {
+            throw new IOException("Connection closed, send aborted.");
+         }
+
+         long now = System.currentTimeMillis();
+         if (now >= nextWarn)
+         {
+            HornetQServerLogger.LOGGER.warn("Memory Limit reached. Producer (" + producerId + ") stopped to prevent flooding "
+                               + result.getBlockingAddress()
+                               + " See http://activemq.apache.org/producer-flow-control.html for more info"
+                               + " (blocking for " + ((now - start) / 1000) + "s");
+            nextWarn = now + blockedProducerWarningInterval;
+         }
+      }
+      producerExchange.blockingOnFlowControl(false);
+   }
 }
