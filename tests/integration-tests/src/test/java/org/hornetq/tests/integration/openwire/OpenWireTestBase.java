@@ -73,6 +73,8 @@ public class OpenWireTestBase extends ServiceTestBase
       serverConfig.getAcceptorConfigurations().add(transportConfiguration);
       serverConfig.setSecurityEnabled(enableSecurity);
 
+      extraServerConfig(serverConfig);
+
       if (enableSecurity)
       {
          server.getSecurityManager().addRole("openwireSender", "sender");
@@ -121,6 +123,11 @@ public class OpenWireTestBase extends ServiceTestBase
 
       registerConnectionFactory();
       System.out.println("debug: server started");
+   }
+
+   //override this to add extra server configs
+   protected void extraServerConfig(Configuration serverConfig)
+   {
    }
 
    protected void registerConnectionFactory() throws Exception

@@ -231,6 +231,19 @@ public class BasicOpenWireTest extends OpenWireTestBase
    {
       return factory.createConnection();
    }
+
+   protected void safeClose(Session s)
+   {
+      try
+      {
+         s.close();
+      }
+      catch (Throwable e)
+      {
+      }
+   }
+
+
 }
 
 
