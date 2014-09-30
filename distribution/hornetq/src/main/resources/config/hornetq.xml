@@ -15,7 +15,9 @@
 <broker xmlns="http://hornetq.org/schema">
 
   <core configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-configuration.xml"></core>
+  <jms configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-jms.xml"></jms>
 
   <basic-security/>
 
 </broker>
+
