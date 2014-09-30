@@ -383,19 +383,28 @@ public class ProducerFlowControlTest extends BasicOpenWireTest
    @After
    public void tearDown() throws Exception
    {
-      if (flowControlConnection != null)
+      try
       {
-         TcpTransport t = (TcpTransport) flowControlConnection.getTransport().narrow(TcpTransport.class);
-         t.getTransportListener().onException(new IOException("Disposed."));
-         flowControlConnection.getTransport().stop();
-         flowControlConnection.close();
+         if (flowControlConnection != null)
+         {
+            TcpTransport t = (TcpTransport) flowControlConnection.getTransport()
+               .narrow(TcpTransport.class);
+            t.getTransportListener()
+               .onException(new IOException("Disposed."));
+            flowControlConnection.getTransport()
+               .stop();
+            flowControlConnection.close();
+         }
+         if (asyncThread != null)
+         {
+            asyncThread.join();
+            asyncThread = null;
+         }
       }
-      if (asyncThread != null)
+      finally
       {
-         asyncThread.join();
-         asyncThread = null;
+         super.tearDown();
       }
-      super.tearDown();
    }
 
 }
