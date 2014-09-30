@@ -16,7 +16,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.config.BackupStrategy;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -119,8 +118,7 @@ public class HornetQPacketHandler implements ChannelHandler
    {
       String nodeID = failoverMessage.getNodeID();
       boolean okToFailover = nodeID == null ||
-            !(server.getConfiguration().getHAPolicy().getBackupStrategy() == BackupStrategy.SCALE_DOWN &&
-            !server.hasScaledDown(new SimpleString(nodeID)));
+            !(server.getHAPolicy().canScaleDown() && !server.hasScaledDown(new SimpleString(nodeID)));
       channel1.send(new CheckFailoverReplyMessage(okToFailover));
    }
 

@@ -23,8 +23,11 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -159,9 +162,9 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       config1.setSecurityEnabled(false);
 
       if (sharedStore)
-         config1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+         config1.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
       else
-         config1.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+         config1.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
 
       List<String> staticConnectors = new ArrayList<String>();
       for (int node : otherBackupNodes)
@@ -208,9 +211,9 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       config0.setSecurityEnabled(false);
 
       if (sharedStore)
-         config0.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+         config0.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
       else
-         config0.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+         config0.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
 
       List<String> pairs = new ArrayList<String>();
       for (int node : otherLiveNodes)

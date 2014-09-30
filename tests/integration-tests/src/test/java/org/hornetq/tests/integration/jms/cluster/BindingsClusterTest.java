@@ -63,11 +63,10 @@ public class BindingsClusterTest extends JMSClusteredTestBase
    @Before
    public void setUp() throws Exception
    {
+      //todo fix if needed
       super.setUp();
       jmsServer1.getHornetQServer().setIdentity("Server 1");
-      jmsServer1.getHornetQServer().getConfiguration().getHAPolicy().setFailoverOnServerShutdown(true);
       jmsServer2.getHornetQServer().setIdentity("Server 2");
-      jmsServer2.getHornetQServer().getConfiguration().getHAPolicy().setFailoverOnServerShutdown(true);
    }
 
    @Override

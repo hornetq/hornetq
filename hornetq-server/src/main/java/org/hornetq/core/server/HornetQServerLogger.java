@@ -1344,5 +1344,8 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 224063, value = "Failed to close consumer connections for address {0}", format = Message.Format.MESSAGE_FORMAT)
    void failedToCloseConsumerConnectionsForAddress(String address, @Cause Exception e);
 
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 224064, value = "Setting <{0}> is invalid with this HA Policy Configuration. Please use <ha-policy> exclusively or remove. Ignoring <{0}> value.", format = Message.Format.MESSAGE_FORMAT)
+   void incompatibleWithHAPolicyChosen(String parameter);
 
 }

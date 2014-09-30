@@ -41,6 +41,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
@@ -69,7 +70,6 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -120,7 +120,7 @@ public final class ReplicationTest extends ServiceTestBase
       Configuration backupConfig = createDefaultConfig();
       Configuration liveConfig = createDefaultConfig();
 
-      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      backupConfig.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
 
       final String suffix = "_backup";
       backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix);

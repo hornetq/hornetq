@@ -23,11 +23,12 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -83,11 +84,16 @@ public class SpawnedServerSupport
       }
 
       if (isBackup)
-         conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      {
+         SharedStoreSlavePolicyConfiguration haPolicyConfiguration = new SharedStoreSlavePolicyConfiguration();
+         conf.setHAPolicyConfiguration(haPolicyConfiguration);
+         haPolicyConfiguration.setAllowFailBack(false);
+      }
       else
-         conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      {
+         conf.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
+      }
 
-      conf.setAllowAutoFailBack(false);
 
       return conf;
    }

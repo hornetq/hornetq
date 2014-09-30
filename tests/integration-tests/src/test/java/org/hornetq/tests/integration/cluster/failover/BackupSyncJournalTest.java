@@ -246,8 +246,8 @@ public class BackupSyncJournalTest extends FailoverTestBase
    }
 
    /**
-    * @throws FileNotFoundException
-    * @throws IOException
+    * @throws java.io.FileNotFoundException
+    * @throws java.io.IOException
     * @throws InterruptedException
     */
    private void assertNodeIdWasSaved() throws Exception
@@ -309,14 +309,14 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertNoMoreMessages();
 
       sendMessages(session, producer, 2 * n_msgs);
-      assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
-      adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+      assertFalse("must NOT be a backup", liveServer.getServer().getHAPolicy().isBackup());
+      adaptLiveConfigForReplicatedFailBack(liveServer);
       liveServer.start();
       waitForServer(liveServer.getServer());
-      assertTrue("must have become a backup", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
+      assertTrue("must have become a backup", liveServer.getServer().getHAPolicy().isBackup());
 
       assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
-      assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().getHAPolicy().isBackup());
+      assertFalse("must be LIVE!", liveServer.getServer().getHAPolicy().isBackup());
       int i = 0;
       while (backupServer.isStarted() && i++ < 100)
       {

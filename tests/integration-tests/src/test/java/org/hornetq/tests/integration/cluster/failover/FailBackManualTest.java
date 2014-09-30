@@ -11,7 +11,8 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.cluster.failover;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
+import org.hornetq.core.config.ha.SharedStoreMasterPolicyConfiguration;
+import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -85,8 +86,6 @@ public class FailBackManualTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      liveConfig.setAllowAutoFailBack(false);
-
       Thread t = new Thread(new ServerStarter(liveServer));
 
       t.start();
@@ -118,24 +117,25 @@ public class FailBackManualTest extends FailoverTestBase
       backupConfig.getAcceptorConfigurations().clear();
       backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
       backupConfig.setSecurityEnabled(false);
-      backupConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_SHARED_STORE);
+      SharedStoreSlavePolicyConfiguration haPolicyConfiguration = new SharedStoreSlavePolicyConfiguration();
+      backupConfig.setHAPolicyConfiguration(haPolicyConfiguration);
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
-      backupConfig.getHAPolicy().setAllowAutoFailBack(false);
+      haPolicyConfiguration.setAllowFailBack(false);
       backupServer = createTestableServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(false);
-      liveConfig.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.SHARED_STORE);
+      SharedStoreMasterPolicyConfiguration haPolicyConfiguration1 = new SharedStoreMasterPolicyConfiguration();
+      liveConfig.setHAPolicyConfiguration(haPolicyConfiguration1);
       basicClusterConnectionConfig(liveConfig, liveConnector.getName(), backupConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      liveConfig.setAllowAutoFailBack(false);
       liveServer = createTestableServer(liveConfig);
    }
 

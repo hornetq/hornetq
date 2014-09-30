@@ -365,4 +365,7 @@ public interface HornetQMessageBundle
 
    @Message(id = 119108, value = "connections for user {0} closed by management", format = Message.Format.MESSAGE_FORMAT)
    HornetQInternalErrorException connectionsForUserClosedByManagement(String userName);
+
+   @Message(id = 119109, value = "unsupported HA Policy Configuration {0}", format = Message.Format.MESSAGE_FORMAT)
+   HornetQIllegalStateException unsupportedHAPolicyConfiguration(Object o);
 }

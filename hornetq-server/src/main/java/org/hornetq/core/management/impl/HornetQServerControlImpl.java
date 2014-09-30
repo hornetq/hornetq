@@ -69,6 +69,10 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.cluster.ha.HAPolicy;
+import org.hornetq.core.server.cluster.ha.LiveOnlyPolicy;
+import org.hornetq.core.server.cluster.ha.ScaleDownPolicy;
+import org.hornetq.core.server.cluster.ha.SharedStoreSlavePolicy;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -172,7 +176,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.getHAPolicy().isBackup();
+         return server.getHAPolicy().isBackup();
       }
       finally
       {
@@ -187,7 +191,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.getHAPolicy().isSharedStore();
+         return server.getHAPolicy().isSharedStore();
       }
       finally
       {
@@ -297,7 +301,11 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         configuration.getHAPolicy().setFailoverOnServerShutdown(failoverOnServerShutdown);
+         HAPolicy haPolicy = server.getHAPolicy();
+         if (haPolicy instanceof SharedStoreSlavePolicy)
+         {
+            ((SharedStoreSlavePolicy) haPolicy).setFailoverOnServerShutdown(failoverOnServerShutdown);
+         }
       }
       finally
       {
@@ -313,7 +321,15 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       clearIO();
       try
       {
-         return configuration.getHAPolicy().isFailoverOnServerShutdown();
+         HAPolicy haPolicy = server.getHAPolicy();
+         if (haPolicy instanceof SharedStoreSlavePolicy)
+         {
+            return ((SharedStoreSlavePolicy) haPolicy).isFailoverOnServerShutdown();
+         }
+         else
+         {
+            return false;
+         }
       }
       finally
       {
@@ -1965,15 +1981,26 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       checkStarted();
 
       clearIO();
-
-      if (connector != null)
+      HAPolicy haPolicy = server.getHAPolicy();
+      if (haPolicy instanceof LiveOnlyPolicy)
       {
-         server.getConfiguration().getHAPolicy().getScaleDownConnectors().add(0, connector);
+         LiveOnlyPolicy liveOnlyPolicy = (LiveOnlyPolicy) haPolicy;
+
+         if (liveOnlyPolicy.getScaleDownPolicy() == null)
+         {
+            liveOnlyPolicy.setScaleDownPolicy(new ScaleDownPolicy());
+         }
+
+         liveOnlyPolicy.getScaleDownPolicy().setScaleDown(true);
+
+         if (connector != null)
+         {
+            liveOnlyPolicy.getScaleDownPolicy().getConnectors().add(0, connector);
+         }
+
+         server.stop(true);
       }
 
-      server.getConfiguration().getHAPolicy().setScaleDown(true);
-
-      server.stop(true);
    }
 
    // NotificationEmitter implementation ----------------------------

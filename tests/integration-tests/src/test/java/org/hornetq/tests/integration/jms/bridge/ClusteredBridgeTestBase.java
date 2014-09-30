@@ -37,10 +37,11 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -157,7 +158,8 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
          conf0.setSecurityEnabled(false);
          conf0.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params0));
          conf0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-         conf0.getHAPolicy().setFailoverOnServerShutdown(true);
+         ReplicatedPolicyConfiguration haPolicyConfiguration1 = new ReplicatedPolicyConfiguration();
+         conf0.setHAPolicyConfiguration(haPolicyConfiguration1);
          basicClusterConnectionConfig(conf0, liveConnector.getName());
 
          HornetQServer server0 = addServer(HornetQServers.newHornetQServer(conf0, true));
@@ -168,7 +170,8 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
 
          //backup
          Configuration conf = createBasicConfig();
-         conf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+         ReplicaPolicyConfiguration haPolicyConfiguration = new ReplicaPolicyConfiguration();
+         conf.setHAPolicyConfiguration(haPolicyConfiguration);
          conf.setJournalDirectory(getJournalDir(id, true));
          conf.setBindingsDirectory(getBindingsDir(id, true));
          conf.setSecurityEnabled(false);
@@ -176,7 +179,6 @@ public abstract class ClusteredBridgeTestBase extends ServiceTestBase
 
          conf.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
          conf.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-         conf.getHAPolicy().setFailoverOnServerShutdown(true);
          basicClusterConnectionConfig(conf, backupConnector.getName(), liveConnector.getName());
 
          HornetQServer backup = addServer(HornetQServers.newHornetQServer(conf, true));

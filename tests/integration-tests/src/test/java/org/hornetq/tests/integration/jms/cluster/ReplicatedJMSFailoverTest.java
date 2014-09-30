@@ -13,9 +13,10 @@
 package org.hornetq.tests.integration.jms.cluster;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.config.ha.ReplicaPolicyConfiguration;
+import org.hornetq.core.config.ha.ReplicatedPolicyConfiguration;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 
 /**
@@ -39,7 +40,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
-      backupConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.BACKUP_REPLICATED);
+      backupConf.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
       backupConf.setBindingsDirectory(getBindingsDir(0, true));
       backupConf.setJournalMinFiles(2);
       backupConf.setJournalDirectory(getJournalDir(0, true));
@@ -64,7 +65,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
 
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveConf.getHAPolicy().setPolicyType(HAPolicy.POLICY_TYPE.REPLICATED);
+      liveConf.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
       liveConf.setBindingsDirectory(getBindingsDir(0, false));
       liveConf.setJournalMinFiles(2);
       liveConf.setJournalDirectory(getJournalDir(0, false));
