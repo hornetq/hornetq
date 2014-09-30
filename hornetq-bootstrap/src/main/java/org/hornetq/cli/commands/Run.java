@@ -14,20 +14,24 @@ package org.hornetq.cli.commands;
 
 import io.airlift.command.Arguments;
 import io.airlift.command.Command;
+
 import org.hornetq.cli.HornetQ;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.dto.BrokerDTO;
 import org.hornetq.factory.BrokerFactory;
 import org.hornetq.factory.CoreFactory;
+import org.hornetq.factory.JmsFactory;
 import org.hornetq.factory.SecurityManagerFactory;
 import org.hornetq.integration.bootstrap.HornetQBootstrapLogger;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.impl.StandaloneNamingServer;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 
 import javax.management.MBeanServer;
+
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.Timer;
@@ -61,6 +65,8 @@ public class Run implements Action
 
       Configuration core = CoreFactory.create(broker.core);
 
+      JMSConfiguration jms = JmsFactory.create(broker.jms);
+
       HornetQSecurityManager security = SecurityManagerFactory.create(broker.security);
 
       MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -71,7 +77,14 @@ public class Run implements Action
 
       namingServer.start();
 
-      jmsServerManager = new JMSServerManagerImpl(server);
+      if (jms != null)
+      {
+         jmsServerManager = new JMSServerManagerImpl(server, jms);
+      }
+      else
+      {
+         jmsServerManager = new JMSServerManagerImpl(server);
+      }
 
       jmsServerManager.start();
 

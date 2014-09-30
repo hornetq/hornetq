@@ -28,7 +28,7 @@ public class HornetQ
 
    public static void main(String[] args) throws Exception
    {
-      Cli.CliBuilder<Action> builder = Cli.<Action>builder("hornet")
+      Cli.CliBuilder<Action> builder = Cli.<Action>builder("hornetq")
                .withDefaultCommand(HelpAction.class)
                .withCommand(Run.class)
                .withCommand(Stop.class)

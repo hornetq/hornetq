@@ -12,5 +12,7 @@
 ## ---------------------------------------------------------------------------
 BrokerDTO
 CoreDTO
+JmsDTO
 SecurityDTO
 BasicSecurityDTO
+
