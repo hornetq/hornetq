@@ -107,7 +107,7 @@ public final class SharedNothingBackupActivation extends Activation
                return;
          }
 
-         boolean scalingDown = replicaPolicy.getScaleDownPolicy() != null;
+         boolean scalingDown = replicaPolicy.getScaleDownPolicy() != null && replicaPolicy.getScaleDownPolicy().isScaleDown();
 
          if (!hornetQServer.initialisePart1(scalingDown))
             return;
@@ -266,8 +266,25 @@ public final class SharedNothingBackupActivation extends Activation
             hornetQServer.getNodeManager().stopBackup();
             hornetQServer.getStorageManager().start();
             hornetQServer.getBackupManager().activated();
-            hornetQServer.setActivation(new SharedNothingLiveActivation(hornetQServer, replicaPolicy.getReplicatedPolicy()));
-            hornetQServer.initialisePart2(scalingDown);
+            if (scalingDown)
+            {
+               hornetQServer.initialisePart2(true);
+            }
+            else
+            {
+               hornetQServer.setActivation(new SharedNothingLiveActivation(hornetQServer, replicaPolicy.getReplicatedPolicy()));
+               hornetQServer.initialisePart2(false);
+
+               if (hornetQServer.getIdentity() != null)
+               {
+                  HornetQServerLogger.LOGGER.serverIsLive(hornetQServer.getIdentity());
+               }
+               else
+               {
+                  HornetQServerLogger.LOGGER.serverIsLive();
+               }
+
+            }
          }
       }
       catch (Exception e)

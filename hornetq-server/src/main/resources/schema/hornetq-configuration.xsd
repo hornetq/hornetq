@@ -1648,6 +1648,19 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
+         <xsd:element name="remote-connectors" maxOccurs="1" minOccurs="0">
+            <xsd:annotation>
+               <xsd:documentation>
+                  the remote connectors that shouldn't have their ports offset, typically remote connectors or the
+                  connector used in the cluster connection if scalinmg down
+               </xsd:documentation>
+            </xsd:annotation>
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="1"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
          <xsd:element name="master" type="replicatedPolicyType" minOccurs="0" maxOccurs="1">
             <xsd:annotation>
                <xsd:documentation>
