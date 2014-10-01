@@ -339,6 +339,12 @@ public class ClusterController implements HornetQComponent
             {
                ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
 
+               //if this acceptor isnt associated with a cluster connection use the default
+               if (clusterConnection == null)
+               {
+                  clusterConnection = server.getClusterManager().getDefaultConnection(null);
+               }
+
                ClusterConnectMessage msg = (ClusterConnectMessage) packet;
 
                if (server.getConfiguration().isSecurityEnabled() && !clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
