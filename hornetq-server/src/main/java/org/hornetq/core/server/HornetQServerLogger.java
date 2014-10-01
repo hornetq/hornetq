@@ -284,6 +284,14 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 221048, value = "Consumer {0}:{1} attached to queue ''{2}'' from {3} identified as ''slow.'' Expected consumption rate: {4} msgs/second; actual consumption rate: {5} msgs/second.", format = Message.Format.MESSAGE_FORMAT)
    void slowConsumerDetected(String sessionID, long consumerID, String queueName, String remoteAddress, float slowConsumerThreshold, float consumerRate);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221049, value = "Activating Replica for node: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void activatingReplica(SimpleString nodeID);
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221050, value = "Activating Shared Store Slave", format = Message.Format.MESSAGE_FORMAT)
+   void activatingSharedStoreSlave();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
             format = Message.Format.MESSAGE_FORMAT)
@@ -1087,7 +1095,7 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222187,
-          value = "Failed to activate replicated backup",
+          value = "Failed to activate replicata",
           format = Message.Format.MESSAGE_FORMAT)
    void activateReplicatedBackupFailed(@Cause Throwable e);
 
@@ -1096,6 +1104,12 @@ public interface HornetQServerLogger extends BasicLogger
           value = "Unable to find target queue for node {0}",
           format = Message.Format.MESSAGE_FORMAT)
    void unableToFindTargetQueue(String targetNodeID);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222189,
+         value = "Failed to activate shared store slave",
+         format = Message.Format.MESSAGE_FORMAT)
+   void activateSharedStoreSlaveFailed(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
