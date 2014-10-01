@@ -166,9 +166,10 @@ public class ColocatedHAManager implements HAManager
       catch (Exception e)
       {
          backup.stop();
-         //todo log a warning
+         HornetQServerLogger.LOGGER.activateSharedStoreSlaveFailed(e);
          return false;
       }
+      HornetQServerLogger.LOGGER.activatingSharedStoreSlave();
       return true;
    }
 
@@ -204,6 +205,7 @@ public class ColocatedHAManager implements HAManager
          HornetQServerLogger.LOGGER.activateReplicatedBackupFailed(e);
          return false;
       }
+      HornetQServerLogger.LOGGER.activatingReplica(nodeID);
       return true;
    }
 
