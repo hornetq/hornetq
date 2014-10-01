@@ -41,6 +41,7 @@ import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.utils.UUID;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,6 +80,27 @@ public class BackupSyncJournalTest extends FailoverTestBase
       sessionFactory = createSessionFactoryAndWaitForTopology(locator, 1);
       syncDelay = new BackupSyncDelay(backupServer, liveServer);
 
+   }
+
+   @Override
+   @After
+   public void tearDown() throws Exception
+   {
+      try
+      {
+         File dir = new File(backupServer.getServer()
+                                .getConfiguration()
+                                .getLargeMessagesDirectory());
+         deleteDirectory(dir);
+         dir = new File(liveServer.getServer()
+                           .getConfiguration()
+                           .getLargeMessagesDirectory());
+         deleteDirectory(dir);
+      }
+      finally
+      {
+         super.tearDown();
+      }
    }
 
    @Test
