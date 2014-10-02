@@ -57,7 +57,6 @@ import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.cluster.qourum.QuorumManager;
 import org.hornetq.core.server.impl.Activation;
 import org.hornetq.core.server.management.ManagementService;
-import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -513,30 +512,6 @@ public final class ClusterManager implements HornetQComponent
             serverLocator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(tcConfigs);
          }
 
-      }
-
-      if (config.getForwardingAddress() != null)
-      {
-         AddressSettings addressConfig = configuration.getAddressesSettings().get(config.getForwardingAddress());
-
-         // The address config could be null on certain test cases or some Embedded environment
-         if (addressConfig == null)
-         {
-            // We will certainly have this warning on testcases which is ok
-            HornetQServerLogger.LOGGER.bridgeCantFindAddressConfig(config.getName(), config.getForwardingAddress());
-         }
-         else
-         {
-            final int windowSize = config.getConfirmationWindowSize();
-            final long maxBytes = addressConfig.getMaxSizeBytes();
-
-            if (maxBytes != -1 && maxBytes < windowSize)
-            {
-               HornetQServerLogger.LOGGER.bridgeConfirmationWindowTooSmall(config.getName(),
-                                                                           config.getForwardingAddress(), windowSize,
-                                                                           maxBytes);
-            }
-         }
       }
 
       serverLocator.setIdentity("Bridge " + config.getName());
