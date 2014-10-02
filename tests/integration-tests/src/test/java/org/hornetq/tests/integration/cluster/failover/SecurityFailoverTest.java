@@ -94,35 +94,32 @@ public class SecurityFailoverTest extends FailoverTest
    protected void createConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager(false);
-
-      backupConfig = super.createDefaultConfig();
-      backupConfig.getAcceptorConfigurations().clear();
-      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      backupConfig.setSecurityEnabled(true);
-      SharedStoreSlavePolicyConfiguration haPolicyConfiguration = new SharedStoreSlavePolicyConfiguration();
-      backupConfig.setHAPolicyConfiguration(haPolicyConfiguration);
-      haPolicyConfiguration.setFailbackDelay(1000);
-
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
-      backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      basicClusterConnectionConfig(backupConfig, backupConnector.getName(), liveConnector.getName());
+
+      backupConfig = super.createDefaultConfig()
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(false))
+         .setSecurityEnabled(true)
+         .setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration()
+                                      .setFailbackDelay(1000))
+         .addConnectorConfiguration(liveConnector.getName(), liveConnector)
+         .addConnectorConfiguration(backupConnector.getName(), backupConnector)
+         .addClusterConfiguration(basicClusterConnectionConfig(backupConnector.getName(), liveConnector.getName()));
+
       backupServer = createTestableServer(backupConfig);
-
       HornetQSecurityManager securityManager = installSecurity(backupServer);
-
       securityManager.setDefaultUser(null);
 
-      liveConfig = super.createDefaultConfig();
-      liveConfig.getAcceptorConfigurations().clear();
-      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      liveConfig.setSecurityEnabled(true);
-      liveConfig.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
-      basicClusterConnectionConfig(liveConfig, liveConnector.getName());
-      liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      liveServer = createTestableServer(liveConfig);
+      liveConfig = super.createDefaultConfig()
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(true))
+         .setSecurityEnabled(true)
+         .setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration())
+         .addClusterConfiguration(basicClusterConnectionConfig(liveConnector.getName()))
+         .addConnectorConfiguration(liveConnector.getName(), liveConnector);
 
+      liveServer = createTestableServer(liveConfig);
       installSecurity(liveServer);
    }
 

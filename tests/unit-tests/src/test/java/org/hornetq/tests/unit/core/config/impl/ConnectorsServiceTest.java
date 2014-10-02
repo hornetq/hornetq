@@ -54,8 +54,10 @@ public class ConnectorsServiceTest extends UnitTestCase
    @Test
    public void testConnectorsServiceUsesInjectedConnectorServiceFactory() throws Exception
    {
-      ConnectorServiceConfiguration connectorServiceConfiguration =
-         new ConnectorServiceConfiguration(null, new HashMap<String, Object>(), "myfact");
+      ConnectorServiceConfiguration connectorServiceConfiguration = new ConnectorServiceConfiguration()
+         .setFactoryClassName(null)
+         .setParams(new HashMap<String, Object>())
+         .setName("myfact");
 
       // Creates a fake connector service factory that returns the fake connector service object
       ConnectorService connectorService = new FakeConnectorService();
@@ -76,8 +78,10 @@ public class ConnectorsServiceTest extends UnitTestCase
    @Test
    public void testConnectorsServiceUsesConfiguredConnectorServices() throws Exception
    {
-      ConnectorServiceConfiguration connectorServiceConfiguration =
-         new ConnectorServiceConfiguration(FakeConnectorServiceFactory.class.getCanonicalName(), new HashMap<String, Object>(), "myfact");
+      ConnectorServiceConfiguration connectorServiceConfiguration = new ConnectorServiceConfiguration()
+         .setFactoryClassName(FakeConnectorServiceFactory.class.getCanonicalName())
+         .setParams(new HashMap<String, Object>())
+         .setName("myfact");
 
       List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
       connectorServiceConfigurations.add(connectorServiceConfiguration);

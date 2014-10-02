@@ -1291,9 +1291,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1377,11 +1376,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
       final int theCacheSize = 5;
 
-      conf.setIDCacheSize(theCacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(theCacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1459,12 +1457,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
       final int initialCacheSize = 10;
       final int subsequentCacheSize = 5;
 
-      conf.setIDCacheSize(initialCacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(initialCacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1553,12 +1550,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
       final int initialCacheSize = 10;
       final int subsequentCacheSize = 5;
 
-      conf.setIDCacheSize(initialCacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(initialCacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1657,11 +1653,9 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
-
-      conf.setPersistIDCache(false);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize)
+         .setPersistIDCache(false);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1745,11 +1739,9 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
-
-      conf.setPersistIDCache(false);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize)
+         .setPersistIDCache(false);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1837,9 +1829,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -1957,11 +1948,9 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
-
-      conf.setPersistIDCache(false);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize)
+         .setPersistIDCache(false);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -2063,9 +2052,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -2165,9 +2153,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       messagingService.stop();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize);
 
       HornetQServer messagingService2 = createServer(conf);
 
@@ -2279,9 +2266,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
    {
       super.setUp();
 
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
+      Configuration conf = createDefaultConfig()
+         .setIDCacheSize(cacheSize);
 
       messagingService = createServer(true, conf);
 

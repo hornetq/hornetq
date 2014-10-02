@@ -10,12 +10,7 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
-/**
- *
- */
 package org.hornetq.tests.util;
-
-import java.util.Set;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -39,23 +34,19 @@ public final class ReplicatedBackupUtils
    {
       if (backupAcceptor != null)
       {
-         Set<TransportConfiguration> backupAcceptorSet = backupConfig.getAcceptorConfigurations();
-         backupAcceptorSet.clear();
-         backupAcceptorSet.add(backupAcceptor);
+         backupConfig.clearAcceptorConfigurations().addAcceptorConfiguration(backupAcceptor);
       }
 
-      backupConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
-      backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
+      backupConfig.addConnectorConfiguration(BACKUP_NODE_NAME, backupConnector)
+         .addConnectorConfiguration(LIVE_NODE_NAME, liveConnector)
+         .addClusterConfiguration(UnitTestCase.basicClusterConnectionConfig(BACKUP_NODE_NAME, LIVE_NODE_NAME))
+         .setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
 
-      UnitTestCase.basicClusterConnectionConfig(backupConfig, BACKUP_NODE_NAME, LIVE_NODE_NAME);
-
-      backupConfig.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
-
-      liveConfig.setName(LIVE_NODE_NAME);
-      liveConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
-      liveConfig.getConnectorConfigurations().put(BACKUP_NODE_NAME, backupConnector);
-      liveConfig.setSecurityEnabled(false);
-      liveConfig.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
-      UnitTestCase.basicClusterConnectionConfig(liveConfig, LIVE_NODE_NAME, BACKUP_NODE_NAME);
+      liveConfig.setName(LIVE_NODE_NAME)
+         .addConnectorConfiguration(LIVE_NODE_NAME, liveConnector)
+         .addConnectorConfiguration(BACKUP_NODE_NAME, backupConnector)
+         .setSecurityEnabled(false)
+         .addClusterConfiguration(UnitTestCase.basicClusterConnectionConfig(LIVE_NODE_NAME, BACKUP_NODE_NAME))
+         .setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
    }
 }

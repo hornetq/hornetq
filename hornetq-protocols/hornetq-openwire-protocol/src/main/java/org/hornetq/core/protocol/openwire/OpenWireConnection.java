@@ -223,7 +223,7 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
             {
                //meaning the dataInput hasn't enough bytes for a command.
                //in that case we just return and waiting for the next
-               //call of bufferReceived().
+               //call of bufferReceived()
                return;
             }
 

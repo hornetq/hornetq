@@ -127,13 +127,13 @@ public class ReplicatedFailoverTest extends FailoverTest
    {
       if (isReplicatedFailbackTest)
       {
-         ReplicatedPolicyConfiguration liveHAPC = (ReplicatedPolicyConfiguration) liveConfig.getHAPolicyConfiguration();
-         liveHAPC.setCheckForLiveServer(true);
-         liveHAPC.setFailbackDelay(2000);
-         ReplicaPolicyConfiguration backupHAPC = (ReplicaPolicyConfiguration) backupConfig.getHAPolicyConfiguration();
-         backupHAPC.setMaxSavedReplicatedJournalsSize(2);
-         backupHAPC.setAllowFailBack(true);
-         backupHAPC.setFailbackDelay(2000);
+         ((ReplicatedPolicyConfiguration) liveConfig.getHAPolicyConfiguration())
+            .setCheckForLiveServer(true)
+            .setFailbackDelay(2000);
+         ((ReplicaPolicyConfiguration) backupConfig.getHAPolicyConfiguration())
+            .setMaxSavedReplicatedJournalsSize(2)
+            .setAllowFailBack(true)
+            .setFailbackDelay(2000);
       }
       else
       {

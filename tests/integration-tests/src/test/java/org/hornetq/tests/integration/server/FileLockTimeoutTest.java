@@ -52,9 +52,9 @@ public class FileLockTimeoutTest extends ServiceTestBase
                            AsynchronousFileImpl.isLoaded()
          );
       }
-      Configuration config = super.createDefaultConfig();
-      config.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
-      config.getAcceptorConfigurations().clear();
+      Configuration config = super.createDefaultConfig()
+         .setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration())
+         .clearAcceptorConfigurations();
 
       HornetQServer server1 = createServer(true, config);
       if (useAIO)

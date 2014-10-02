@@ -14,6 +14,7 @@ package org.hornetq.core.server.cluster.ha;
 
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
+
 import java.util.Map;
 
 /*

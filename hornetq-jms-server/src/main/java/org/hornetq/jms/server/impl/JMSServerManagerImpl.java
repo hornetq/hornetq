@@ -974,8 +974,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, ha, connectorNames);
-         configuration.setFactoryType(cfType);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl()
+            .setName(name)
+            .setHA(ha)
+            .setConnectorNames(connectorNames)
+            .setFactoryType(cfType);
+
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }
@@ -1020,37 +1024,41 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, ha, connectorNames);
-         configuration.setClientID(clientID);
-         configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
-         configuration.setConnectionTTL(connectionTTL);
-         configuration.setFactoryType(cfType);
-         configuration.setCallTimeout(callTimeout);
-         configuration.setCallFailoverTimeout(callFailoverTimeout);
-         configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
-         configuration.setMinLargeMessageSize(minLargeMessageSize);
-         configuration.setConsumerWindowSize(consumerWindowSize);
-         configuration.setConsumerMaxRate(consumerMaxRate);
-         configuration.setConfirmationWindowSize(confirmationWindowSize);
-         configuration.setProducerWindowSize(producerWindowSize);
-         configuration.setProducerMaxRate(producerMaxRate);
-         configuration.setBlockOnAcknowledge(blockOnAcknowledge);
-         configuration.setBlockOnDurableSend(blockOnDurableSend);
-         configuration.setBlockOnNonDurableSend(blockOnNonDurableSend);
-         configuration.setAutoGroup(autoGroup);
-         configuration.setPreAcknowledge(preAcknowledge);
-         configuration.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-         configuration.setTransactionBatchSize(transactionBatchSize);
-         configuration.setDupsOKBatchSize(dupsOKBatchSize);
-         configuration.setUseGlobalPools(useGlobalPools);
-         configuration.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
-         configuration.setThreadPoolMaxSize(threadPoolMaxSize);
-         configuration.setRetryInterval(retryInterval);
-         configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
-         configuration.setMaxRetryInterval(maxRetryInterval);
-         configuration.setReconnectAttempts(reconnectAttempts);
-         configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
-         configuration.setGroupID(groupId);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl()
+            .setName(name)
+            .setHA(ha)
+            .setConnectorNames(connectorNames)
+            .setClientID(clientID)
+            .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+            .setConnectionTTL(connectionTTL)
+            .setFactoryType(cfType)
+            .setCallTimeout(callTimeout)
+            .setCallFailoverTimeout(callFailoverTimeout)
+            .setCacheLargeMessagesClient(cacheLargeMessagesClient)
+            .setMinLargeMessageSize(minLargeMessageSize)
+            .setConsumerWindowSize(consumerWindowSize)
+            .setConsumerMaxRate(consumerMaxRate)
+            .setConfirmationWindowSize(confirmationWindowSize)
+            .setProducerWindowSize(producerWindowSize)
+            .setProducerMaxRate(producerMaxRate)
+            .setBlockOnAcknowledge(blockOnAcknowledge)
+            .setBlockOnDurableSend(blockOnDurableSend)
+            .setBlockOnNonDurableSend(blockOnNonDurableSend)
+            .setAutoGroup(autoGroup)
+            .setPreAcknowledge(preAcknowledge)
+            .setLoadBalancingPolicyClassName(loadBalancingPolicyClassName)
+            .setTransactionBatchSize(transactionBatchSize)
+            .setDupsOKBatchSize(dupsOKBatchSize)
+            .setUseGlobalPools(useGlobalPools)
+            .setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize)
+            .setThreadPoolMaxSize(threadPoolMaxSize)
+            .setRetryInterval(retryInterval)
+            .setRetryIntervalMultiplier(retryIntervalMultiplier)
+            .setMaxRetryInterval(maxRetryInterval)
+            .setReconnectAttempts(reconnectAttempts)
+            .setFailoverOnInitialConnection(failoverOnInitialConnection)
+            .setGroupID(groupId);
+
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }
@@ -1095,38 +1103,41 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, ha, jndiBindings);
-         configuration.setDiscoveryGroupName(discoveryGroupName);
-         configuration.setFactoryType(cfType);
-         configuration.setClientID(clientID);
-         configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
-         configuration.setConnectionTTL(connectionTTL);
-         configuration.setCallTimeout(callTimeout);
-         configuration.setCallFailoverTimeout(callFailoverTimeout);
-         configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
-         configuration.setMinLargeMessageSize(minLargeMessageSize);
-         configuration.setCompressLargeMessages(compressLargeMessages);
-         configuration.setConsumerWindowSize(consumerWindowSize);
-         configuration.setConsumerMaxRate(consumerMaxRate);
-         configuration.setConfirmationWindowSize(confirmationWindowSize);
-         configuration.setProducerWindowSize(producerWindowSize);
-         configuration.setProducerMaxRate(producerMaxRate);
-         configuration.setBlockOnAcknowledge(blockOnAcknowledge);
-         configuration.setBlockOnDurableSend(blockOnDurableSend);
-         configuration.setBlockOnNonDurableSend(blockOnNonDurableSend);
-         configuration.setAutoGroup(autoGroup);
-         configuration.setPreAcknowledge(preAcknowledge);
-         configuration.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-         configuration.setTransactionBatchSize(transactionBatchSize);
-         configuration.setDupsOKBatchSize(dupsOKBatchSize);
-         configuration.setUseGlobalPools(useGlobalPools);
-         configuration.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
-         configuration.setThreadPoolMaxSize(threadPoolMaxSize);
-         configuration.setRetryInterval(retryInterval);
-         configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
-         configuration.setMaxRetryInterval(maxRetryInterval);
-         configuration.setReconnectAttempts(reconnectAttempts);
-         configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl()
+            .setName(name)
+            .setHA(ha)
+            .setBindings(jndiBindings)
+            .setDiscoveryGroupName(discoveryGroupName)
+            .setFactoryType(cfType)
+            .setClientID(clientID)
+            .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+            .setConnectionTTL(connectionTTL)
+            .setCallTimeout(callTimeout)
+            .setCallFailoverTimeout(callFailoverTimeout)
+            .setCacheLargeMessagesClient(cacheLargeMessagesClient)
+            .setMinLargeMessageSize(minLargeMessageSize)
+            .setCompressLargeMessages(compressLargeMessages)
+            .setConsumerWindowSize(consumerWindowSize)
+            .setConsumerMaxRate(consumerMaxRate)
+            .setConfirmationWindowSize(confirmationWindowSize)
+            .setProducerWindowSize(producerWindowSize)
+            .setProducerMaxRate(producerMaxRate)
+            .setBlockOnAcknowledge(blockOnAcknowledge)
+            .setBlockOnDurableSend(blockOnDurableSend)
+            .setBlockOnNonDurableSend(blockOnNonDurableSend)
+            .setAutoGroup(autoGroup)
+            .setPreAcknowledge(preAcknowledge)
+            .setLoadBalancingPolicyClassName(loadBalancingPolicyClassName)
+            .setTransactionBatchSize(transactionBatchSize)
+            .setDupsOKBatchSize(dupsOKBatchSize)
+            .setUseGlobalPools(useGlobalPools)
+            .setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize)
+            .setThreadPoolMaxSize(threadPoolMaxSize)
+            .setRetryInterval(retryInterval)
+            .setRetryIntervalMultiplier(retryIntervalMultiplier)
+            .setMaxRetryInterval(maxRetryInterval)
+            .setReconnectAttempts(reconnectAttempts)
+            .setFailoverOnInitialConnection(failoverOnInitialConnection);
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }
@@ -1141,8 +1152,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, ha, jndiBindings);
-         configuration.setDiscoveryGroupName(discoveryGroupName);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl()
+            .setName(name)
+            .setHA(ha)
+            .setBindings(jndiBindings)
+            .setDiscoveryGroupName(discoveryGroupName);
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }

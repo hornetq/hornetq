@@ -49,60 +49,39 @@ public class LiveToLiveFailoverTest extends FailoverTest
    {
       nodeManager0 = new InVMNodeManager(false);
       nodeManager1 = new InVMNodeManager(false);
-
-      backupConfig = super.createDefaultConfig(1);
-      backupConfig.getAcceptorConfigurations().clear();
-
       TransportConfiguration liveConnector0 = getConnectorTransportConfiguration(true, 0);
       TransportConfiguration liveConnector1 = getConnectorTransportConfiguration(true, 1);
 
-      SharedStoreSlavePolicyConfiguration sharedStoreSlavePolicyConfiguration = new SharedStoreSlavePolicyConfiguration();
-      sharedStoreSlavePolicyConfiguration.setFailbackDelay(1000);
-      ScaleDownConfiguration sdc = new ScaleDownConfiguration();
-      sdc.getConnectors().add(liveConnector1.getName());
-      sharedStoreSlavePolicyConfiguration.setScaleDownConfiguration(sdc);
+      backupConfig = super.createDefaultConfig(1)
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(true, 1))
+         .setHAPolicyConfiguration(new ColocatedPolicyConfiguration()
+                                      .setRequestBackup(true)
+                                      .setLiveConfig(new SharedStoreMasterPolicyConfiguration())
+                                      .setBackupConfig(new SharedStoreSlavePolicyConfiguration()
+                                                          .setFailbackDelay(1000)
+                                                          .setScaleDownConfiguration(new ScaleDownConfiguration()
+                                                                                        .addConnector(liveConnector1.getName()))))
+         .addConnectorConfiguration(liveConnector0.getName(), liveConnector0)
+         .addConnectorConfiguration(liveConnector1.getName(), liveConnector1)
+         .addClusterConfiguration(basicClusterConnectionConfig(liveConnector1.getName(), liveConnector0.getName()));
 
-      SharedStoreMasterPolicyConfiguration sharedStoreMasterPolicyConfiguration = new SharedStoreMasterPolicyConfiguration();
+      backupServer = createColocatedTestableServer(backupConfig, nodeManager1, nodeManager0, 1);
 
-      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true, 1));
-      ColocatedPolicyConfiguration colocatedPolicyConfiguration = new ColocatedPolicyConfiguration();
-      colocatedPolicyConfiguration.setRequestBackup(true);
-      colocatedPolicyConfiguration.setLiveConfig(new SharedStoreMasterPolicyConfiguration());
-      colocatedPolicyConfiguration.setBackupConfig(sharedStoreSlavePolicyConfiguration);
-      colocatedPolicyConfiguration.setLiveConfig(sharedStoreMasterPolicyConfiguration);
+      liveConfig = super.createDefaultConfig(0)
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(getAcceptorTransportConfiguration(true, 0))
+         .setHAPolicyConfiguration(new ColocatedPolicyConfiguration()
+                                      .setRequestBackup(true)
+                                      .setBackupRequestRetryInterval(1000)
+                                      .setLiveConfig(new SharedStoreMasterPolicyConfiguration())
+                                      .setBackupConfig(new SharedStoreSlavePolicyConfiguration()
+                                                          .setFailbackDelay(1000)
+                                                          .setScaleDownConfiguration(new ScaleDownConfiguration())))
+         .addConnectorConfiguration(liveConnector0.getName(), liveConnector0)
+         .addConnectorConfiguration(liveConnector1.getName(), liveConnector1)
+         .addClusterConfiguration(basicClusterConnectionConfig(liveConnector0.getName(), liveConnector1.getName()));
 
-
-      backupConfig.setHAPolicyConfiguration(colocatedPolicyConfiguration);
-
-      backupConfig.getConnectorConfigurations().put(liveConnector0.getName(), liveConnector0);
-      backupConfig.getConnectorConfigurations().put(liveConnector1.getName(), liveConnector1);
-
-
-
-      basicClusterConnectionConfig(backupConfig, liveConnector1.getName(), liveConnector0.getName());
-      backupServer =  createColocatedTestableServer(backupConfig, nodeManager1, nodeManager0, 1);
-
-
-      SharedStoreSlavePolicyConfiguration sharedStoreSlavePolicyConfiguration1 = new SharedStoreSlavePolicyConfiguration();
-      sharedStoreSlavePolicyConfiguration1.setFailbackDelay(1000);
-      sharedStoreSlavePolicyConfiguration1.setScaleDownConfiguration(new ScaleDownConfiguration());
-
-      SharedStoreMasterPolicyConfiguration sharedStoreMasterPolicyConfiguration1 = new SharedStoreMasterPolicyConfiguration();
-
-      ColocatedPolicyConfiguration colocatedPolicyConfiguration1 = new ColocatedPolicyConfiguration();
-      colocatedPolicyConfiguration1.setRequestBackup(true);
-      colocatedPolicyConfiguration1.setBackupRequestRetryInterval(1000);
-      colocatedPolicyConfiguration1.setLiveConfig(sharedStoreMasterPolicyConfiguration1);
-      colocatedPolicyConfiguration1.setBackupConfig(sharedStoreSlavePolicyConfiguration1);
-
-      liveConfig = super.createDefaultConfig(0);
-
-      liveConfig.setHAPolicyConfiguration(colocatedPolicyConfiguration1);
-      liveConfig.getAcceptorConfigurations().clear();
-      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true, 0));
-      basicClusterConnectionConfig(liveConfig, liveConnector0.getName(), liveConnector1.getName());
-      liveConfig.getConnectorConfigurations().put(liveConnector0.getName(), liveConnector0);
-      liveConfig.getConnectorConfigurations().put(liveConnector1.getName(), liveConnector1);
       liveServer = createColocatedTestableServer(liveConfig, nodeManager0, nodeManager1, 0);
    }
 

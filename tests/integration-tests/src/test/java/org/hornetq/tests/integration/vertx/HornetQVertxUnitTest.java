@@ -28,7 +28,6 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.vertx.VertxConstants;
 import org.hornetq.integration.vertx.VertxIncomingConnectorServiceFactory;
-import org.hornetq.integration.vertx.VertxOutgoingConnectorServiceFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.After;
@@ -82,16 +81,16 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       createVertxService();
 
       super.setUp();
-
-      Configuration configuration = createDefaultConfig(false);
-
       //all queues
-      CoreQueueConfiguration qc = new CoreQueueConfiguration(incomingQueue1, incomingQueue1, null, true);
-      configuration.getQueueConfigurations().add(qc);
-      qc = new CoreQueueConfiguration(inOutQueue1, inOutQueue1, null, true);
-      configuration.getQueueConfigurations().add(qc);
-      qc = new CoreQueueConfiguration(inOutQueue2, inOutQueue2, null, true);
-      configuration.getQueueConfigurations().add(qc);
+      CoreQueueConfiguration qc1 = new CoreQueueConfiguration()
+         .setAddress(incomingQueue1)
+         .setName(incomingQueue1);
+      CoreQueueConfiguration qc2 = new CoreQueueConfiguration()
+         .setAddress(inOutQueue1)
+         .setName(inOutQueue1);
+      CoreQueueConfiguration qc3 = new CoreQueueConfiguration()
+         .setAddress(inOutQueue2)
+         .setName(inOutQueue2);
 
       //incoming
       HashMap<String, Object> config1 = new HashMap<String, Object>();
@@ -100,11 +99,10 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config1.put(VertxConstants.QUEUE_NAME, incomingQueue1);
       config1.put(VertxConstants.VERTX_ADDRESS, incomingVertxAddress1);
 
-      ConnectorServiceConfiguration inconf1 =
-         new ConnectorServiceConfiguration(
-            VertxIncomingConnectorServiceFactory.class.getName(),
-            config1, "test-vertx-incoming-connector1");
-      configuration.getConnectorServiceConfigurations().add(inconf1);
+      ConnectorServiceConfiguration inconf1 = new ConnectorServiceConfiguration()
+         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
+         .setParams(config1)
+         .setName("test-vertx-incoming-connector1");
 
       //outgoing send style
       HashMap<String, Object> config2 = new HashMap<String, Object>();
@@ -113,11 +111,10 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config2.put(VertxConstants.QUEUE_NAME, inOutQueue1);
       config2.put(VertxConstants.VERTX_ADDRESS, incomingVertxAddress2);
 
-      ConnectorServiceConfiguration inconf2 =
-         new ConnectorServiceConfiguration(
-            VertxIncomingConnectorServiceFactory.class.getName(),
-            config2, "test-vertx-incoming-connector2");
-      configuration.getConnectorServiceConfigurations().add(inconf2);
+      ConnectorServiceConfiguration inconf2 = new ConnectorServiceConfiguration()
+         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
+         .setParams(config2)
+         .setName("test-vertx-incoming-connector2");
 
       HashMap<String, Object> config3 = new HashMap<String, Object>();
       config3.put(VertxConstants.HOST, host);
@@ -125,11 +122,10 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config3.put(VertxConstants.QUEUE_NAME, inOutQueue1);
       config3.put(VertxConstants.VERTX_ADDRESS, outgoingVertxAddress1);
 
-      ConnectorServiceConfiguration outconf1 =
-         new ConnectorServiceConfiguration(
-            VertxOutgoingConnectorServiceFactory.class.getName(),
-            config3, "test-vertx-outgoing-connector1");
-      configuration.getConnectorServiceConfigurations().add(outconf1);
+      ConnectorServiceConfiguration outconf1 = new ConnectorServiceConfiguration()
+         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
+         .setParams(config2)
+         .setName("test-vertx-outgoing-connector1");
 
       //outgoing publish style
       HashMap<String, Object> config4 = new HashMap<String, Object>();
@@ -138,11 +134,10 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config4.put(VertxConstants.QUEUE_NAME, inOutQueue2);
       config4.put(VertxConstants.VERTX_ADDRESS, incomingVertxAddress3);
 
-      ConnectorServiceConfiguration inconf3 =
-         new ConnectorServiceConfiguration(
-            VertxIncomingConnectorServiceFactory.class.getName(),
-            config4, "test-vertx-incoming-connector3");
-      configuration.getConnectorServiceConfigurations().add(inconf3);
+      ConnectorServiceConfiguration inconf3 = new ConnectorServiceConfiguration()
+         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
+         .setParams(config2)
+         .setName("test-vertx-incoming-connector3");
 
       HashMap<String, Object> config5 = new HashMap<String, Object>();
       config5.put(VertxConstants.HOST, host);
@@ -151,11 +146,20 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config5.put(VertxConstants.VERTX_ADDRESS, outgoingVertxAddress2);
       config5.put(VertxConstants.VERTX_PUBLISH, "true");
 
-      ConnectorServiceConfiguration outconf2 =
-         new ConnectorServiceConfiguration(
-            VertxOutgoingConnectorServiceFactory.class.getName(),
-            config5, "test-vertx-outgoing-connector2");
-      configuration.getConnectorServiceConfigurations().add(outconf2);
+      ConnectorServiceConfiguration outconf2 = new ConnectorServiceConfiguration()
+         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
+         .setParams(config2)
+         .setName("test-vertx-outgoing-connector2");
+
+      Configuration configuration = createDefaultConfig(false)
+         .addQueueConfiguration(qc1)
+         .addQueueConfiguration(qc2)
+         .addQueueConfiguration(qc3)
+         .addConnectorServiceConfiguration(inconf1)
+         .addConnectorServiceConfiguration(inconf2)
+         .addConnectorServiceConfiguration(outconf1)
+         .addConnectorServiceConfiguration(inconf3)
+         .addConnectorServiceConfiguration(outconf2);
 
       server = createServer(false, configuration);
       server.start();

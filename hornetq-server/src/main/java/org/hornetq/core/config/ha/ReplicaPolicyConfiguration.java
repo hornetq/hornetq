@@ -18,7 +18,7 @@ import org.hornetq.core.config.ScaleDownConfiguration;
 
 public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
 {
-   private String clusterName;
+   private String clusterName = null;
 
    private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
 
@@ -31,20 +31,9 @@ public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
    /*
    * used in the replicated policy after failover
    * */
-   private boolean allowFailBack;
+   private boolean allowFailBack = false;
 
    private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
-
-   public ReplicaPolicyConfiguration(String clusterName, int maxSavedReplicatedJournalsSize, String groupName, boolean restartBackup, boolean allowFailBack, long failbackDelay, ScaleDownConfiguration scaleDownConfiguration)
-   {
-      this.clusterName = clusterName;
-      this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
-      this.groupName = groupName;
-      this.restartBackup = restartBackup;
-      this.allowFailBack = allowFailBack;
-      this.failbackDelay = failbackDelay;
-      this.scaleDownConfiguration = scaleDownConfiguration;
-   }
 
    public ReplicaPolicyConfiguration()
    {
@@ -61,21 +50,21 @@ public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
       return scaleDownConfiguration;
    }
 
-   public void setScaleDownConfiguration(ScaleDownConfiguration scaleDownConfiguration)
+   public ReplicaPolicyConfiguration setScaleDownConfiguration(ScaleDownConfiguration scaleDownConfiguration)
    {
       this.scaleDownConfiguration = scaleDownConfiguration;
+      return this;
    }
-
-
 
    public String getClusterName()
    {
       return clusterName;
    }
 
-   public void setClusterName(String clusterName)
+   public ReplicaPolicyConfiguration setClusterName(String clusterName)
    {
       this.clusterName = clusterName;
+      return this;
    }
 
    public int getMaxSavedReplicatedJournalsSize()
@@ -83,9 +72,10 @@ public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
       return maxSavedReplicatedJournalsSize;
    }
 
-   public void setMaxSavedReplicatedJournalsSize(int maxSavedReplicatedJournalsSize)
+   public ReplicaPolicyConfiguration setMaxSavedReplicatedJournalsSize(int maxSavedReplicatedJournalsSize)
    {
       this.maxSavedReplicatedJournalsSize = maxSavedReplicatedJournalsSize;
+      return this;
    }
 
    public String getGroupName()
@@ -93,9 +83,10 @@ public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
       return groupName;
    }
 
-   public void setGroupName(String groupName)
+   public ReplicaPolicyConfiguration setGroupName(String groupName)
    {
       this.groupName = groupName;
+      return this;
    }
 
    public boolean isRestartBackup()
@@ -103,9 +94,10 @@ public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
       return restartBackup;
    }
 
-   public void setRestartBackup(boolean restartBackup)
+   public ReplicaPolicyConfiguration setRestartBackup(boolean restartBackup)
    {
       this.restartBackup = restartBackup;
+      return this;
    }
 
    public boolean isAllowFailBack()
@@ -113,14 +105,16 @@ public class ReplicaPolicyConfiguration implements HAPolicyConfiguration
       return allowFailBack;
    }
 
-   public void setAllowFailBack(boolean allowFailBack)
+   public ReplicaPolicyConfiguration setAllowFailBack(boolean allowFailBack)
    {
       this.allowFailBack = allowFailBack;
+      return this;
    }
 
-   public void setFailbackDelay(long failbackDelay)
+   public ReplicaPolicyConfiguration setFailbackDelay(long failbackDelay)
    {
       this.failbackDelay = failbackDelay;
+      return this;
    }
 
    public long getFailbackDelay()

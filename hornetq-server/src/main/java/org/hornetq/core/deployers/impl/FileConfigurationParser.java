@@ -1171,7 +1171,11 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
-      return new CoreQueueConfiguration(address, name, filterString, durable);
+      return new CoreQueueConfiguration()
+         .setAddress(address)
+         .setName(name)
+         .setFilterString(filterString)
+         .setDurable(durable);
    }
 
    private TransportConfiguration parseTransportConfiguration(final Element e, final Configuration mainConfig)
@@ -1512,10 +1516,18 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
       else
       {
-         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localAddress, localBindPort);
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration()
+            .setGroupAddress(groupAddress)
+            .setGroupPort(groupPort)
+            .setLocalBindAddress(localAddress)
+            .setLocalBindPort(localBindPort);
       }
 
-      BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name, broadcastPeriod, connectorNames, endpointFactoryConfiguration);
+      BroadcastGroupConfiguration config = new BroadcastGroupConfiguration()
+         .setName(name)
+         .setBroadcastPeriod(broadcastPeriod)
+         .setConnectorInfos(connectorNames)
+         .setEndpointFactoryConfiguration(endpointFactoryConfiguration);
 
       mainConfig.getBroadcastGroupConfigurations().add(config);
    }
@@ -1552,10 +1564,18 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
       else
       {
-         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localBindAddress, localBindPort);
+         endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration()
+            .setGroupAddress(groupAddress)
+            .setGroupPort(groupPort)
+            .setLocalBindAddress(localBindAddress)
+            .setLocalBindPort(localBindPort);
       }
 
-      DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name, refreshTimeout, discoveryInitialWaitTimeout, endpointFactoryConfiguration);
+      DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration()
+         .setName(name)
+         .setRefreshTimeout(refreshTimeout)
+         .setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout)
+         .setBroadcastEndpointFactoryConfiguration(endpointFactoryConfiguration);
 
       if (mainConfig.getDiscoveryGroupConfigurations().containsKey(name))
       {
@@ -1618,7 +1638,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
 
       int confirmationWindowSize =
-         getInteger(e, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+         getInteger(e, "confirmation-window-size", HornetQDefaultConfiguration.getDefaultClusterConfirmationWindowSize(),
                     Validators.GT_ZERO);
 
       long clusterNotificationInterval = getLong(e, "notification-interval", HornetQDefaultConfiguration.getDefaultClusterNotificationInterval(), Validators.GT_ZERO);
@@ -1654,44 +1674,35 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
-      ClusterConnectionConfiguration config;
+      ClusterConnectionConfiguration config = new ClusterConnectionConfiguration()
+         .setName(name)
+         .setAddress(address)
+         .setConnectorName(connectorName)
+         .setMinLargeMessageSize(minLargeMessageSize)
+         .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+         .setConnectionTTL(connectionTTL)
+         .setRetryInterval(retryInterval)
+         .setRetryIntervalMultiplier(retryIntervalMultiplier)
+         .setMaxRetryInterval(maxRetryInterval)
+         .setInitialConnectAttempts(initialConnectAttempts)
+         .setReconnectAttempts(reconnectAttempts)
+         .setCallTimeout(callTimeout)
+         .setCallFailoverTimeout(callFailoverTimeout)
+         .setDuplicateDetection(duplicateDetection)
+         .setForwardWhenNoConsumers(forwardWhenNoConsumers)
+         .setMaxHops(maxHops)
+         .setConfirmationWindowSize(confirmationWindowSize)
+         .setAllowDirectConnectionsOnly(allowDirectConnectionsOnly)
+         .setClusterNotificationInterval(clusterNotificationInterval)
+         .setClusterNotificationAttempts(clusterNotificationAttempts);
 
       if (discoveryGroupName == null)
       {
-         config =
-            new ClusterConnectionConfiguration(name, address, connectorName,
-                                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                                               retryInterval, retryIntervalMultiplier, maxRetryInterval,
-                                               initialConnectAttempts, reconnectAttempts, callTimeout, callFailoverTimeout,
-                                               duplicateDetection, forwardWhenNoConsumers, maxHops,
-                                               confirmationWindowSize,
-                                               staticConnectorNames,
-                                               allowDirectConnectionsOnly,
-                                               clusterNotificationInterval,
-                                               clusterNotificationAttempts,
-                                               scaleDownConnector);
+         config.setStaticConnectors(staticConnectorNames);
       }
       else
       {
-         config =
-            new ClusterConnectionConfiguration(name, address, connectorName,
-                                               minLargeMessageSize, clientFailureCheckPeriod,
-                                               connectionTTL,
-                                               retryInterval,
-                                               retryIntervalMultiplier,
-                                               maxRetryInterval,
-                                               initialConnectAttempts,
-                                               reconnectAttempts,
-                                               callTimeout,
-                                               callFailoverTimeout,
-                                               duplicateDetection,
-                                               forwardWhenNoConsumers,
-                                               maxHops,
-                                               confirmationWindowSize,
-                                               discoveryGroupName,
-                                               clusterNotificationInterval,
-                                               clusterNotificationAttempts,
-                                               scaleDownConnector);
+         config.setDiscoveryGroupName(discoveryGroupName);
       }
 
       mainConfig.getClusterConfigurations().add(config);
@@ -1702,17 +1713,19 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       String name = node.getAttribute("name");
       String type = getString(node, "type", null, Validators.NOT_NULL_OR_EMPTY);
       String address = getString(node, "address", null, Validators.NOT_NULL_OR_EMPTY);
-      Integer timeout = getInteger(node, "timeout", GroupingHandlerConfiguration.DEFAULT_TIMEOUT, Validators.GT_ZERO);
-      Long groupTimeout = getLong(node, "group-timeout", GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT, Validators.MINUS_ONE_OR_GT_ZERO);
-      Long reaperPeriod = getLong(node, "reaper-period", GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD, Validators.GT_ZERO);
-      mainConfiguration.setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString(name),
-                                                                                         type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())
-                                                                                            ? GroupingHandlerConfiguration.TYPE.LOCAL
-                                                                                            : GroupingHandlerConfiguration.TYPE.REMOTE,
-                                                                                         new SimpleString(address),
-                                                                                         timeout,
-                                                                                         groupTimeout,
-                                                                                         reaperPeriod));
+      Integer timeout = getInteger(node, "timeout", HornetQDefaultConfiguration.getDefaultGroupingHandlerTimeout(), Validators.GT_ZERO);
+      Long groupTimeout = getLong(node, "group-timeout", HornetQDefaultConfiguration.getDefaultGroupingHandlerGroupTimeout(), Validators.MINUS_ONE_OR_GT_ZERO);
+      Long reaperPeriod = getLong(node, "reaper-period", HornetQDefaultConfiguration.getDefaultGroupingHandlerReaperPeriod(), Validators.GT_ZERO);
+      mainConfiguration.setGroupingHandlerConfiguration(new GroupingHandlerConfiguration()
+                                                           .setName(new SimpleString(name))
+                                                           .setType(
+                                                              type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())
+                                                                 ? GroupingHandlerConfiguration.TYPE.LOCAL
+                                                                 : GroupingHandlerConfiguration.TYPE.REMOTE)
+                                                           .setAddress(new SimpleString(address))
+                                                           .setTimeout(timeout)
+                                                           .setGroupTimeout(groupTimeout)
+                                                           .setReaperPeriod(reaperPeriod));
    }
 
    private void parseBridgeConfiguration(final Element brNode, final Configuration mainConfig) throws Exception
@@ -1727,7 +1740,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       // Default bridge conf
       int confirmationWindowSize =
-         getInteger(brNode, "confirmation-window-size", FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+         getInteger(brNode, "confirmation-window-size", HornetQDefaultConfiguration.getDefaultBridgeConfirmationWindowSize(),
                     Validators.GT_ZERO);
 
       long retryInterval = getLong(brNode, "retry-interval", HornetQClient.DEFAULT_RETRY_INTERVAL, Validators.GT_ZERO);
@@ -1822,53 +1835,34 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
-      BridgeConfiguration config;
+      BridgeConfiguration config = new BridgeConfiguration()
+         .setName(name)
+         .setQueueName(queueName)
+         .setForwardingAddress(forwardingAddress)
+         .setFilterString(filterString)
+         .setTransformerClassName(transformerClassName)
+         .setMinLargeMessageSize(minLargeMessageSize)
+         .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+         .setConnectionTTL(connectionTTL)
+         .setRetryInterval(retryInterval)
+         .setMaxRetryInterval(maxRetryInterval)
+         .setRetryIntervalMultiplier(retryIntervalMultiplier)
+         .setInitialConnectAttempts(initialConnectAttempts)
+         .setReconnectAttempts(reconnectAttempts)
+         .setReconnectAttemptsOnSameNode(reconnectAttemptsSameNode)
+         .setUseDuplicateDetection(useDuplicateDetection)
+         .setConfirmationWindowSize(confirmationWindowSize)
+         .setHA(ha)
+         .setUser(user)
+         .setPassword(password);
 
       if (!staticConnectorNames.isEmpty())
       {
-         config = new BridgeConfiguration(name,
-                                          queueName,
-                                          forwardingAddress,
-                                          filterString,
-                                          transformerClassName,
-                                          minLargeMessageSize,
-                                          clientFailureCheckPeriod,
-                                          connectionTTL,
-                                          retryInterval,
-                                          maxRetryInterval,
-                                          retryIntervalMultiplier,
-                                          initialConnectAttempts,
-                                          reconnectAttempts,
-                                          reconnectAttemptsSameNode,
-                                          useDuplicateDetection,
-                                          confirmationWindowSize,
-                                          staticConnectorNames,
-                                          ha,
-                                          user,
-                                          password);
+         config.setStaticConnectors(staticConnectorNames);
       }
       else
       {
-         config = new BridgeConfiguration(name,
-                                          queueName,
-                                          forwardingAddress,
-                                          filterString,
-                                          transformerClassName,
-                                          minLargeMessageSize,
-                                          clientFailureCheckPeriod,
-                                          connectionTTL,
-                                          retryInterval,
-                                          maxRetryInterval,
-                                          retryIntervalMultiplier,
-                                          initialConnectAttempts,
-                                          reconnectAttempts,
-                                          reconnectAttemptsSameNode,
-                                          useDuplicateDetection,
-                                          confirmationWindowSize,
-                                          discoveryGroupName,
-                                          ha,
-                                          user,
-                                          password);
+         config.setDiscoveryGroupName(discoveryGroupName);
       }
 
       mainConfig.getBridgeConfigurations().add(config);
@@ -1916,13 +1910,14 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
-      DivertConfiguration config = new DivertConfiguration(name,
-                                                           routingName,
-                                                           address,
-                                                           forwardingAddress,
-                                                           exclusive,
-                                                           filterString,
-                                                           transformerClassName);
+      DivertConfiguration config = new DivertConfiguration()
+         .setName(name)
+         .setRoutingName(routingName)
+         .setAddress(address)
+         .setForwardingAddress(forwardingAddress)
+         .setExclusive(exclusive)
+         .setFilterString(filterString)
+         .setTransformerClassName(transformerClassName);
 
       mainConfig.getDivertConfigurations().add(config);
    }
@@ -1954,6 +1949,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          params.put(key, nValue.getTextContent());
       }
 
-      return new ConnectorServiceConfiguration(clazz, params, name);
+      return new ConnectorServiceConfiguration()
+         .setFactoryClassName(clazz)
+         .setParams(params)
+         .setName(name);
    }
 }

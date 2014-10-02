@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
@@ -117,25 +118,19 @@ public final class ReplicationTest extends ServiceTestBase
       final TransportConfiguration backupConnector = TransportConfigurationUtils.getInVMConnector(false);
       final TransportConfiguration backupAcceptor = TransportConfigurationUtils.getInVMAcceptor(false);
 
-      Configuration backupConfig = createDefaultConfig();
+      final String suffix = "_backup";
       Configuration liveConfig = createDefaultConfig();
 
-      backupConfig.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
+      Configuration backupConfig = createDefaultConfig()
+         .setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration())
+         .setBindingsDirectory(HornetQDefaultConfiguration.getDefaultBindingsDirectory() + suffix)
+         .setJournalDirectory(HornetQDefaultConfiguration.getDefaultJournalDir() + suffix)
+         .setPagingDirectory(HornetQDefaultConfiguration.getDefaultPagingDir() + suffix)
+         .setLargeMessagesDirectory(HornetQDefaultConfiguration.getDefaultLargeMessagesDir() + suffix)
+         .setIncomingInterceptorClassNames(interceptors.length > 0 ? Arrays.asList(interceptors) : new ArrayList<String>());
 
-      final String suffix = "_backup";
-      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + suffix);
-      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + suffix);
-      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + suffix);
-      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix);
+      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig, liveConnector);
 
-      if (interceptors.length > 0)
-      {
-         List<String> interceptorsList = Arrays.asList(interceptors);
-         backupConfig.setIncomingInterceptorClassNames(interceptorsList);
-      }
-
-      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
-                                                     liveConnector);
       if (backup)
       {
          liveServer = createServer(liveConfig);

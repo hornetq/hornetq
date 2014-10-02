@@ -1231,8 +1231,7 @@
             </xsd:annotation>
          </xsd:element>
 
-         <xsd:element name="use-duplicate-detection" type="xsd:boolean" default="true"
-                      maxOccurs="1" minOccurs="0">
+         <xsd:element name="use-duplicate-detection" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
             <xsd:annotation hq:field_name="DEFAULT_BRIDGE_DUPLICATE_DETECTION">
                <xsd:documentation>
                   should duplicate detection headers be inserted in forwarded messages?
@@ -1240,8 +1239,8 @@
             </xsd:annotation>
          </xsd:element>
 
-         <xsd:element name="confirmation-window-size" type="xsd:int" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:default="(bytes, 1024 * 1024)">
+         <xsd:element name="confirmation-window-size" type="xsd:int" maxOccurs="1" minOccurs="0" default="1048576">
+            <xsd:annotation hq:default="(bytes)" hq:field_name="DEFAULT_BRIDGE_CONFIRMATION_WINDOW_SIZE">
                <xsd:documentation>
                   Once the bridge has received this many bytes, it sends a confirmation
                </xsd:documentation>
@@ -1264,8 +1263,7 @@
             </xsd:annotation>
          </xsd:element>
 
-         <xsd:element name="reconnect-attempts-same-node" default="10" type="xsd:int"
-                      maxOccurs="1" minOccurs="0">
+         <xsd:element name="reconnect-attempts-same-node" default="10" type="xsd:int" maxOccurs="1" minOccurs="0">
             <xsd:annotation hq:default="(int, 10)" hq:field_name="DEFAULT_BRIDGE_CONNECT_SAME_NODE">
                <xsd:documentation>
                   Upon reconnection this configures the number of time the same node on the topology will be retried
@@ -1327,8 +1325,7 @@
          </xsd:element>
 
          <xsd:element name="check-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)"
-                            hq:field_name="DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD">
+            <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)" hq:field_name="DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD">
                <xsd:documentation>
                   The period (in milliseconds) used to check if the cluster connection has failed to receive pings from
                   another server
@@ -1337,8 +1334,7 @@
          </xsd:element>
 
          <xsd:element name="connection-ttl" type="xsd:long" default="60000" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)"
-                            hq:field_name="DEFAULT_CLUSTER_CONNECTION_TTL">
+            <xsd:annotation hq:linkend="connection-ttl" hq:default="(ms)" hq:field_name="DEFAULT_CLUSTER_CONNECTION_TTL">
                <xsd:documentation>
                   how long to keep a connection alive in the absence of any data arriving from the client
                </xsd:documentation>
@@ -1354,7 +1350,7 @@
          </xsd:element>
 
          <xsd:element name="call-timeout" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:default="(ms)">
+            <xsd:annotation hq:default="(ms)" hq:field_name="DEFAULT_CLUSTER_CALL_TIMEOUT">
                <xsd:documentation>
                   How long to wait for a reply
                </xsd:documentation>
@@ -1426,7 +1422,7 @@
          </xsd:element>
 
          <xsd:element name="confirmation-window-size" type="xsd:int" default="1048576" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:linkend="client-reconnection">
+            <xsd:annotation hq:field_name="DEFAULT_CLUSTER_CONFIRMATION_WINDOW_SIZE" hq:linkend="client-reconnection">
                <xsd:documentation>
                   The size (in bytes) of the window used for confirming data from the server connected to.
                </xsd:documentation>
@@ -1434,7 +1430,7 @@
          </xsd:element>
 
          <xsd:element name="call-failover-timeout" type="xsd:long" default="-1" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:linkend="clusters.cluster-connections" hq:default="(ms)">
+            <xsd:annotation hq:linkend="clusters.cluster-connections" hq:default="(ms)" hq:field_name="DEFAULT_CLUSTER_CALL_FAILOVER_TIMEOUT">
                <xsd:documentation>
                   How long to wait for a reply if in the middle of a fail-over. -1 means wait forever.
                </xsd:documentation>
@@ -1472,9 +1468,8 @@
                   <xsd:sequence>
                      <xsd:element name="connector-ref" type="xsd:string" maxOccurs="unbounded" minOccurs="0"/>
                   </xsd:sequence>
-                  <xsd:attribute name="allow-direct-connections-only" default="false" type="xsd:boolean"
-                                 use="optional">
-                     <xsd:annotation>
+                  <xsd:attribute name="allow-direct-connections-only" default="false" type="xsd:boolean" use="optional">
+                     <xsd:annotation hq:field_name="DEFAULT_CLUSTER_ALLOW_DIRECT_CONNECTIONS">
                         <xsd:documentation>
                            restricts cluster connections to the listed connector-ref's
                         </xsd:documentation>
@@ -2079,14 +2074,14 @@
             </xsd:annotation>
          </xsd:element>
          <xsd:element name="timeout" type="xsd:int" default="5000" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:default="(ms)">
+            <xsd:annotation hq:default="(ms)" hq:field_name="DEFAULT_GROUPING_HANDLER_TIMEOUT">
                <xsd:documentation>
                   How long to wait for a decision
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
          <xsd:element name="group-timeout" type="xsd:int" default="-1" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:default="(ms)">
+            <xsd:annotation hq:default="(ms)" hq:field_name="DEFAULT_GROUPING_HANDLER_GROUP_TIMEOUT">
                <xsd:documentation>
                   How long a group binding will be used, -1 means for ever. Bindings are removed after this wait
                   elapses. On the remote node this is used to determine how often you should re-query the main
@@ -2095,7 +2090,7 @@
             </xsd:annotation>
          </xsd:element>
          <xsd:element name="reaper-period" type="xsd:long" default="30000" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:default="(ms)">
+            <xsd:annotation hq:default="(ms)" hq:field_name="DEFAULT_GROUPING_HANDLER_REAPER_PERIOD">
                <xsd:documentation>
                   How often the reaper will be run to check for timed out group bindings. Only valid for LOCAL handlers
                </xsd:documentation>

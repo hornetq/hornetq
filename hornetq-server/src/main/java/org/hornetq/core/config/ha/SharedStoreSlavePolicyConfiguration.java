@@ -24,19 +24,12 @@ public class SharedStoreSlavePolicyConfiguration implements HAPolicyConfiguratio
 
    private boolean restartBackup = HornetQDefaultConfiguration.isDefaultRestartBackup();
 
+   private boolean allowFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
+
    private ScaleDownConfiguration scaleDownConfiguration;
 
    public SharedStoreSlavePolicyConfiguration()
    {
-   }
-
-   public SharedStoreSlavePolicyConfiguration(long failbackDelay, boolean failoverOnServerShutdown, boolean restartBackup, ScaleDownConfiguration scaleDownConfiguration, boolean allowAutoFailBack)
-   {
-      this.failbackDelay = failbackDelay;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-      this.restartBackup = restartBackup;
-      this.scaleDownConfiguration = scaleDownConfiguration;
-      this.allowFailBack = allowAutoFailBack;
    }
 
    @Override
@@ -50,9 +43,10 @@ public class SharedStoreSlavePolicyConfiguration implements HAPolicyConfiguratio
       return restartBackup;
    }
 
-   public void setRestartBackup(boolean restartBackup)
+   public SharedStoreSlavePolicyConfiguration setRestartBackup(boolean restartBackup)
    {
       this.restartBackup = restartBackup;
+      return this;
    }
 
    public ScaleDownConfiguration getScaleDownConfiguration()
@@ -60,9 +54,10 @@ public class SharedStoreSlavePolicyConfiguration implements HAPolicyConfiguratio
       return scaleDownConfiguration;
    }
 
-   public void setScaleDownConfiguration(ScaleDownConfiguration scaleDownConfiguration)
+   public SharedStoreSlavePolicyConfiguration setScaleDownConfiguration(ScaleDownConfiguration scaleDownConfiguration)
    {
       this.scaleDownConfiguration = scaleDownConfiguration;
+      return this;
    }
 
    public boolean isAllowFailBack()
@@ -70,9 +65,10 @@ public class SharedStoreSlavePolicyConfiguration implements HAPolicyConfiguratio
       return allowFailBack;
    }
 
-   public void setAllowFailBack(boolean allowFailBack)
+   public SharedStoreSlavePolicyConfiguration setAllowFailBack(boolean allowFailBack)
    {
       this.allowFailBack = allowFailBack;
+      return this;
    }
 
    public boolean isFailoverOnServerShutdown()
@@ -80,9 +76,10 @@ public class SharedStoreSlavePolicyConfiguration implements HAPolicyConfiguratio
       return failoverOnServerShutdown;
    }
 
-   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public SharedStoreSlavePolicyConfiguration setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
+      return this;
    }
 
    public long getFailbackDelay()
@@ -90,11 +87,10 @@ public class SharedStoreSlavePolicyConfiguration implements HAPolicyConfiguratio
       return failbackDelay;
    }
 
-   public void setFailbackDelay(long failbackDelay)
+   public SharedStoreSlavePolicyConfiguration setFailbackDelay(long failbackDelay)
    {
       this.failbackDelay = failbackDelay;
+      return this;
    }
-
-   private boolean allowFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
 
 }

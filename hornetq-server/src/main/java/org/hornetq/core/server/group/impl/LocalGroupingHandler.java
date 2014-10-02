@@ -265,7 +265,7 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
          {
             waitingForBindings = true;
 
-            //make a copy of the bindings added so far from the cluster via onNotification().
+            //make a copy of the bindings added so far from the cluster via onNotification()
             List<SimpleString> bindingsAlreadyAdded;
             if (expectedBindings == null)
             {

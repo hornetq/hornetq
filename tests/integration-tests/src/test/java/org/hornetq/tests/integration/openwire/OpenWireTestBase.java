@@ -154,11 +154,13 @@ public class OpenWireTestBase extends ServiceTestBase
       {
          cfName = "cfOpenWire";
       }
-      ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(cfName, ha, connectorNames);
-      configuration.setRetryInterval(retryInterval);
-      configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
-      configuration.setCallTimeout(callTimeout);
-      configuration.setReconnectAttempts(reconnectAttempts);
+      ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl()
+         .setName(cfName)
+         .setConnectorNames(connectorNames)
+         .setRetryInterval(retryInterval)
+         .setRetryIntervalMultiplier(retryIntervalMultiplier)
+         .setCallTimeout(callTimeout)
+         .setReconnectAttempts(reconnectAttempts);
       jmsServer.createConnectionFactory(false, configuration, jndiBindings);
    }
 

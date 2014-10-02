@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.management;
 
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,45 +23,35 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * A JMXDomainTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class JMXDomainTest extends ManagementTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
+   HornetQServer server_0 = null;
+   HornetQServer server_1 = null;
 
    @Test
    public void test2HornetQServersManagedFrom1MBeanServer() throws Exception
    {
-
-      Configuration config_0 = createDefaultConfig();
-      config_0.setJMXManagementEnabled(true);
+      Configuration config_0 = createDefaultConfig()
+         .setJMXManagementEnabled(true);
 
       String jmxDomain_1 = HornetQDefaultConfiguration.getDefaultJmxDomain() + ".1";
 
-      Configuration config_1 = createBasicConfig();
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      config_1.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params));
-      config_1.setJMXDomain(jmxDomain_1);
-      config_1.setJMXManagementEnabled(true);
+      Configuration config_1 = createBasicConfig()
+         .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params))
+         .setJMXDomain(jmxDomain_1);
 
-      HornetQServer server_0 = HornetQServers.newHornetQServer(config_0, mbeanServer, false);
-      HornetQServer server_1 = HornetQServers.newHornetQServer(config_1, mbeanServer, false);
+      server_0 = HornetQServers.newHornetQServer(config_0, mbeanServer, false);
+      server_1 = HornetQServers.newHornetQServer(config_1, mbeanServer, false);
 
       ObjectNameBuilder builder_0 = ObjectNameBuilder.DEFAULT;
       ObjectNameBuilder builder_1 = ObjectNameBuilder.create(jmxDomain_1);
@@ -90,14 +78,22 @@ public class JMXDomainTest extends ManagementTestBase
 
       checkNoResource(builder_0.getHornetQServerObjectName());
       checkNoResource(builder_1.getHornetQServerObjectName());
-
    }
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
+   @Override
+   @After
+   public void tearDown() throws Exception
+   {
+      if (server_0 != null)
+      {
+         server_0.stop();
+      }
 
-   // Private -------------------------------------------------------
+      if (server_1 != null)
+      {
+         server_1.stop();
+      }
 
-   // Inner classes -------------------------------------------------
-
+      super.tearDown();
+   }
 }

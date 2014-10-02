@@ -56,10 +56,8 @@ public class AcceptorControlTest extends ManagementTestBase
                                                                          new HashMap<String, Object>(),
                                                                          RandomUtil.randomString());
 
-      Configuration conf = createBasicConfig();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(acceptorConfig);
+      Configuration conf = createBasicConfig()
+         .addAcceptorConfiguration(acceptorConfig);
       HornetQServer service = createServer(false, conf, mbeanServer);
       service.start();
 
@@ -75,10 +73,8 @@ public class AcceptorControlTest extends ManagementTestBase
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
                                                                          RandomUtil.randomString());
-      Configuration conf = createBasicConfig();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(acceptorConfig);
+      Configuration conf = createBasicConfig()
+         .addAcceptorConfiguration(acceptorConfig);
       HornetQServer service = createServer(false, conf, mbeanServer);
       service.start();
 
@@ -136,10 +132,8 @@ public class AcceptorControlTest extends ManagementTestBase
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
                                                                          RandomUtil.randomString());
-      Configuration conf = createBasicConfig();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(acceptorConfig);
+      Configuration conf = createBasicConfig()
+         .addAcceptorConfiguration(acceptorConfig);
       HornetQServer service = createServer(false, conf, mbeanServer);
       service.start();
 

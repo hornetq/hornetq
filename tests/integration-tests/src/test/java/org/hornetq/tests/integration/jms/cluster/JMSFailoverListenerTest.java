@@ -288,27 +288,25 @@ public class JMSFailoverListenerTest extends ServiceTestBase
       livetc = new TransportConfiguration(INVM_CONNECTOR_FACTORY);
 
       liveAcceptortc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
-
       backupAcceptortc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams);
 
-      backupConf = createBasicConfig(0);
-
-      backupConf.getAcceptorConfigurations().add(backupAcceptortc);
-      backupConf.getConnectorConfigurations().put(livetc.getName(), livetc);
-      backupConf.getConnectorConfigurations().put(backuptc.getName(), backuptc);
-      basicClusterConnectionConfig(backupConf, backuptc.getName(), livetc.getName());
-
-      backupConf.setSecurityEnabled(false);
-      backupConf.setJournalType(getDefaultJournalType());
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
-      backupConf.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
-      backupConf.setBindingsDirectory(getBindingsDir());
-      backupConf.setJournalMinFiles(2);
-      backupConf.setJournalDirectory(getJournalDir());
-      backupConf.setPagingDirectory(getPageDir());
-      backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
-      backupConf.setPersistenceEnabled(true);
+
+      backupConf = createBasicConfig(0)
+         .addAcceptorConfiguration(backupAcceptortc)
+         .addConnectorConfiguration(livetc.getName(), livetc)
+         .addConnectorConfiguration(backuptc.getName(), backuptc)
+         .setJournalType(getDefaultJournalType())
+         .addAcceptorConfiguration(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams))
+         .setBindingsDirectory(getBindingsDir())
+         .setJournalMinFiles(2)
+         .setJournalDirectory(getJournalDir())
+         .setPagingDirectory(getPageDir())
+         .setLargeMessagesDirectory(getLargeMessagesDir())
+         .setPersistenceEnabled(true)
+         .setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration())
+         .addClusterConfiguration(basicClusterConnectionConfig(backuptc.getName(), livetc.getName()));
+
       backupService = new InVMNodeManagerServer(backupConf, nodeManager);
 
       backupJMSService = new JMSServerManagerImpl(backupService);
@@ -319,23 +317,21 @@ public class JMSFailoverListenerTest extends ServiceTestBase
       log.info("Starting backup");
       backupJMSService.start();
 
-      liveConf = createBasicConfig(0);
+      liveConf = createBasicConfig(0)
+         .setJournalDirectory(getJournalDir())
+         .setBindingsDirectory(getBindingsDir())
+         .addAcceptorConfiguration(liveAcceptortc)
+         .setJournalType(getDefaultJournalType())
+         .setBindingsDirectory(getBindingsDir())
+         .setJournalMinFiles(2)
+         .setJournalDirectory(getJournalDir())
+         .setPagingDirectory(getPageDir())
+         .setLargeMessagesDirectory(getLargeMessagesDir())
+         .addConnectorConfiguration(livetc.getName(), livetc)
+         .setPersistenceEnabled(true)
+         .setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration())
+         .addClusterConfiguration(basicClusterConnectionConfig(livetc.getName()));
 
-      liveConf.setJournalDirectory(getJournalDir());
-      liveConf.setBindingsDirectory(getBindingsDir());
-
-      liveConf.setSecurityEnabled(false);
-      liveConf.getAcceptorConfigurations().add(liveAcceptortc);
-      basicClusterConnectionConfig(liveConf, livetc.getName());
-      liveConf.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
-      liveConf.setJournalType(getDefaultJournalType());
-      liveConf.setBindingsDirectory(getBindingsDir());
-      liveConf.setJournalMinFiles(2);
-      liveConf.setJournalDirectory(getJournalDir());
-      liveConf.setPagingDirectory(getPageDir());
-      liveConf.setLargeMessagesDirectory(getLargeMessagesDir());
-      liveConf.getConnectorConfigurations().put(livetc.getName(), livetc);
-      liveConf.setPersistenceEnabled(true);
       liveService = new InVMNodeManagerServer(liveConf, nodeManager);
 
       liveJMSService = new JMSServerManagerImpl(liveService);

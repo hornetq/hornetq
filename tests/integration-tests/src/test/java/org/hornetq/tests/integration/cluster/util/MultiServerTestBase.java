@@ -178,33 +178,21 @@ public class MultiServerTestBase extends ServiceTestBase
                                                               final boolean sharedStorage) throws Exception
    {
       NodeManager nodeManager = null;
+      TransportConfiguration serverConfigAcceptor = createTransportConfiguration(useNetty(), true, generateParams(node, useNetty()));
+      TransportConfiguration thisConnector = createTransportConfiguration(useNetty(), false, generateParams(node, useNetty()));
 
       if (sharedStorage)
       {
          nodeManager = new InVMNodeManager(false);
       }
 
-      Configuration configuration = createBasicConfig(node);
-
-      configuration.setJournalMaxIO_AIO(1000);
-
-      if (sharedStorage)
-         configuration.setHAPolicyConfiguration(new SharedStoreMasterPolicyConfiguration());
-      else
-         configuration.setHAPolicyConfiguration(new ReplicatedPolicyConfiguration());
-
-      configuration.setThreadPoolMaxSize(10);
-
-      configuration.getAcceptorConfigurations().clear();
-
-      TransportConfiguration serverConfigAcceptor = createTransportConfiguration(useNetty(), true,
-                                                                                 generateParams(node, useNetty()));
-      configuration.getAcceptorConfigurations().add(serverConfigAcceptor);
-
-
-      TransportConfiguration thisConnector = createTransportConfiguration(useNetty(), false, generateParams(node, useNetty()));
-
-      configuration.getConnectorConfigurations().put("thisConnector", thisConnector);
+      Configuration configuration = createBasicConfig(node)
+         .setJournalMaxIO_AIO(1000)
+         .setThreadPoolMaxSize(10)
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(serverConfigAcceptor)
+         .addConnectorConfiguration("thisConnector", thisConnector)
+         .setHAPolicyConfiguration(sharedStorage ? new SharedStoreMasterPolicyConfiguration() : new ReplicatedPolicyConfiguration());
 
       List<String> targetServersOnConnection = new ArrayList<String>();
 
@@ -227,15 +215,14 @@ public class MultiServerTestBase extends ServiceTestBase
          configuration.getConnectorConfigurations().put(backupConnectorName, backupConnector);
       }
 
-      ClusterConnectionConfiguration clusterConf =
-         new ClusterConnectionConfiguration("localCluster" + node, "cluster-queues", "thisConnector",
-                                            100,
-                                            true,
-                                            false,
-                                            1,
-                                            1024,
-                                            targetServersOnConnection,
-                                            false);
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration()
+         .setName("localCluster" + node)
+         .setAddress("cluster-queues")
+         .setConnectorName("thisConnector")
+         .setRetryInterval(100)
+         .setConfirmationWindowSize(1024)
+         .setStaticConnectors(targetServersOnConnection);
+
       configuration.getClusterConfigurations().add(clusterConf);
 
       HornetQServer server;
@@ -261,24 +248,14 @@ public class MultiServerTestBase extends ServiceTestBase
                                              final int liveNode,
                                              final NodeManager nodeManager) throws Exception
    {
-      Configuration configuration = createBasicConfig(useSharedStorage() ? liveNode : node);
-
-      if (useSharedStorage())
-         configuration.setHAPolicyConfiguration(new SharedStoreSlavePolicyConfiguration());
-      else
-         configuration.setHAPolicyConfiguration(new ReplicaPolicyConfiguration());
-
-      configuration.getAcceptorConfigurations().clear();
-
-      TransportConfiguration serverConfigAcceptor = createTransportConfiguration(useNetty(), true,
-                                                                                 generateParams(node, useNetty()));
-      configuration.getAcceptorConfigurations().add(serverConfigAcceptor);
-
-
-
+      TransportConfiguration serverConfigAcceptor = createTransportConfiguration(useNetty(), true, generateParams(node, useNetty()));
       TransportConfiguration thisConnector = createTransportConfiguration(useNetty(), false, generateParams(node, useNetty()));
 
-      configuration.getConnectorConfigurations().put("thisConnector", thisConnector);
+      Configuration configuration = createBasicConfig(useSharedStorage() ? liveNode : node)
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(serverConfigAcceptor)
+         .addConnectorConfiguration("thisConnector", thisConnector)
+         .setHAPolicyConfiguration(useSharedStorage() ? new SharedStoreSlavePolicyConfiguration() : new ReplicaPolicyConfiguration());
 
       List<String> targetServersOnConnection = new ArrayList<String>();
 
@@ -291,19 +268,18 @@ public class MultiServerTestBase extends ServiceTestBase
 //         }
          String targetConnectorName = "targetConnector-" + targetNode;
          TransportConfiguration targetServer = createTransportConfiguration(useNetty(), false, generateParams(targetNode, useNetty()));
-         configuration.getConnectorConfigurations().put(targetConnectorName, targetServer);
+         configuration.addConnectorConfiguration(targetConnectorName, targetServer);
          targetServersOnConnection.add(targetConnectorName);
       }
 
-      ClusterConnectionConfiguration clusterConf =
-         new ClusterConnectionConfiguration("localCluster" + node, "cluster-queues", "thisConnector",
-                                            100,
-                                            true,
-                                            false,
-                                            1,
-                                            1024,
-                                            targetServersOnConnection,
-                                            false);
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration()
+         .setName("localCluster" + node)
+         .setAddress("cluster-queues")
+         .setConnectorName("thisConnector")
+         .setRetryInterval(100)
+         .setConfirmationWindowSize(1024)
+         .setStaticConnectors(targetServersOnConnection);
+
       configuration.getClusterConfigurations().add(clusterConf);
 
       HornetQServer server;

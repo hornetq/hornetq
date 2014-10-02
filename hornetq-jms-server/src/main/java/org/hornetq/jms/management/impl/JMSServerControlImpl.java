@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
@@ -325,7 +324,39 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, ha, bindings);
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl()
+            .setName(name)
+            .setHA(ha)
+            .setBindings(bindings)
+            .setFactoryType(JMSFactoryType.valueOf(cfType))
+            .setClientID(clientID)
+            .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+            .setConnectionTTL(connectionTTL)
+            .setCallTimeout(callTimeout)
+            .setCallFailoverTimeout(callFailoverTimeout)
+            .setMinLargeMessageSize(minLargeMessageSize)
+            .setCompressLargeMessages(compressLargeMessages)
+            .setConsumerWindowSize(consumerWindowSize)
+            .setConsumerMaxRate(consumerMaxRate)
+            .setConfirmationWindowSize(confirmationWindowSize)
+            .setProducerWindowSize(producerWindowSize)
+            .setProducerMaxRate(producerMaxRate)
+            .setBlockOnAcknowledge(blockOnAcknowledge)
+            .setBlockOnDurableSend(blockOnDurableSend)
+            .setBlockOnNonDurableSend(blockOnNonDurableSend)
+            .setAutoGroup(autoGroup)
+            .setPreAcknowledge(preAcknowledge)
+            .setTransactionBatchSize(transactionBatchSize)
+            .setDupsOKBatchSize(dupsOKBatchSize)
+            .setUseGlobalPools(useGlobalPools)
+            .setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize)
+            .setThreadPoolMaxSize(threadPoolMaxSize)
+            .setRetryInterval(retryInterval)
+            .setRetryIntervalMultiplier(retryIntervalMultiplier)
+            .setMaxRetryInterval(maxRetryInterval)
+            .setReconnectAttempts(reconnectAttempts)
+            .setFailoverOnInitialConnection(failoverOnInitialConnection)
+            .setGroupID(groupId);
 
          if (useDiscovery)
          {
@@ -341,42 +372,10 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
             configuration.setConnectorNames(connectorNamesList);
          }
 
-         configuration.setFactoryType(JMSFactoryType.valueOf(cfType));
-         configuration.setClientID(clientID);
-         configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
-         configuration.setConnectionTTL(connectionTTL);
-         configuration.setCallTimeout(callTimeout);
-         configuration.setCallFailoverTimeout(callFailoverTimeout);
-         configuration.setMinLargeMessageSize(minLargeMessageSize);
-         configuration.setCompressLargeMessages(compressLargeMessages);
-         configuration.setConsumerWindowSize(consumerWindowSize);
-         configuration.setConsumerMaxRate(consumerMaxRate);
-         configuration.setConfirmationWindowSize(confirmationWindowSize);
-         configuration.setProducerWindowSize(producerWindowSize);
-         configuration.setProducerMaxRate(producerMaxRate);
-         configuration.setBlockOnAcknowledge(blockOnAcknowledge);
-         configuration.setBlockOnDurableSend(blockOnDurableSend);
-         configuration.setBlockOnNonDurableSend(blockOnNonDurableSend);
-         configuration.setAutoGroup(autoGroup);
-         configuration.setPreAcknowledge(preAcknowledge);
-
-         if (loadBalancingPolicyClassName == null || loadBalancingPolicyClassName.trim().equals(""))
+         if (loadBalancingPolicyClassName != null && !loadBalancingPolicyClassName.trim().equals(""))
          {
-            loadBalancingPolicyClassName = HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+            configuration.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
          }
-
-         configuration.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-         configuration.setTransactionBatchSize(transactionBatchSize);
-         configuration.setDupsOKBatchSize(dupsOKBatchSize);
-         configuration.setUseGlobalPools(useGlobalPools);
-         configuration.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
-         configuration.setThreadPoolMaxSize(threadPoolMaxSize);
-         configuration.setRetryInterval(retryInterval);
-         configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
-         configuration.setMaxRetryInterval(maxRetryInterval);
-         configuration.setReconnectAttempts(reconnectAttempts);
-         configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
-         configuration.setGroupID(groupId);
 
          server.createConnectionFactory(true, configuration, bindings);
       }

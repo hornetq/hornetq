@@ -25,15 +25,7 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
 
    private String groupName = null;
 
-   private String clusterName;
-   public ReplicatedPolicyConfiguration(boolean checkForLiveServer, boolean allowAutoFailBack, long failbackDelay, String groupName, String clusterName)
-   {
-      this.checkForLiveServer = checkForLiveServer;
-      this.allowAutoFailBack = allowAutoFailBack;
-      this.failbackDelay = failbackDelay;
-      this.groupName = groupName;
-      this.clusterName = clusterName;
-   }
+   private String clusterName = null;
 
    public ReplicatedPolicyConfiguration()
    {
@@ -50,9 +42,10 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
       return checkForLiveServer;
    }
 
-   public void setCheckForLiveServer(boolean checkForLiveServer)
+   public ReplicatedPolicyConfiguration setCheckForLiveServer(boolean checkForLiveServer)
    {
       this.checkForLiveServer = checkForLiveServer;
+      return this;
    }
 
    public boolean isAllowAutoFailBack()
@@ -60,9 +53,10 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
       return allowAutoFailBack;
    }
 
-   public void setAllowAutoFailBack(boolean allowAutoFailBack)
+   public ReplicatedPolicyConfiguration setAllowAutoFailBack(boolean allowAutoFailBack)
    {
       this.allowAutoFailBack = allowAutoFailBack;
+      return this;
    }
 
    public long getFailbackDelay()
@@ -70,9 +64,10 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
       return failbackDelay;
    }
 
-   public void setFailbackDelay(long failbackDelay)
+   public ReplicatedPolicyConfiguration setFailbackDelay(long failbackDelay)
    {
       this.failbackDelay = failbackDelay;
+      return this;
    }
 
    public String getGroupName()
@@ -80,9 +75,10 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
       return groupName;
    }
 
-   public void setGroupName(String groupName)
+   public ReplicatedPolicyConfiguration setGroupName(String groupName)
    {
       this.groupName = groupName;
+      return this;
    }
 
    public String getClusterName()
@@ -90,8 +86,9 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
       return clusterName;
    }
 
-   public void setClusterName(String clusterName)
+   public ReplicatedPolicyConfiguration setClusterName(String clusterName)
    {
       this.clusterName = clusterName;
+      return this;
    }
 }

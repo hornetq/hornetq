@@ -154,11 +154,11 @@ public class ConnectionFactoryControlTest extends ManagementTestBase
     */
    protected void startServer() throws Exception
    {
-      Configuration conf = createDefaultConfig(false);
-      conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      Configuration conf = createDefaultConfig(false)
+         .addConnectorConfiguration("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY))
+         .setSecurityEnabled(false)
+         .setJMXManagementEnabled(true)
+         .addAcceptorConfiguration(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       server.start();
 

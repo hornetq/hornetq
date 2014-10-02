@@ -403,8 +403,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          checkJournalDirectory();
 
-         nodeManager =
-            createNodeManager(configuration.getJournalDirectory(), false);
+         nodeManager = createNodeManager(configuration.getJournalDirectory(), false);
 
          nodeManager.start();
 
@@ -795,7 +794,7 @@ public class HornetQServerImpl implements HornetQServer
     * Freeze all connections.
     * <p/>
     * If replicating, avoid freezing the replication connection. Helper method for
-    * {@link #stop(boolean, boolean)}.
+    * {@link #stop(boolean, boolean, boolean)}.
     */
    private void freezeConnections()
    {

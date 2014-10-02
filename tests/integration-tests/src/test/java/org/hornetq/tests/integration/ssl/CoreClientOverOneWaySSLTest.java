@@ -559,8 +559,6 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
 
    private void createCustomSslServer(String cipherSuites, String protocols) throws Exception
    {
-      ConfigurationImpl config = createBasicConfig();
-      config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       params.put(TransportConstants.KEYSTORE_PROVIDER_PROP_NAME, storeType);
@@ -577,7 +575,8 @@ public class CoreClientOverOneWaySSLTest extends ServiceTestBase
          params.put(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, protocols);
       }
 
-      config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+      ConfigurationImpl config = createBasicConfig()
+         .addAcceptorConfiguration(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
       server = createServer(false, config);
       server.start();
       waitForServer(server);

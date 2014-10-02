@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -305,26 +306,28 @@ public class AutomaticColocatedQuorumVoteTest extends ServiceTestBase
 
    private Configuration getConfiguration(String identity, boolean scaleDown, TransportConfiguration liveConnector, TransportConfiguration liveAcceptor, TransportConfiguration... otherLiveNodes) throws Exception
    {
-      Configuration configuration = createDefaultConfig();
-      configuration.getAcceptorConfigurations().clear();
-      configuration.getAcceptorConfigurations().add(liveAcceptor);
-      configuration.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      configuration.setJournalDirectory(configuration.getJournalDirectory() + identity);
-      configuration.setBindingsDirectory(configuration.getBindingsDirectory() + identity);
-      configuration.setLargeMessagesDirectory(configuration.getLargeMessagesDirectory() + identity);
-      configuration.setPagingDirectory(configuration.getPagingDirectory() + identity);
+      Configuration configuration = createDefaultConfig()
+         .clearAcceptorConfigurations()
+         .addAcceptorConfiguration(liveAcceptor)
+         .addConnectorConfiguration(liveConnector.getName(), liveConnector)
+         .setJournalDirectory(HornetQDefaultConfiguration.getDefaultJournalDir() + identity)
+         .setBindingsDirectory(HornetQDefaultConfiguration.getDefaultBindingsDirectory() + identity)
+         .setLargeMessagesDirectory(HornetQDefaultConfiguration.getDefaultLargeMessagesDir() + identity)
+         .setPagingDirectory(HornetQDefaultConfiguration.getDefaultPagingDir() + identity)
+         .addQueueConfiguration(new CoreQueueConfiguration()
+                                   .setAddress("jms.queue.testQueue")
+                                   .setName("jms.queue.testQueue"));
+
       List<String> transportConfigurationList = new ArrayList<>();
 
       final ColocatedPolicyConfiguration haPolicy = new ColocatedPolicyConfiguration();
       for (TransportConfiguration otherLiveNode : otherLiveNodes)
       {
-         configuration.getConnectorConfigurations().put(otherLiveNode.getName(), otherLiveNode);
+         configuration.addConnectorConfiguration(otherLiveNode.getName(), otherLiveNode);
          transportConfigurationList.add(otherLiveNode.getName());
          haPolicy.getRemoteConnectors().add(otherLiveNode.getName());
       }
-      basicClusterConnectionConfig(configuration, liveConnector.getName(), transportConfigurationList);
-      configuration.getQueueConfigurations().add(new CoreQueueConfiguration("jms.queue.testQueue", "jms.queue.testQueue", null, true));
-
+      configuration.addClusterConfiguration(basicClusterConnectionConfig(liveConnector.getName(), transportConfigurationList));
       haPolicy.setBackupPortOffset(100);
       haPolicy.setBackupRequestRetries(-1);
       haPolicy.setBackupRequestRetryInterval(500);

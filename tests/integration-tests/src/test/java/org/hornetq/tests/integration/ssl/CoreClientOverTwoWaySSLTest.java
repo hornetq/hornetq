@@ -188,8 +188,6 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
    public void setUp() throws Exception
    {
       super.setUp();
-      ConfigurationImpl config = createBasicConfig();
-      config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       params.put(TransportConstants.KEYSTORE_PATH_PROP_NAME, SERVER_SIDE_KEYSTORE);
@@ -199,7 +197,8 @@ public class CoreClientOverTwoWaySSLTest extends ServiceTestBase
       params.put(TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME, storeType);
       params.put(TransportConstants.KEYSTORE_PROVIDER_PROP_NAME, storeType);
       params.put(TransportConstants.NEED_CLIENT_AUTH_PROP_NAME, true);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+      ConfigurationImpl config = createBasicConfig()
+         .addAcceptorConfiguration(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
       server = createServer(false, config);
       server.start();
       waitForServer(server);

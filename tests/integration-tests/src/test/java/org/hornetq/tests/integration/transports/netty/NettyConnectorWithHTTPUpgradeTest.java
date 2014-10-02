@@ -87,18 +87,17 @@ public class NettyConnectorWithHTTPUpgradeTest extends UnitTestCase
    public void setUp() throws Exception
    {
       super.setUp();
-      conf = createDefaultConfig();
-
-      acceptorName = randomString();
-      conf.setSecurityEnabled(false);
       HashMap<String, Object> httpParams = new HashMap<String, Object>();
       // This prop controls the usage of HTTP Get + Upgrade from Netty connector
       httpParams.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
       httpParams.put(TransportConstants.PORT_PROP_NAME, HTTP_PORT);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, httpParams, acceptorName));
-
+      acceptorName = randomString();
       HashMap<String, Object> emptyParams = new HashMap<>();
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, emptyParams, randomString()));
+
+      conf = createDefaultConfig()
+         .setSecurityEnabled(false)
+         .addAcceptorConfiguration(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, httpParams, acceptorName))
+         .addAcceptorConfiguration(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, emptyParams, randomString()));
 
       server = addServer(HornetQServers.newHornetQServer(conf, false));
 

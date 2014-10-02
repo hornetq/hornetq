@@ -449,7 +449,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    // PostOffice implementation -----------------------------------------------
 
-   // TODO - needs to be synchronized to prevent happening concurrently with activate().
+   // TODO - needs to be synchronized to prevent happening concurrently with activate()
    // (and possible removeBinding and other methods)
    // Otherwise can have situation where createQueue comes in before failover, then failover occurs
    // and post office is activated but queue remains unactivated after failover so delivery never occurs

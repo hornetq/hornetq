@@ -1923,7 +1923,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
                : raProperties.getDiscoveryLocalBindAddress();
-            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
+            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration()
+               .setGroupAddress(discoveryAddress)
+               .setGroupPort(discoveryPort)
+               .setLocalBindAddress(localBindAddress)
+               .setLocalBindPort(-1);
          }
          else if (jgroupsFileName != null)
          {
@@ -1944,7 +1948,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
          }
 
-         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(refreshTimeout, initialTimeout, endpointFactoryConfiguration);
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration()
+            .setRefreshTimeout(refreshTimeout)
+            .setDiscoveryInitialWaitTimeout(initialTimeout)
+            .setBroadcastEndpointFactoryConfiguration(endpointFactoryConfiguration);
 
          if (HornetQRALogger.LOGGER.isDebugEnabled())
          {
@@ -2044,7 +2051,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
             String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
                : raProperties.getDiscoveryLocalBindAddress();
-            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
+            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration()
+               .setGroupAddress(discoveryAddress)
+               .setGroupPort(discoveryPort)
+               .setLocalBindAddress(localBindAddress)
+               .setLocalBindPort(-1);
          }
          else if (jgroupsFileName != null)
          {
@@ -2078,7 +2089,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          {
             initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
          }
-         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(refreshTimeout, initialTimeout, endpointFactoryConfiguration);
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration()
+            .setRefreshTimeout(refreshTimeout)
+            .setDiscoveryInitialWaitTimeout(initialTimeout)
+            .setBroadcastEndpointFactoryConfiguration(endpointFactoryConfiguration);
 
          groupConfiguration.setRefreshTimeout(refreshTimeout);
 

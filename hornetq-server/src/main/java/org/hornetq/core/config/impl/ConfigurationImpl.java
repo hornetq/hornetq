@@ -209,8 +209,6 @@ public class ConfigurationImpl implements Configuration
 
    private boolean resolveProtocols = HornetQDefaultConfiguration.isDefaultResolveProtocols();
 
-   //private BackupStrategy backupStrategy;
-
    private long journalLockAcquisitionTimeout = HornetQDefaultConfiguration.getDefaultJournalLockAcquisitionTimeout();
 
    private HAPolicyConfiguration haPolicyConfiguration;
@@ -227,9 +225,10 @@ public class ConfigurationImpl implements Configuration
       return fileDeploymentEnabled;
    }
 
-   public void setFileDeploymentEnabled(final boolean enable)
+   public ConfigurationImpl setFileDeploymentEnabled(final boolean enable)
    {
       fileDeploymentEnabled = enable;
+      return this;
    }
 
    public boolean isPersistenceEnabled()
@@ -237,9 +236,10 @@ public class ConfigurationImpl implements Configuration
       return persistenceEnabled;
    }
 
-   public void setPersistenceEnabled(final boolean enable)
+   public ConfigurationImpl setPersistenceEnabled(final boolean enable)
    {
       persistenceEnabled = enable;
+      return this;
    }
 
    public long getFileDeployerScanPeriod()
@@ -247,9 +247,10 @@ public class ConfigurationImpl implements Configuration
       return fileDeploymentScanPeriod;
    }
 
-   public void setFileDeployerScanPeriod(final long period)
+   public ConfigurationImpl setFileDeployerScanPeriod(final long period)
    {
       fileDeploymentScanPeriod = period;
+      return this;
    }
 
    /**
@@ -260,9 +261,10 @@ public class ConfigurationImpl implements Configuration
       return persistDeliveryCountBeforeDelivery;
    }
 
-   public void setPersistDeliveryCountBeforeDelivery(final boolean persistDeliveryCountBeforeDelivery)
+   public ConfigurationImpl setPersistDeliveryCountBeforeDelivery(final boolean persistDeliveryCountBeforeDelivery)
    {
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
+      return this;
    }
 
    public int getScheduledThreadPoolMaxSize()
@@ -270,9 +272,10 @@ public class ConfigurationImpl implements Configuration
       return scheduledThreadPoolMaxSize;
    }
 
-   public void setScheduledThreadPoolMaxSize(final int maxSize)
+   public ConfigurationImpl setScheduledThreadPoolMaxSize(final int maxSize)
    {
       scheduledThreadPoolMaxSize = maxSize;
+      return this;
    }
 
    public int getThreadPoolMaxSize()
@@ -280,9 +283,10 @@ public class ConfigurationImpl implements Configuration
       return threadPoolMaxSize;
    }
 
-   public void setThreadPoolMaxSize(final int maxSize)
+   public ConfigurationImpl setThreadPoolMaxSize(final int maxSize)
    {
       threadPoolMaxSize = maxSize;
+      return this;
    }
 
    public long getSecurityInvalidationInterval()
@@ -290,9 +294,10 @@ public class ConfigurationImpl implements Configuration
       return securityInvalidationInterval;
    }
 
-   public void setSecurityInvalidationInterval(final long interval)
+   public ConfigurationImpl setSecurityInvalidationInterval(final long interval)
    {
       securityInvalidationInterval = interval;
+      return this;
    }
 
    public long getConnectionTTLOverride()
@@ -300,9 +305,10 @@ public class ConfigurationImpl implements Configuration
       return connectionTTLOverride;
    }
 
-   public void setConnectionTTLOverride(final long ttl)
+   public ConfigurationImpl setConnectionTTLOverride(final long ttl)
    {
       connectionTTLOverride = ttl;
+      return this;
    }
 
    public boolean isAsyncConnectionExecutionEnabled()
@@ -310,9 +316,10 @@ public class ConfigurationImpl implements Configuration
       return asyncConnectionExecutionEnabled;
    }
 
-   public void setEnabledAsyncConnectionExecution(final boolean enabled)
+   public ConfigurationImpl setEnabledAsyncConnectionExecution(final boolean enabled)
    {
       asyncConnectionExecutionEnabled = enabled;
+      return this;
    }
 
    @Deprecated
@@ -324,9 +331,10 @@ public class ConfigurationImpl implements Configuration
 
    @Deprecated
    @Override
-   public void setInterceptorClassNames(final List<String> interceptors)
+   public ConfigurationImpl setInterceptorClassNames(final List<String> interceptors)
    {
       setIncomingInterceptorClassNames(interceptors);
+      return this;
    }
 
    public List<String> getIncomingInterceptorClassNames()
@@ -334,9 +342,10 @@ public class ConfigurationImpl implements Configuration
       return incomingInterceptorClassNames;
    }
 
-   public void setIncomingInterceptorClassNames(final List<String> interceptors)
+   public ConfigurationImpl setIncomingInterceptorClassNames(final List<String> interceptors)
    {
       incomingInterceptorClassNames = interceptors;
+      return this;
    }
 
    public List<String> getOutgoingInterceptorClassNames()
@@ -344,9 +353,10 @@ public class ConfigurationImpl implements Configuration
       return outgoingInterceptorClassNames;
    }
 
-   public void setOutgoingInterceptorClassNames(final List<String> interceptors)
+   public ConfigurationImpl setOutgoingInterceptorClassNames(final List<String> interceptors)
    {
       outgoingInterceptorClassNames = interceptors;
+      return this;
    }
 
    public Set<TransportConfiguration> getAcceptorConfigurations()
@@ -354,9 +364,22 @@ public class ConfigurationImpl implements Configuration
       return acceptorConfigs;
    }
 
-   public void setAcceptorConfigurations(final Set<TransportConfiguration> infos)
+   public ConfigurationImpl setAcceptorConfigurations(final Set<TransportConfiguration> infos)
    {
       acceptorConfigs = infos;
+      return this;
+   }
+
+   public ConfigurationImpl addAcceptorConfiguration(final TransportConfiguration infos)
+   {
+      acceptorConfigs.add(infos);
+      return this;
+   }
+
+   public ConfigurationImpl clearAcceptorConfigurations()
+   {
+      acceptorConfigs.clear();
+      return this;
    }
 
    public Map<String, TransportConfiguration> getConnectorConfigurations()
@@ -364,9 +387,16 @@ public class ConfigurationImpl implements Configuration
       return connectorConfigs;
    }
 
-   public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
+   public ConfigurationImpl setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
       connectorConfigs = infos;
+      return this;
+   }
+
+   public ConfigurationImpl addConnectorConfiguration(final String key, final TransportConfiguration info)
+   {
+      connectorConfigs.put(key, info);
+      return this;
    }
 
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
@@ -374,9 +404,10 @@ public class ConfigurationImpl implements Configuration
       return groupingHandlerConfiguration;
    }
 
-   public void setGroupingHandlerConfiguration(final GroupingHandlerConfiguration groupingHandlerConfiguration)
+   public ConfigurationImpl setGroupingHandlerConfiguration(final GroupingHandlerConfiguration groupingHandlerConfiguration)
    {
       this.groupingHandlerConfiguration = groupingHandlerConfiguration;
+      return this;
    }
 
    public List<BridgeConfiguration> getBridgeConfigurations()
@@ -384,9 +415,16 @@ public class ConfigurationImpl implements Configuration
       return bridgeConfigurations;
    }
 
-   public void setBridgeConfigurations(final List<BridgeConfiguration> configs)
+   public ConfigurationImpl setBridgeConfigurations(final List<BridgeConfiguration> configs)
    {
       bridgeConfigurations = configs;
+      return this;
+   }
+
+   public ConfigurationImpl addBridgeConfiguration(final BridgeConfiguration config)
+   {
+      bridgeConfigurations.add(config);
+      return this;
    }
 
    public List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations()
@@ -394,9 +432,16 @@ public class ConfigurationImpl implements Configuration
       return broadcastGroupConfigurations;
    }
 
-   public void setBroadcastGroupConfigurations(final List<BroadcastGroupConfiguration> configs)
+   public ConfigurationImpl setBroadcastGroupConfigurations(final List<BroadcastGroupConfiguration> configs)
    {
       broadcastGroupConfigurations = configs;
+      return this;
+   }
+
+   public ConfigurationImpl addBroadcastGroupConfiguration(final BroadcastGroupConfiguration config)
+   {
+      broadcastGroupConfigurations.add(config);
+      return this;
    }
 
    public List<ClusterConnectionConfiguration> getClusterConfigurations()
@@ -404,9 +449,22 @@ public class ConfigurationImpl implements Configuration
       return clusterConfigurations;
    }
 
-   public void setClusterConfigurations(final List<ClusterConnectionConfiguration> configs)
+   public ConfigurationImpl setClusterConfigurations(final List<ClusterConnectionConfiguration> configs)
    {
       clusterConfigurations = configs;
+      return this;
+   }
+
+   public ConfigurationImpl addClusterConfiguration(final ClusterConnectionConfiguration config)
+   {
+      clusterConfigurations.add(config);
+      return this;
+   }
+
+   public ConfigurationImpl clearClusterConfigurations()
+   {
+      clusterConfigurations.clear();
+      return this;
    }
 
    public List<DivertConfiguration> getDivertConfigurations()
@@ -414,9 +472,16 @@ public class ConfigurationImpl implements Configuration
       return divertConfigurations;
    }
 
-   public void setDivertConfigurations(final List<DivertConfiguration> configs)
+   public ConfigurationImpl setDivertConfigurations(final List<DivertConfiguration> configs)
    {
       divertConfigurations = configs;
+      return this;
+   }
+
+   public ConfigurationImpl addDivertConfiguration(final DivertConfiguration config)
+   {
+      divertConfigurations.add(config);
+      return this;
    }
 
    public List<CoreQueueConfiguration> getQueueConfigurations()
@@ -424,9 +489,16 @@ public class ConfigurationImpl implements Configuration
       return queueConfigurations;
    }
 
-   public void setQueueConfigurations(final List<CoreQueueConfiguration> configs)
+   public ConfigurationImpl setQueueConfigurations(final List<CoreQueueConfiguration> configs)
    {
       queueConfigurations = configs;
+      return this;
+   }
+
+   public ConfigurationImpl addQueueConfiguration(final CoreQueueConfiguration config)
+   {
+      queueConfigurations.add(config);
+      return this;
    }
 
    public Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations()
@@ -434,9 +506,16 @@ public class ConfigurationImpl implements Configuration
       return discoveryGroupConfigurations;
    }
 
-   public void setDiscoveryGroupConfigurations(final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations)
+   public ConfigurationImpl setDiscoveryGroupConfigurations(final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations)
    {
       this.discoveryGroupConfigurations = discoveryGroupConfigurations;
+      return this;
+   }
+
+   public ConfigurationImpl addDiscoveryGroupConfiguration(final String key, DiscoveryGroupConfiguration discoveryGroupConfiguration)
+   {
+      this.discoveryGroupConfigurations.put(key, discoveryGroupConfiguration);
+      return this;
    }
 
    public int getIDCacheSize()
@@ -444,9 +523,10 @@ public class ConfigurationImpl implements Configuration
       return idCacheSize;
    }
 
-   public void setIDCacheSize(final int idCacheSize)
+   public ConfigurationImpl setIDCacheSize(final int idCacheSize)
    {
       this.idCacheSize = idCacheSize;
+      return this;
    }
 
    public boolean isPersistIDCache()
@@ -454,9 +534,10 @@ public class ConfigurationImpl implements Configuration
       return persistIDCache;
    }
 
-   public void setPersistIDCache(final boolean persist)
+   public ConfigurationImpl setPersistIDCache(final boolean persist)
    {
       persistIDCache = persist;
+      return this;
    }
 
    public String getBindingsDirectory()
@@ -464,9 +545,10 @@ public class ConfigurationImpl implements Configuration
       return bindingsDirectory;
    }
 
-   public void setBindingsDirectory(final String dir)
+   public ConfigurationImpl setBindingsDirectory(final String dir)
    {
       bindingsDirectory = dir;
+      return this;
    }
 
 
@@ -477,9 +559,10 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setPageMaxConcurrentIO(int maxIO)
+   public ConfigurationImpl setPageMaxConcurrentIO(int maxIO)
    {
       this.maxConcurrentPageIO = maxIO;
+      return this;
    }
 
 
@@ -488,9 +571,10 @@ public class ConfigurationImpl implements Configuration
       return journalDirectory;
    }
 
-   public void setJournalDirectory(final String dir)
+   public ConfigurationImpl setJournalDirectory(final String dir)
    {
       journalDirectory = dir;
+      return this;
    }
 
    public JournalType getJournalType()
@@ -498,9 +582,10 @@ public class ConfigurationImpl implements Configuration
       return journalType;
    }
 
-   public void setPagingDirectory(final String dir)
+   public ConfigurationImpl setPagingDirectory(final String dir)
    {
       pagingDirectory = dir;
+      return this;
    }
 
    public String getPagingDirectory()
@@ -508,9 +593,10 @@ public class ConfigurationImpl implements Configuration
       return pagingDirectory;
    }
 
-   public void setJournalType(final JournalType type)
+   public ConfigurationImpl setJournalType(final JournalType type)
    {
       journalType = type;
+      return this;
    }
 
    public boolean isJournalSyncTransactional()
@@ -518,9 +604,10 @@ public class ConfigurationImpl implements Configuration
       return journalSyncTransactional;
    }
 
-   public void setJournalSyncTransactional(final boolean sync)
+   public ConfigurationImpl setJournalSyncTransactional(final boolean sync)
    {
       journalSyncTransactional = sync;
+      return this;
    }
 
    public boolean isJournalSyncNonTransactional()
@@ -528,9 +615,10 @@ public class ConfigurationImpl implements Configuration
       return journalSyncNonTransactional;
    }
 
-   public void setJournalSyncNonTransactional(final boolean sync)
+   public ConfigurationImpl setJournalSyncNonTransactional(final boolean sync)
    {
       journalSyncNonTransactional = sync;
+      return this;
    }
 
    public int getJournalFileSize()
@@ -538,9 +626,10 @@ public class ConfigurationImpl implements Configuration
       return journalFileSize;
    }
 
-   public void setJournalFileSize(final int size)
+   public ConfigurationImpl setJournalFileSize(final int size)
    {
       journalFileSize = size;
+      return this;
    }
 
    public int getJournalMinFiles()
@@ -548,9 +637,10 @@ public class ConfigurationImpl implements Configuration
       return journalMinFiles;
    }
 
-   public void setJournalMinFiles(final int files)
+   public ConfigurationImpl setJournalMinFiles(final int files)
    {
       journalMinFiles = files;
+      return this;
    }
 
    public boolean isLogJournalWriteRate()
@@ -558,9 +648,10 @@ public class ConfigurationImpl implements Configuration
       return logJournalWriteRate;
    }
 
-   public void setLogJournalWriteRate(final boolean logJournalWriteRate)
+   public ConfigurationImpl setLogJournalWriteRate(final boolean logJournalWriteRate)
    {
       this.logJournalWriteRate = logJournalWriteRate;
+      return this;
    }
 
    public int getJournalPerfBlastPages()
@@ -568,9 +659,10 @@ public class ConfigurationImpl implements Configuration
       return journalPerfBlastPages;
    }
 
-   public void setJournalPerfBlastPages(final int journalPerfBlastPages)
+   public ConfigurationImpl setJournalPerfBlastPages(final int journalPerfBlastPages)
    {
       this.journalPerfBlastPages = journalPerfBlastPages;
+      return this;
    }
 
    public boolean isRunSyncSpeedTest()
@@ -578,9 +670,10 @@ public class ConfigurationImpl implements Configuration
       return runSyncSpeedTest;
    }
 
-   public void setRunSyncSpeedTest(final boolean run)
+   public ConfigurationImpl setRunSyncSpeedTest(final boolean run)
    {
       runSyncSpeedTest = run;
+      return this;
    }
 
    public boolean isCreateBindingsDir()
@@ -588,9 +681,10 @@ public class ConfigurationImpl implements Configuration
       return createBindingsDir;
    }
 
-   public void setCreateBindingsDir(final boolean create)
+   public ConfigurationImpl setCreateBindingsDir(final boolean create)
    {
       createBindingsDir = create;
+      return this;
    }
 
    public boolean isCreateJournalDir()
@@ -598,9 +692,10 @@ public class ConfigurationImpl implements Configuration
       return createJournalDir;
    }
 
-   public void setCreateJournalDir(final boolean create)
+   public ConfigurationImpl setCreateJournalDir(final boolean create)
    {
       createJournalDir = create;
+      return this;
    }
 
    public boolean isWildcardRoutingEnabled()
@@ -608,9 +703,10 @@ public class ConfigurationImpl implements Configuration
       return wildcardRoutingEnabled;
    }
 
-   public void setWildcardRoutingEnabled(final boolean enabled)
+   public ConfigurationImpl setWildcardRoutingEnabled(final boolean enabled)
    {
       wildcardRoutingEnabled = enabled;
+      return this;
    }
 
    public long getTransactionTimeout()
@@ -618,9 +714,10 @@ public class ConfigurationImpl implements Configuration
       return transactionTimeout;
    }
 
-   public void setTransactionTimeout(final long timeout)
+   public ConfigurationImpl setTransactionTimeout(final long timeout)
    {
       transactionTimeout = timeout;
+      return this;
    }
 
    public long getTransactionTimeoutScanPeriod()
@@ -628,9 +725,10 @@ public class ConfigurationImpl implements Configuration
       return transactionTimeoutScanPeriod;
    }
 
-   public void setTransactionTimeoutScanPeriod(final long period)
+   public ConfigurationImpl setTransactionTimeoutScanPeriod(final long period)
    {
       transactionTimeoutScanPeriod = period;
+      return this;
    }
 
    public long getMessageExpiryScanPeriod()
@@ -638,9 +736,10 @@ public class ConfigurationImpl implements Configuration
       return messageExpiryScanPeriod;
    }
 
-   public void setMessageExpiryScanPeriod(final long messageExpiryScanPeriod)
+   public ConfigurationImpl setMessageExpiryScanPeriod(final long messageExpiryScanPeriod)
    {
       this.messageExpiryScanPeriod = messageExpiryScanPeriod;
+      return this;
    }
 
    public int getMessageExpiryThreadPriority()
@@ -648,9 +747,10 @@ public class ConfigurationImpl implements Configuration
       return messageExpiryThreadPriority;
    }
 
-   public void setMessageExpiryThreadPriority(final int messageExpiryThreadPriority)
+   public ConfigurationImpl setMessageExpiryThreadPriority(final int messageExpiryThreadPriority)
    {
       this.messageExpiryThreadPriority = messageExpiryThreadPriority;
+      return this;
    }
 
    public boolean isSecurityEnabled()
@@ -658,9 +758,10 @@ public class ConfigurationImpl implements Configuration
       return securityEnabled;
    }
 
-   public void setSecurityEnabled(final boolean enabled)
+   public ConfigurationImpl setSecurityEnabled(final boolean enabled)
    {
       securityEnabled = enabled;
+      return this;
    }
 
    public boolean isJMXManagementEnabled()
@@ -668,9 +769,10 @@ public class ConfigurationImpl implements Configuration
       return jmxManagementEnabled;
    }
 
-   public void setJMXManagementEnabled(final boolean enabled)
+   public ConfigurationImpl setJMXManagementEnabled(final boolean enabled)
    {
       jmxManagementEnabled = enabled;
+      return this;
    }
 
    public String getJMXDomain()
@@ -678,9 +780,10 @@ public class ConfigurationImpl implements Configuration
       return jmxDomain;
    }
 
-   public void setJMXDomain(final String domain)
+   public ConfigurationImpl setJMXDomain(final String domain)
    {
       jmxDomain = domain;
+      return this;
    }
 
    public String getLargeMessagesDirectory()
@@ -688,9 +791,10 @@ public class ConfigurationImpl implements Configuration
       return largeMessagesDirectory;
    }
 
-   public void setLargeMessagesDirectory(final String directory)
+   public ConfigurationImpl setLargeMessagesDirectory(final String directory)
    {
       largeMessagesDirectory = directory;
+      return this;
    }
 
    public boolean isMessageCounterEnabled()
@@ -698,9 +802,10 @@ public class ConfigurationImpl implements Configuration
       return messageCounterEnabled;
    }
 
-   public void setMessageCounterEnabled(final boolean enabled)
+   public ConfigurationImpl setMessageCounterEnabled(final boolean enabled)
    {
       messageCounterEnabled = enabled;
+      return this;
    }
 
    public long getMessageCounterSamplePeriod()
@@ -708,9 +813,10 @@ public class ConfigurationImpl implements Configuration
       return messageCounterSamplePeriod;
    }
 
-   public void setMessageCounterSamplePeriod(final long period)
+   public ConfigurationImpl setMessageCounterSamplePeriod(final long period)
    {
       messageCounterSamplePeriod = period;
+      return this;
    }
 
    public int getMessageCounterMaxDayHistory()
@@ -718,9 +824,10 @@ public class ConfigurationImpl implements Configuration
       return messageCounterMaxDayHistory;
    }
 
-   public void setMessageCounterMaxDayHistory(final int maxDayHistory)
+   public ConfigurationImpl setMessageCounterMaxDayHistory(final int maxDayHistory)
    {
       messageCounterMaxDayHistory = maxDayHistory;
+      return this;
    }
 
    public SimpleString getManagementAddress()
@@ -728,9 +835,10 @@ public class ConfigurationImpl implements Configuration
       return managementAddress;
    }
 
-   public void setManagementAddress(final SimpleString address)
+   public ConfigurationImpl setManagementAddress(final SimpleString address)
    {
       managementAddress = address;
+      return this;
    }
 
    public SimpleString getManagementNotificationAddress()
@@ -738,9 +846,10 @@ public class ConfigurationImpl implements Configuration
       return managementNotificationAddress;
    }
 
-   public void setManagementNotificationAddress(final SimpleString address)
+   public ConfigurationImpl setManagementNotificationAddress(final SimpleString address)
    {
       managementNotificationAddress = address;
+      return this;
    }
 
    public String getClusterUser()
@@ -748,9 +857,10 @@ public class ConfigurationImpl implements Configuration
       return clusterUser;
    }
 
-   public void setClusterUser(final String user)
+   public ConfigurationImpl setClusterUser(final String user)
    {
       clusterUser = user;
+      return this;
    }
 
    public String getClusterPassword()
@@ -763,14 +873,16 @@ public class ConfigurationImpl implements Configuration
       return failoverOnServerShutdown;
    }
 
-   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public ConfigurationImpl setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
+      return this;
    }
 
-   public void setClusterPassword(final String theclusterPassword)
+   public ConfigurationImpl setClusterPassword(final String theclusterPassword)
    {
       clusterPassword = theclusterPassword;
+      return this;
    }
 
    public int getJournalCompactMinFiles()
@@ -783,14 +895,16 @@ public class ConfigurationImpl implements Configuration
       return journalCompactPercentage;
    }
 
-   public void setJournalCompactMinFiles(final int minFiles)
+   public ConfigurationImpl setJournalCompactMinFiles(final int minFiles)
    {
       journalCompactMinFiles = minFiles;
+      return this;
    }
 
-   public void setJournalCompactPercentage(final int percentage)
+   public ConfigurationImpl setJournalCompactPercentage(final int percentage)
    {
       journalCompactPercentage = percentage;
+      return this;
    }
 
    public long getServerDumpInterval()
@@ -798,9 +912,10 @@ public class ConfigurationImpl implements Configuration
       return serverDumpInterval;
    }
 
-   public void setServerDumpInterval(final long intervalInMilliseconds)
+   public ConfigurationImpl setServerDumpInterval(final long intervalInMilliseconds)
    {
       serverDumpInterval = intervalInMilliseconds;
+      return this;
    }
 
    public int getMemoryWarningThreshold()
@@ -808,9 +923,10 @@ public class ConfigurationImpl implements Configuration
       return memoryWarningThreshold;
    }
 
-   public void setMemoryWarningThreshold(final int memoryWarningThreshold)
+   public ConfigurationImpl setMemoryWarningThreshold(final int memoryWarningThreshold)
    {
       this.memoryWarningThreshold = memoryWarningThreshold;
+      return this;
    }
 
    public long getMemoryMeasureInterval()
@@ -818,9 +934,10 @@ public class ConfigurationImpl implements Configuration
       return memoryMeasureInterval;
    }
 
-   public void setMemoryMeasureInterval(final long memoryMeasureInterval)
+   public ConfigurationImpl setMemoryMeasureInterval(final long memoryMeasureInterval)
    {
       this.memoryMeasureInterval = memoryMeasureInterval;
+      return this;
    }
 
    public int getJournalMaxIO_AIO()
@@ -828,9 +945,10 @@ public class ConfigurationImpl implements Configuration
       return journalMaxIO_AIO;
    }
 
-   public void setJournalMaxIO_AIO(final int journalMaxIO)
+   public ConfigurationImpl setJournalMaxIO_AIO(final int journalMaxIO)
    {
       journalMaxIO_AIO = journalMaxIO;
+      return this;
    }
 
    public int getJournalBufferTimeout_AIO()
@@ -838,9 +956,10 @@ public class ConfigurationImpl implements Configuration
       return journalBufferTimeout_AIO;
    }
 
-   public void setJournalBufferTimeout_AIO(final int journalBufferTimeout)
+   public ConfigurationImpl setJournalBufferTimeout_AIO(final int journalBufferTimeout)
    {
       journalBufferTimeout_AIO = journalBufferTimeout;
+      return this;
    }
 
    public int getJournalBufferSize_AIO()
@@ -848,9 +967,10 @@ public class ConfigurationImpl implements Configuration
       return journalBufferSize_AIO;
    }
 
-   public void setJournalBufferSize_AIO(final int journalBufferSize)
+   public ConfigurationImpl setJournalBufferSize_AIO(final int journalBufferSize)
    {
       journalBufferSize_AIO = journalBufferSize;
+      return this;
    }
 
    public int getJournalMaxIO_NIO()
@@ -858,9 +978,10 @@ public class ConfigurationImpl implements Configuration
       return journalMaxIO_NIO;
    }
 
-   public void setJournalMaxIO_NIO(final int journalMaxIO)
+   public ConfigurationImpl setJournalMaxIO_NIO(final int journalMaxIO)
    {
       journalMaxIO_NIO = journalMaxIO;
+      return this;
    }
 
    public int getJournalBufferTimeout_NIO()
@@ -868,9 +989,10 @@ public class ConfigurationImpl implements Configuration
       return journalBufferTimeout_NIO;
    }
 
-   public void setJournalBufferTimeout_NIO(final int journalBufferTimeout)
+   public ConfigurationImpl setJournalBufferTimeout_NIO(final int journalBufferTimeout)
    {
       journalBufferTimeout_NIO = journalBufferTimeout;
+      return this;
    }
 
    public int getJournalBufferSize_NIO()
@@ -878,9 +1000,10 @@ public class ConfigurationImpl implements Configuration
       return journalBufferSize_NIO;
    }
 
-   public void setJournalBufferSize_NIO(final int journalBufferSize)
+   public ConfigurationImpl setJournalBufferSize_NIO(final int journalBufferSize)
    {
       journalBufferSize_NIO = journalBufferSize;
+      return this;
    }
 
    @Override
@@ -890,9 +1013,17 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setAddressesSettings(final Map<String, AddressSettings> addressesSettings)
+   public ConfigurationImpl setAddressesSettings(final Map<String, AddressSettings> addressesSettings)
    {
       this.addressesSettings = addressesSettings;
+      return this;
+   }
+
+   @Override
+   public ConfigurationImpl addAddressesSetting(String key, AddressSettings addressesSetting)
+   {
+      this.addressesSettings.put(key, addressesSetting);
+      return this;
    }
 
    @Override
@@ -902,9 +1033,10 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setSecurityRoles(final Map<String, Set<Role>> securitySettings)
+   public ConfigurationImpl setSecurityRoles(final Map<String, Set<Role>> securitySettings)
    {
       this.securitySettings = securitySettings;
+      return this;
    }
 
    public List<ConnectorServiceConfiguration> getConnectorServiceConfigurations()
@@ -924,17 +1056,14 @@ public class ConfigurationImpl implements Configuration
       }
    }
 
-   public void setCheckForLiveServer(boolean checkForLiveServer)
+   public ConfigurationImpl setCheckForLiveServer(boolean checkForLiveServer)
    {
       if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
       {
          ((ReplicatedPolicyConfiguration)haPolicyConfiguration).setCheckForLiveServer(checkForLiveServer);
       }
-   }
 
-   public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
-   {
-      this.connectorServiceConfigurations = configs;
+      return this;
    }
 
    @Override
@@ -950,19 +1079,33 @@ public class ConfigurationImpl implements Configuration
       return sb.toString();
    }
 
+   public ConfigurationImpl setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
+   {
+      this.connectorServiceConfigurations = configs;
+      return this;
+   }
+
+   public ConfigurationImpl addConnectorServiceConfiguration(final ConnectorServiceConfiguration config)
+   {
+      this.connectorServiceConfigurations.add(config);
+      return this;
+   }
+
    public boolean isMaskPassword()
    {
       return maskPassword;
    }
 
-   public void setMaskPassword(boolean maskPassword)
+   public ConfigurationImpl setMaskPassword(boolean maskPassword)
    {
       this.maskPassword = maskPassword;
+      return this;
    }
 
-   public void setPasswordCodec(String codec)
+   public ConfigurationImpl setPasswordCodec(String codec)
    {
       passwordCodec = codec;
+      return this;
    }
 
    public String getPasswordCodec()
@@ -977,9 +1120,10 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setName(String name)
+   public ConfigurationImpl setName(String name)
    {
       this.name = name;
+      return this;
    }
 
 
@@ -987,8 +1131,9 @@ public class ConfigurationImpl implements Configuration
    * All these operations are now deprecated and may or my not work, best efforts is all we can do, an HA Policy needs to be used
    * */
    @Deprecated
-   public void setBackup(final boolean backup)
+   public ConfigurationImpl setBackup(final boolean backup)
    {
+      return this;
    }
 
    @Deprecated
@@ -998,8 +1143,9 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Deprecated
-   public void setSharedStore(final boolean sharedStore)
+   public ConfigurationImpl setSharedStore(final boolean sharedStore)
    {
+      return this;
    }
 
    @Deprecated
@@ -1029,7 +1175,7 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Deprecated
-   public void setFailbackDelay(long failbackDelay)
+   public ConfigurationImpl setFailbackDelay(long failbackDelay)
    {
       if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
       {
@@ -1051,6 +1197,8 @@ public class ConfigurationImpl implements Configuration
          SharedStoreSlavePolicyConfiguration hapc = (SharedStoreSlavePolicyConfiguration) haPolicyConfiguration;
          hapc.setFailbackDelay(failbackDelay);
       }
+
+      return this;
    }
 
    @Deprecated
@@ -1070,7 +1218,7 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Deprecated
-   public void setBackupGroupName(String nodeGroupName)
+   public ConfigurationImpl setBackupGroupName(String nodeGroupName)
    {
       if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
       {
@@ -1082,11 +1230,12 @@ public class ConfigurationImpl implements Configuration
          ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
          hapc.setGroupName(nodeGroupName);
       }
+      return this;
    }
 
    @Override
    @Deprecated
-   public void setReplicationClustername(String clusterName)
+   public ConfigurationImpl setReplicationClustername(String clusterName)
    {
       if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
       {
@@ -1098,6 +1247,7 @@ public class ConfigurationImpl implements Configuration
          ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
          hapc.setClusterName(clusterName);
       }
+      return this;
    }
 
    @Override
@@ -1119,13 +1269,15 @@ public class ConfigurationImpl implements Configuration
 
    @Override
    @Deprecated
-   public void setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize)
+   public ConfigurationImpl setMaxSavedReplicatedJournalSize(int maxSavedReplicatedJournalsSize)
    {
       if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
       {
          ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
          hapc.setMaxSavedReplicatedJournalsSize(maxSavedReplicatedJournalsSize);
       }
+
+      return this;
    }
 
    @Override
@@ -1178,9 +1330,10 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setResolveProtocols(boolean resolveProtocols)
+   public ConfigurationImpl setResolveProtocols(boolean resolveProtocols)
    {
       this.resolveProtocols = resolveProtocols;
+      return this;
    }
 
    @Override
@@ -1553,6 +1706,7 @@ public class ConfigurationImpl implements Configuration
       return true;
    }
 
+   @Override
    public Configuration copy() throws Exception
    {
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -1563,9 +1717,10 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout)
+   public ConfigurationImpl setJournalLockAcquisitionTimeout(long journalLockAcquisitionTimeout)
    {
       this.journalLockAcquisitionTimeout = journalLockAcquisitionTimeout;
+      return this;
    }
 
    @Override
@@ -1581,8 +1736,9 @@ public class ConfigurationImpl implements Configuration
    }
 
    @Override
-   public void setHAPolicyConfiguration(HAPolicyConfiguration haPolicyConfiguration)
+   public ConfigurationImpl setHAPolicyConfiguration(HAPolicyConfiguration haPolicyConfiguration)
    {
       this.haPolicyConfiguration = haPolicyConfiguration;
+      return this;
    }
 }

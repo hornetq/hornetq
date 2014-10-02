@@ -21,12 +21,6 @@ public class SharedStoreMasterPolicyConfiguration implements HAPolicyConfigurati
 
    private boolean failoverOnServerShutdown = HornetQDefaultConfiguration.isDefaultFailoverOnServerShutdown();
 
-   public SharedStoreMasterPolicyConfiguration(long failbackDelay, boolean failoverOnServerShutdown)
-   {
-      this.failbackDelay = failbackDelay;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-   }
-
    public SharedStoreMasterPolicyConfiguration()
    {
    }
@@ -42,9 +36,10 @@ public class SharedStoreMasterPolicyConfiguration implements HAPolicyConfigurati
       return failbackDelay;
    }
 
-   public void setFailbackDelay(long failbackDelay)
+   public SharedStoreMasterPolicyConfiguration setFailbackDelay(long failbackDelay)
    {
       this.failbackDelay = failbackDelay;
+      return this;
    }
 
    public boolean isFailoverOnServerShutdown()
@@ -52,8 +47,9 @@ public class SharedStoreMasterPolicyConfiguration implements HAPolicyConfigurati
       return failoverOnServerShutdown;
    }
 
-   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   public SharedStoreMasterPolicyConfiguration setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
+      return this;
    }
 }

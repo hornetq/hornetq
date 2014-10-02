@@ -2001,10 +2001,8 @@ public class QueueControlTest extends ManagementTestBase
    {
       super.setUp();
 
-      Configuration conf = createBasicConfig();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      Configuration conf = createBasicConfig()
+         .addAcceptorConfiguration(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       server = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, false));
       server.start();
 

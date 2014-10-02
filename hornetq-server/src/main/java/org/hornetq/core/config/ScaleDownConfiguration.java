@@ -26,7 +26,7 @@ public class ScaleDownConfiguration implements Serializable
 
    private String groupName = null;
 
-   private String clusterName;
+   private String clusterName = null;
 
    private boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
 
@@ -35,9 +35,16 @@ public class ScaleDownConfiguration implements Serializable
       return connectors;
    }
 
-   public void setConnectors(List<String> connectors)
+   public ScaleDownConfiguration setConnectors(List<String> connectors)
    {
       this.connectors = connectors;
+      return this;
+   }
+
+   public ScaleDownConfiguration addConnector(String connector)
+   {
+      connectors.add(connector);
+      return this;
    }
 
    public String getDiscoveryGroup()
@@ -45,9 +52,10 @@ public class ScaleDownConfiguration implements Serializable
       return discoveryGroup;
    }
 
-   public void setDiscoveryGroup(String discoveryGroup)
+   public ScaleDownConfiguration setDiscoveryGroup(String discoveryGroup)
    {
       this.discoveryGroup = discoveryGroup;
+      return this;
    }
 
    public String getGroupName()
@@ -55,9 +63,10 @@ public class ScaleDownConfiguration implements Serializable
       return groupName;
    }
 
-   public void setGroupName(String groupName)
+   public ScaleDownConfiguration setGroupName(String groupName)
    {
       this.groupName = groupName;
+      return this;
    }
 
    public String getClusterName()
@@ -65,9 +74,10 @@ public class ScaleDownConfiguration implements Serializable
       return clusterName;
    }
 
-   public void setClusterName(String clusterName)
+   public ScaleDownConfiguration setClusterName(String clusterName)
    {
       this.clusterName = clusterName;
+      return this;
    }
 
    public boolean isScaleDown()
@@ -75,8 +85,9 @@ public class ScaleDownConfiguration implements Serializable
       return scaleDown;
    }
 
-   public void setScaleDown(boolean scaleDown)
+   public ScaleDownConfiguration setScaleDown(boolean scaleDown)
    {
       this.scaleDown = scaleDown;
+      return this;
    }
 }

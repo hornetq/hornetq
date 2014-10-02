@@ -92,8 +92,17 @@ public class ConnectionFactoryWithJGroupsSerializationTest extends JMSTestBase
          JGroupsBroadcastGroupConfiguration jgroupsBroadcastCfg1 = new JGroupsBroadcastGroupConfiguration(channel, channelName1);
          JGroupsBroadcastGroupConfiguration jgroupsBroadcastCfg2 = new JGroupsBroadcastGroupConfiguration(jgroupsConfigString, channelName2);
 
-         DiscoveryGroupConfiguration dcConfig1 = new DiscoveryGroupConfiguration("dg1", 5000, 5000, jgroupsBroadcastCfg1);
-         DiscoveryGroupConfiguration dcConfig2 = new DiscoveryGroupConfiguration("dg2", 5000, 5000, jgroupsBroadcastCfg2);
+         DiscoveryGroupConfiguration dcConfig1 = new DiscoveryGroupConfiguration()
+            .setName("dg1")
+            .setRefreshTimeout(5000)
+            .setDiscoveryInitialWaitTimeout(5000)
+            .setBroadcastEndpointFactoryConfiguration(jgroupsBroadcastCfg1);
+
+         DiscoveryGroupConfiguration dcConfig2 = new DiscoveryGroupConfiguration()
+            .setName("dg2")
+            .setRefreshTimeout(5000)
+            .setDiscoveryInitialWaitTimeout(5000)
+            .setBroadcastEndpointFactoryConfiguration(jgroupsBroadcastCfg2);
 
          jmsServer.getHornetQServer().getConfiguration().getDiscoveryGroupConfigurations().put(dcConfig1.getName(), dcConfig1);
          jmsServer.getHornetQServer().getConfiguration().getDiscoveryGroupConfigurations().put(dcConfig2.getName(), dcConfig2);
