@@ -2025,7 +2025,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    }
 
    // This can be used to interrupt a thread if it takes more than timeoutMilliseconds
-   public void runWithTimeout(final RunnerWithEX runner, final long timeoutMilliseconds) throws Throwable
+   public boolean runWithTimeout(final RunnerWithEX runner, final long timeoutMilliseconds) throws Throwable
    {
 
       class ThreadRunner extends Thread
@@ -2073,10 +2073,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          throw runnerThread.t;
       }
 
-      if (hadToInterrupt)
-      {
-         fail("Test would have hung. We had to issue an interrupt!");
-      }
+      // we are returning true if it ran ok.
+      // had to Interrupt is exactly the opposite of what we are returning
+      return !hadToInterrupt;
    }
 
 
