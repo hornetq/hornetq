@@ -1180,6 +1180,12 @@ public abstract class UnitTestCase extends CoreUnitTestCase
             checkThread = true;
          }
 
+         if (Thread.currentThread().getContextClassLoader() == null)
+         {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            fail("Thread Context ClassLoader was set to null at some point before this test. We will set to this.getClass().getClassLoader(), but you are supposed to fix your tests");
+         }
+
          checkFilesUsage();
       }
    }

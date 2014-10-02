@@ -69,11 +69,16 @@ public class HornetQVertxUnitTest extends ServiceTestBase
    protected String incomingVertxAddress3 = "org.hornetq.test.incoming3";
    protected String outgoingVertxAddress2 = "org.hornetq.test.outgoing2";
 
+
+   // Vertx is changing the classLoader to null.. this will preserve the original classloader
+   ClassLoader contextClassLoader;
+
    //subclasses may override this method
    //in order to get a server with different connector services
    @Before @Override
    public void setUp() throws Exception
    {
+      contextClassLoader = Thread.currentThread().getContextClassLoader();
       createVertxService();
 
       super.setUp();
@@ -848,5 +853,9 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       vertxManager.stop();
       server.stop();
       server = null;
+
+      // Something on vertx is setting the TCL to null what would break subsequent tests
+      Thread.currentThread().setContextClassLoader(contextClassLoader);
+      super.tearDown();
    }
 }
