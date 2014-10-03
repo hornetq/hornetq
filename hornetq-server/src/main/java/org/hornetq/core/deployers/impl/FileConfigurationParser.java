@@ -345,11 +345,6 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfig;
                hapc.setFailbackDelay(getLong(e, "failback-delay", hapc.getFailbackDelay(), Validators.GT_ZERO));
             }
-            else if (haPolicyConfig instanceof ReplicatedPolicyConfiguration)
-            {
-               ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfig;
-               hapc.setFailbackDelay(getLong(e, "failback-delay", hapc.getFailbackDelay(), Validators.GT_ZERO));
-            }
             else if (haPolicyConfig instanceof SharedStoreMasterPolicyConfiguration)
             {
                SharedStoreMasterPolicyConfiguration hapc = (SharedStoreMasterPolicyConfiguration) haPolicyConfig;
@@ -1310,13 +1305,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       configuration.setCheckForLiveServer(getBoolean(policyNode, "check-for-live-server", configuration.isCheckForLiveServer()));
 
-      configuration.setAllowAutoFailBack(getBoolean(policyNode, "allow-failback", configuration.isCheckForLiveServer()));
-
       configuration.setGroupName(getString(policyNode, "group-name", configuration.getGroupName(), Validators.NO_CHECK));
 
       configuration.setClusterName(getString(policyNode, "clustername", configuration.getClusterName(), Validators.NO_CHECK));
-
-      configuration.setFailbackDelay(getLong(policyNode, "failback-delay", configuration.getFailbackDelay(), Validators.GT_ZERO));
 
       return configuration;
    }

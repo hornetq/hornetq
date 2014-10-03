@@ -19,10 +19,6 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
 {
    private boolean checkForLiveServer = HornetQDefaultConfiguration.isDefaultCheckForLiveServer();
 
-   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
-
-   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
-
    private String groupName = null;
 
    private String clusterName = null;
@@ -45,28 +41,6 @@ public class ReplicatedPolicyConfiguration implements HAPolicyConfiguration
    public ReplicatedPolicyConfiguration setCheckForLiveServer(boolean checkForLiveServer)
    {
       this.checkForLiveServer = checkForLiveServer;
-      return this;
-   }
-
-   public boolean isAllowAutoFailBack()
-   {
-      return allowAutoFailBack;
-   }
-
-   public ReplicatedPolicyConfiguration setAllowAutoFailBack(boolean allowAutoFailBack)
-   {
-      this.allowAutoFailBack = allowAutoFailBack;
-      return this;
-   }
-
-   public long getFailbackDelay()
-   {
-      return failbackDelay;
-   }
-
-   public ReplicatedPolicyConfiguration setFailbackDelay(long failbackDelay)
-   {
-      this.failbackDelay = failbackDelay;
       return this;
    }
 

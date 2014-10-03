@@ -1156,11 +1156,6 @@ public class ConfigurationImpl implements Configuration
          ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
          return hapc.getFailbackDelay();
       }
-      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
-      {
-         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
-         return hapc.getFailbackDelay();
-      }
       else if (haPolicyConfiguration instanceof SharedStoreMasterPolicyConfiguration)
       {
          SharedStoreMasterPolicyConfiguration hapc = (SharedStoreMasterPolicyConfiguration) haPolicyConfiguration;
@@ -1180,11 +1175,6 @@ public class ConfigurationImpl implements Configuration
       if (haPolicyConfiguration instanceof ReplicaPolicyConfiguration)
       {
          ReplicaPolicyConfiguration hapc = (ReplicaPolicyConfiguration) haPolicyConfiguration;
-         hapc.setFailbackDelay(failbackDelay);
-      }
-      else if (haPolicyConfiguration instanceof ReplicatedPolicyConfiguration)
-      {
-         ReplicatedPolicyConfiguration hapc = (ReplicatedPolicyConfiguration) haPolicyConfiguration;
          hapc.setFailbackDelay(failbackDelay);
       }
       else if (haPolicyConfiguration instanceof SharedStoreMasterPolicyConfiguration)
