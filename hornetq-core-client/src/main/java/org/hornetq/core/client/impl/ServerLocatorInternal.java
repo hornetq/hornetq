@@ -36,14 +36,14 @@ public interface ServerLocatorInternal extends ServerLocator
 
    AfterConnectInternalListener getAfterConnectInternalListener();
 
-   void setAfterConnectionInternalListener(AfterConnectInternalListener listener);
+   ServerLocatorInternal setAfterConnectionInternalListener(AfterConnectInternalListener listener);
 
    /** Used to better identify Cluster Connection Locators on logs. To facilitate eventual debugging.
     *
     *  This method used to be on tests interface, but I'm now making it part of the public interface since*/
-   void setIdentity(String identity);
+   ServerLocatorInternal setIdentity(String identity);
 
-   void setNodeID(String nodeID);
+   ServerLocatorInternal setNodeID(String nodeID);
 
    String getNodeID();
 
@@ -70,17 +70,17 @@ public interface ServerLocatorInternal extends ServerLocator
     */
    void notifyNodeDown(long uniqueEventID, String nodeID);
 
-   void setClusterConnection(boolean clusterConnection);
+   ServerLocatorInternal setClusterConnection(boolean clusterConnection);
 
    boolean isClusterConnection();
 
    TransportConfiguration getClusterTransportConfiguration();
 
-   void setClusterTransportConfiguration(TransportConfiguration tc);
+   ServerLocatorInternal setClusterTransportConfiguration(TransportConfiguration tc);
 
    Topology getTopology();
 
-   void setPacketDecoder(PacketDecoder instance);
+   ServerLocatorInternal setPacketDecoder(PacketDecoder instance);
 
    boolean isConnectable();
 }

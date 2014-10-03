@@ -38,8 +38,9 @@ public interface ClientMessage extends Message
     * <p>
     * This method is not meant to be called by HornetQ clients.
     * @param deliveryCount message delivery count
+    * @return this ClientMessage
     */
-   void setDeliveryCount(int deliveryCount);
+   ClientMessage setDeliveryCount(int deliveryCount);
 
    /**
     * Acknowledges reception of this message.
@@ -84,8 +85,9 @@ public interface ClientMessage extends Message
     * This method is used when consuming large messages
     *
     * @throws HornetQException
+    * @return this ClientMessage
     */
-   void setOutputStream(OutputStream out) throws HornetQException;
+   ClientMessage setOutputStream(OutputStream out) throws HornetQException;
 
    /**
     * Saves the content of the message to the OutputStream.
@@ -111,7 +113,8 @@ public interface ClientMessage extends Message
     * Sets the body's IntputStream.
     * <br>
     * This method is used when sending large messages
+    * @return this ClientMessage
     */
-   void setBodyInputStream(InputStream bodyInputStream);
+   ClientMessage setBodyInputStream(InputStream bodyInputStream);
 
 }

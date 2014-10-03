@@ -508,9 +508,10 @@ public class DelegatingSession implements ClientSessionInternal
       session.rollback(xid);
    }
 
-   public void setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
+   public DelegatingSession setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
    {
       session.setSendAcknowledgementHandler(handler);
+      return this;
    }
 
    public boolean setTransactionTimeout(final int seconds) throws XAException

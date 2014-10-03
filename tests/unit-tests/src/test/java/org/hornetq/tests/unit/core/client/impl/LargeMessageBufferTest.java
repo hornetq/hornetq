@@ -811,9 +811,9 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
-      public void setMessageHandler(final MessageHandler handler) throws HornetQException
+      public FakeConsumerInternal setMessageHandler(final MessageHandler handler) throws HornetQException
       {
-
+         return this;
       }
 
       public void acknowledge(final ClientMessage message) throws HornetQException

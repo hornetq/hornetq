@@ -78,9 +78,10 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       this.consumer = consumer;
    }
 
-   public void setDeliveryCount(final int deliveryCount)
+   public ClientMessageImpl setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
+      return this;
    }
 
    public int getDeliveryCount()
@@ -159,9 +160,10 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    }
 
    @Override
-   public void setOutputStream(final OutputStream out) throws HornetQException
+   public ClientMessageImpl setOutputStream(final OutputStream out) throws HornetQException
    {
       saveToOutputStream(out);
+      return this;
    }
 
    @Override
@@ -186,9 +188,10 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /**
     * @param bodyInputStream the bodyInputStream to set
     */
-   public void setBodyInputStream(final InputStream bodyInputStream)
+   public ClientMessageImpl setBodyInputStream(final InputStream bodyInputStream)
    {
       this.bodyInputStream = bodyInputStream;
+      return this;
    }
 
    @Override

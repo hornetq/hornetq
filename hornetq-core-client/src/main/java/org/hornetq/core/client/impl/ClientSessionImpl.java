@@ -951,9 +951,10 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       doCleanup(failingOver);
    }
 
-   public void setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
+   public ClientSessionImpl setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
    {
       sessionContext.setSendAcknowledgementHandler(handler);
+      return this;
    }
 
    public void preHandleFailover(RemotingConnection connection)

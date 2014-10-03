@@ -421,7 +421,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
    // Must be synchronized since messages may be arriving while handler is being set and might otherwise end
    // up not queueing enough executors - so messages get stranded
-   public synchronized void setMessageHandler(final MessageHandler theHandler) throws HornetQException
+   public synchronized ClientConsumerImpl setMessageHandler(final MessageHandler theHandler) throws HornetQException
    {
       checkClosed();
 
@@ -449,6 +449,8 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       {
          waitForOnMessageToComplete(true);
       }
+
+      return this;
    }
 
    public void close() throws HornetQException
