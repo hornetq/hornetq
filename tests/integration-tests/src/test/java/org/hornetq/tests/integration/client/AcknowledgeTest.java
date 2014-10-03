@@ -363,9 +363,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public void setMessageHandler(MessageHandler handler) throws HornetQException
+      public FakeConsumerWithID setMessageHandler(MessageHandler handler) throws HornetQException
       {
-
+         return this;
       }
 
       @Override

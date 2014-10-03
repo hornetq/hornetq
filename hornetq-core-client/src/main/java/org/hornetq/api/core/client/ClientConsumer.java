@@ -95,7 +95,7 @@ public interface ClientConsumer extends AutoCloseable
     * @param handler a MessageHandler
     * @throws HornetQException if an exception occurs while setting the MessageHandler
     */
-   void setMessageHandler(MessageHandler handler) throws HornetQException;
+   ClientConsumer setMessageHandler(MessageHandler handler) throws HornetQException;
 
    /**
     * Closes the consumer.

@@ -471,9 +471,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       return listeners.remove(listener);
    }
 
-   public void addFailoverListener(FailoverEventListener listener)
+   public ClientSessionFactoryImpl addFailoverListener(FailoverEventListener listener)
    {
       failoverListeners.add(listener);
+      return this;
    }
 
    public boolean removeFailoverListener(FailoverEventListener listener)
