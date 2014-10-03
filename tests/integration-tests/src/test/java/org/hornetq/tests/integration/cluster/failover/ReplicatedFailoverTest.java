@@ -128,8 +128,7 @@ public class ReplicatedFailoverTest extends FailoverTest
       if (isReplicatedFailbackTest)
       {
          ((ReplicatedPolicyConfiguration) liveConfig.getHAPolicyConfiguration())
-            .setCheckForLiveServer(true)
-            .setFailbackDelay(2000);
+            .setCheckForLiveServer(true);
          ((ReplicaPolicyConfiguration) backupConfig.getHAPolicyConfiguration())
             .setMaxSavedReplicatedJournalsSize(2)
             .setAllowFailBack(true)

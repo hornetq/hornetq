@@ -23,13 +23,17 @@ public class ReplicatedPolicy implements HAPolicy<LiveActivation>
 {
    private boolean checkForLiveServer = HornetQDefaultConfiguration.isDefaultCheckForLiveServer();
 
-   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
-
-   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
-
    private String groupName = null;
 
    private String clusterName;
+
+   /*
+   * these are only set by the ReplicaPolicy after failover to decide if the live server can failback, these should not
+   * be exposed in configuration.
+   * */
+   private boolean allowAutoFailBack = HornetQDefaultConfiguration.isDefaultAllowAutoFailback();
+
+   private long failbackDelay = HornetQDefaultConfiguration.getDefaultFailbackDelay();
 
    /*
    * this is used as the policy when the server is started after a failover
@@ -41,11 +45,9 @@ public class ReplicatedPolicy implements HAPolicy<LiveActivation>
    {
    }
 
-   public ReplicatedPolicy(boolean checkForLiveServer, boolean allowAutoFailBack, long failbackDelay, String groupName, String clusterName)
+   public ReplicatedPolicy(boolean checkForLiveServer, String groupName, String clusterName)
    {
       this.checkForLiveServer = checkForLiveServer;
-      this.allowAutoFailBack = allowAutoFailBack;
-      this.failbackDelay = failbackDelay;
       this.groupName = groupName;
       this.clusterName = clusterName;
       /*
@@ -57,9 +59,10 @@ public class ReplicatedPolicy implements HAPolicy<LiveActivation>
    public ReplicatedPolicy(boolean checkForLiveServer, boolean allowAutoFailBack, long failbackDelay, String groupName, String clusterName, ReplicaPolicy replicaPolicy)
    {
       this.checkForLiveServer = checkForLiveServer;
+      this.clusterName = clusterName;
+      this.groupName = groupName;
       this.allowAutoFailBack = allowAutoFailBack;
       this.failbackDelay = failbackDelay;
-      this.groupName = groupName;
       this.replicaPolicy = replicaPolicy;
    }
 
@@ -76,11 +79,6 @@ public class ReplicatedPolicy implements HAPolicy<LiveActivation>
    public boolean isAllowAutoFailBack()
    {
       return allowAutoFailBack;
-   }
-
-   public void setAllowAutoFailBack(boolean allowAutoFailBack)
-   {
-      this.allowAutoFailBack = allowAutoFailBack;
    }
 
    public long getFailbackDelay()

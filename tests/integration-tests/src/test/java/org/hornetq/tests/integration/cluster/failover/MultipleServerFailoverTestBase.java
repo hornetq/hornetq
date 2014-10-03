@@ -94,7 +94,6 @@ public abstract class MultipleServerFailoverTestBase extends ServiceTestBase
          else
          {
             haPolicyConfiguration = new ReplicatedPolicyConfiguration();
-            ((ReplicatedPolicyConfiguration)haPolicyConfiguration).setFailbackDelay(1000);
             if (getNodeGroupName() != null)
             {
                ((ReplicatedPolicyConfiguration)haPolicyConfiguration).setGroupName(getNodeGroupName() + "-" + i);

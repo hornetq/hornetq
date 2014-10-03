@@ -127,10 +127,8 @@ public class HAPolicyConfigurationTest
          HAPolicy haPolicy = server.getHAPolicy();
          assertTrue(haPolicy instanceof ReplicatedPolicy);
          ReplicatedPolicy replicatedPolicy = (ReplicatedPolicy) haPolicy;
-         assertTrue(replicatedPolicy.isAllowAutoFailBack());
          assertEquals(replicatedPolicy.getGroupName(), "purple");
          assertTrue(replicatedPolicy.isCheckForLiveServer());
-         assertEquals(replicatedPolicy.getFailbackDelay(), 1111);
          assertEquals(replicatedPolicy.getClusterName(), "abcdefg");
       }
       finally
@@ -354,10 +352,8 @@ public class HAPolicyConfigurationTest
          ReplicatedPolicy livePolicy = (ReplicatedPolicy) colocatedPolicy.getLivePolicy();
          assertNotNull(livePolicy);
 
-         assertTrue(livePolicy.isAllowAutoFailBack());
          assertEquals(livePolicy.getGroupName(), "purple");
          assertTrue(livePolicy.isCheckForLiveServer());
-         assertEquals(livePolicy.getFailbackDelay(), 1111);
          assertEquals(livePolicy.getClusterName(), "abcdefg");
          ReplicaPolicy backupPolicy = (ReplicaPolicy) colocatedPolicy.getBackupPolicy();
          assertNotNull(backupPolicy);

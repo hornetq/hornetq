@@ -11,10 +11,8 @@
             <request-backup>false</request-backup>
             <backup-port-offset>33</backup-port-offset>
             <master>
-               <allow-failback>true</allow-failback>
                <group-name>purple</group-name>
                <check-for-live-server>true</check-for-live-server>
-               <failback-delay>1111</failback-delay>
                <clustername>abcdefg</clustername>
             </master>
             <slave>

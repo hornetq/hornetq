@@ -67,7 +67,7 @@ public final class ConfigurationUtils
          case REPLICATED:
          {
             ReplicatedPolicyConfiguration pc = (ReplicatedPolicyConfiguration) conf;
-            return new ReplicatedPolicy(pc.isCheckForLiveServer(), pc.isAllowAutoFailBack(), pc.getFailbackDelay(), pc.getGroupName(), pc.getClusterName());
+            return new ReplicatedPolicy(pc.isCheckForLiveServer(), pc.getGroupName(), pc.getClusterName());
          }
          case REPLICA:
          {
