@@ -410,9 +410,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public void setUserID(UUID userID)
+      public FakeMessageWithID setUserID(UUID userID)
       {
-
+         return this;
       }
 
       @Override
@@ -440,9 +440,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public void setDurable(boolean durable)
+      public FakeMessageWithID setDurable(boolean durable)
       {
-
+         return this;
       }
 
       @Override
@@ -458,9 +458,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public void setExpiration(long expiration)
+      public FakeMessageWithID setExpiration(long expiration)
       {
-
+         return this;
       }
 
       @Override
@@ -470,9 +470,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public void setTimestamp(long timestamp)
+      public FakeMessageWithID setTimestamp(long timestamp)
       {
-
+         return this;
       }
 
       @Override
@@ -482,9 +482,9 @@ public class AcknowledgeTest extends ServiceTestBase
       }
 
       @Override
-      public void setPriority(byte priority)
+      public FakeMessageWithID setPriority(byte priority)
       {
-
+         return this;
       }
 
       @Override
@@ -809,6 +809,18 @@ public class AcknowledgeTest extends ServiceTestBase
       public Map<String, Object> toMap()
       {
          return null;
+      }
+
+      @Override
+      public FakeMessageWithID writeBodyBufferBytes(byte[] bytes)
+      {
+         return this;
+      }
+
+      @Override
+      public FakeMessageWithID writeBodyBufferString(String string)
+      {
+         return this;
       }
    }
 }

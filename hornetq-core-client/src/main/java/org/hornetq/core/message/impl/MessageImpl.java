@@ -270,6 +270,20 @@ public abstract class MessageImpl implements MessageInternal
       return bodyBuffer;
    }
 
+   public Message writeBodyBufferBytes(byte[] bytes)
+   {
+      getBodyBuffer().writeBytes(bytes);
+
+      return this;
+   }
+
+   public Message writeBodyBufferString(String string)
+   {
+      getBodyBuffer().writeString(string);
+
+      return this;
+   }
+
    public void checkCompletion() throws HornetQException
    {
       // no op on regular messages
@@ -297,9 +311,10 @@ public abstract class MessageImpl implements MessageInternal
       return userID;
    }
 
-   public void setUserID(final UUID userID)
+   public MessageImpl setUserID(final UUID userID)
    {
       this.userID = userID;
+      return this;
    }
 
    /**
@@ -347,7 +362,7 @@ public abstract class MessageImpl implements MessageInternal
       return durable;
    }
 
-   public void setDurable(final boolean durable)
+   public MessageImpl setDurable(final boolean durable)
    {
       if (this.durable != durable)
       {
@@ -355,6 +370,7 @@ public abstract class MessageImpl implements MessageInternal
 
          bufferValid = false;
       }
+      return this;
    }
 
    public long getExpiration()
@@ -362,7 +378,7 @@ public abstract class MessageImpl implements MessageInternal
       return expiration;
    }
 
-   public void setExpiration(final long expiration)
+   public MessageImpl setExpiration(final long expiration)
    {
       if (this.expiration != expiration)
       {
@@ -370,6 +386,7 @@ public abstract class MessageImpl implements MessageInternal
 
          bufferValid = false;
       }
+      return this;
    }
 
    public long getTimestamp()
@@ -377,7 +394,7 @@ public abstract class MessageImpl implements MessageInternal
       return timestamp;
    }
 
-   public void setTimestamp(final long timestamp)
+   public MessageImpl setTimestamp(final long timestamp)
    {
       if (this.timestamp != timestamp)
       {
@@ -385,6 +402,7 @@ public abstract class MessageImpl implements MessageInternal
 
          bufferValid = false;
       }
+      return this;
    }
 
    public byte getPriority()
@@ -392,7 +410,7 @@ public abstract class MessageImpl implements MessageInternal
       return priority;
    }
 
-   public void setPriority(final byte priority)
+   public MessageImpl setPriority(final byte priority)
    {
       if (this.priority != priority)
       {
@@ -400,6 +418,7 @@ public abstract class MessageImpl implements MessageInternal
 
          bufferValid = false;
       }
+      return this;
    }
 
    public boolean isExpired()

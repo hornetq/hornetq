@@ -653,7 +653,7 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       }
    }
 
-   public void start() throws HornetQException
+   public ClientSessionImpl start() throws HornetQException
    {
       checkClosed();
 
@@ -668,6 +668,8 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
 
          started = true;
       }
+
+      return this;
    }
 
    public void stop() throws HornetQException
