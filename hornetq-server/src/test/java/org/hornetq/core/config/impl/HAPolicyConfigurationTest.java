@@ -29,17 +29,12 @@ import org.hornetq.core.server.impl.Activation;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.SharedStoreBackupActivation;
 import org.hornetq.core.server.impl.SharedStoreLiveActivation;
+import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-public class HAPolicyConfigurationTest
+public class HAPolicyConfigurationTest extends UnitTestCase
 {
    @Test
    public void liveOnlyTest() throws Exception
@@ -426,6 +421,12 @@ public class HAPolicyConfigurationTest
       FileConfiguration fc = new FileConfiguration(fileName);
 
       fc.start();
+
+      // we need this otherwise the data folder will be located under hornetq-server and not on the temporary directory
+      fc.setPagingDirectory(getTestDir() + "/" + fc.getPagingDirectory());
+      fc.setLargeMessagesDirectory(getTestDir() + "/" + fc.getLargeMessagesDirectory());
+      fc.setJournalDirectory(getTestDir() + "/" + fc.getJournalDirectory());
+      fc.setBindingsDirectory(getTestDir() + "/" + fc.getBindingsDirectory());
 
       return fc;
    }
