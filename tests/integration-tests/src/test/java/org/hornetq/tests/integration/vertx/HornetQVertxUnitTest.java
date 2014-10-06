@@ -28,6 +28,7 @@ import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.vertx.VertxConstants;
 import org.hornetq.integration.vertx.VertxIncomingConnectorServiceFactory;
+import org.hornetq.integration.vertx.VertxOutgoingConnectorServiceFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.After;
@@ -123,8 +124,8 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config3.put(VertxConstants.VERTX_ADDRESS, outgoingVertxAddress1);
 
       ConnectorServiceConfiguration outconf1 = new ConnectorServiceConfiguration()
-         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
-         .setParams(config2)
+         .setFactoryClassName(VertxOutgoingConnectorServiceFactory.class.getName())
+         .setParams(config3)
          .setName("test-vertx-outgoing-connector1");
 
       //outgoing publish style
@@ -136,7 +137,7 @@ public class HornetQVertxUnitTest extends ServiceTestBase
 
       ConnectorServiceConfiguration inconf3 = new ConnectorServiceConfiguration()
          .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
-         .setParams(config2)
+         .setParams(config4)
          .setName("test-vertx-incoming-connector3");
 
       HashMap<String, Object> config5 = new HashMap<String, Object>();
@@ -147,8 +148,8 @@ public class HornetQVertxUnitTest extends ServiceTestBase
       config5.put(VertxConstants.VERTX_PUBLISH, "true");
 
       ConnectorServiceConfiguration outconf2 = new ConnectorServiceConfiguration()
-         .setFactoryClassName(VertxIncomingConnectorServiceFactory.class.getName())
-         .setParams(config2)
+         .setFactoryClassName(VertxOutgoingConnectorServiceFactory.class.getName())
+         .setParams(config5)
          .setName("test-vertx-outgoing-connector2");
 
       Configuration configuration = createDefaultConfig(false)
