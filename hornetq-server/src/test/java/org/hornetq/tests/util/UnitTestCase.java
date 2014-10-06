@@ -1767,11 +1767,21 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
    protected final ServerLocator createNonHALocator(final boolean isNetty)
    {
-      ServerLocator locatorWithoutHA =
-         isNetty
-            ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
-            : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ServerLocator locatorWithoutHA = internalCreateNonHALocator(isNetty);
       return addServerLocator(locatorWithoutHA);
+   }
+
+   /**
+    * Creates the Locator without adding it to the list where the tearDown will take place
+    * This is because we don't want it closed in certain tests where we are issuing failures
+    * @param isNetty
+    * @return
+    */
+   protected ServerLocator internalCreateNonHALocator(boolean isNetty)
+   {
+      return isNetty
+         ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
+         : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
    }
 
    protected static final void stopComponent(HornetQComponent component)

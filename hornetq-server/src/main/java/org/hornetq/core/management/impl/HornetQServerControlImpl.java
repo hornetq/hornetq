@@ -1265,8 +1265,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             String remoteAddress = connection.getRemoteAddress();
             if (remoteAddress.contains(ipAddress))
             {
-               remotingService.removeConnection(connection.getID());
                connection.fail(HornetQMessageBundle.BUNDLE.connectionsClosedByManagement(ipAddress));
+               remotingService.removeConnection(connection.getID());
                closed = true;
             }
          }
