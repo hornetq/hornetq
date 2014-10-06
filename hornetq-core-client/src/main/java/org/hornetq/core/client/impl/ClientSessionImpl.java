@@ -1351,19 +1351,45 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
    {
       checkXA();
 
-      if (!(xares instanceof ClientSessionInternal))
-      {
-         return false;
-      }
-
       if (forceNotSameRM)
       {
          return false;
       }
 
-      ClientSessionInternal other = (ClientSessionInternal) xares;
+      ClientSessionInternal other = getSessionInternalFromXAResource(xares);
 
+      if (other == null)
+      {
+         return false;
+      }
+
+      String liveNodeId = sessionFactory.getLiveNodeId();
+      String otherLiveNodeId = ((ClientSessionFactoryInternal) other.getSessionFactory()).getLiveNodeId();
+
+      if (liveNodeId != null && otherLiveNodeId != null)
+      {
+         return liveNodeId.equals(otherLiveNodeId);
+      }
+
+      //we shouldn't get here, live node id should always be set
       return sessionFactory == other.getSessionFactory();
+   }
+
+   private ClientSessionInternal getSessionInternalFromXAResource(final XAResource xares)
+   {
+      if (xares == null)
+      {
+         return null;
+      }
+      if (xares instanceof ClientSessionInternal)
+      {
+         return (ClientSessionInternal) xares;
+      }
+      else if (xares instanceof HornetQXAResource)
+      {
+         return getSessionInternalFromXAResource(((HornetQXAResource)xares).getResource());
+      }
+      return null;
    }
 
    public int prepare(final Xid xid) throws XAException
