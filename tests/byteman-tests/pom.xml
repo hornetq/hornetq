@@ -13,7 +13,7 @@
 
    <properties>
       <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-      <byteman.version>2.1.3</byteman.version>
+      <byteman.version>2.2.0</byteman.version>
       <hornetq.basedir>${project.parent.parent.basedir}</hornetq.basedir>
    </properties>
 
@@ -25,25 +25,25 @@
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman</artifactId>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman-submit</artifactId>
          <scope>test</scope>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman-install</artifactId>
          <scope>test</scope>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.byteman</groupId>
          <artifactId>byteman-bmunit</artifactId>
          <scope>test</scope>
-         <version>2.1.2</version>
+         <version>${byteman.version}</version>
          <exclusions>
             <exclusion>
                <groupId>org.testng</groupId>
