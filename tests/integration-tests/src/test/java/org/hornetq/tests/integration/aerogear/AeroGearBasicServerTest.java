@@ -155,9 +155,6 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       String badge = body.getString("badge");
       assertNotNull(badge);
       assertEquals(badge, "99");
-      Integer ttl = body.getInt("ttl");
-      assertNotNull(ttl);
-      assertEquals(ttl.intValue(), 3600);
       JSONArray jsonArray = (JSONArray) aeroGearHandler.jsonObject.get("variants");
       assertNotNull(jsonArray);
       assertEquals(jsonArray.getString(0), "variant1");
@@ -171,6 +168,9 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       assertNotNull(jsonArray);
       assertEquals(jsonArray.getString(0), "android");
       assertEquals(jsonArray.getString(1), "ipad");
+      Integer ttl = (Integer) aeroGearHandler.jsonObject.get("ttl");
+      assertNotNull(ttl);
+      assertEquals(ttl.intValue(), 3600);
       latch = new CountDownLatch(1);
       aeroGearHandler.resetLatch(latch);
 
@@ -198,9 +198,6 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       badge = body.getString("badge");
       assertNotNull(badge);
       assertEquals(badge, "111");
-      ttl = body.getInt("ttl");
-      assertNotNull(ttl);
-      assertEquals(ttl.intValue(), 10000);
       jsonArray = (JSONArray) aeroGearHandler.jsonObject.get("variants");
       assertNotNull(jsonArray);
       assertEquals(jsonArray.getString(0), "v1");
@@ -213,6 +210,9 @@ public class AeroGearBasicServerTest extends ServiceTestBase
       assertNotNull(jsonArray);
       assertEquals(jsonArray.getString(0), "dev1");
       assertEquals(jsonArray.getString(1), "dev2");
+      ttl = (Integer) aeroGearHandler.jsonObject.get("ttl");
+      assertNotNull(ttl);
+      assertEquals(ttl.intValue(), 10000);
       session.start();
       ClientMessage message = session.createConsumer("testQueue").receiveImmediate();
       assertNull(message);
