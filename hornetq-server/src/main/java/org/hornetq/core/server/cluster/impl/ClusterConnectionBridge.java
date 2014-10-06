@@ -12,7 +12,9 @@
  */
 package org.hornetq.core.server.cluster.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,6 +52,7 @@ import org.hornetq.utils.UUIDGenerator;
  *
  * @author tim
  * @author Clebert Suconic
+ * @author <a href="mtaylor@redhat,com">Martyn Taylor</a>
  */
 public class ClusterConnectionBridge extends BridgeImpl
 {
@@ -265,10 +268,8 @@ public class ClusterConnectionBridge extends BridgeImpl
                                                    "<" +
                                                    flowRecord.getMaxHops() +
                                                    " AND (" +
-                                                   ManagementHelper.HDR_ADDRESS +
-                                                   " LIKE '" +
-                                                   flowRecord.getAddress() +
-                                                   "%')");
+                                                   createSelectorFromAddress(flowRecord.getAddress()) +
+                                                   ")");
 
          session.createTemporaryQueue(managementNotificationAddress, notifQueueName, filter);
 
@@ -298,6 +299,79 @@ public class ClusterConnectionBridge extends BridgeImpl
 
          prod.send(message);
       }
+   }
+
+   /**
+    * Takes in a string of an address filter or comma separated list and generates an appropriate JMS selector for
+    * filtering queues.
+    * @param address
+    */
+   public static String createSelectorFromAddress(String address)
+   {
+      StringBuilder stringBuilder = new StringBuilder();
+
+      // Support standard address (not a list) case.
+      if (!address.contains(","))
+      {
+         if (address.startsWith("!"))
+         {
+            stringBuilder.append(ManagementHelper.HDR_ADDRESS + " NOT LIKE '" + address.substring(1, address.length()) + "%'");
+         }
+         else
+         {
+            stringBuilder.append(ManagementHelper.HDR_ADDRESS +  " LIKE '" + address + "%'");
+         }
+         return stringBuilder.toString();
+      }
+
+      // For comma separated lists build a JMS selector statement based on the list items
+      return buildSelectorFromArray(address.split(","));
+   }
+
+   public static String buildSelectorFromArray(String[] list)
+   {
+      List<String> includes = new ArrayList<String>();
+      List<String> excludes = new ArrayList<String>();
+
+      // Split the list into addresses to match and addresses to exclude.
+      for (int i = 0; i < list.length; i++)
+      {
+         if (list[i].startsWith("!"))
+         {
+            excludes.add(list[i].substring(1, list[i].length()));
+         }
+         else
+         {
+            includes.add(list[i]);
+         }
+      }
+
+      // Build the address matching part of the selector
+      StringBuilder builder = new StringBuilder("(");
+      if (includes.size() > 0)
+      {
+         if (excludes.size() > 0) builder.append("(");
+         for (int i = 0; i < includes.size(); i++)
+         {
+            builder.append("(" + ManagementHelper.HDR_ADDRESS + " LIKE '" + includes.get(i) + "%')");
+            if (i < includes.size() - 1) builder.append(" OR ");
+         }
+         if (excludes.size() > 0) builder.append(")");
+      }
+
+      // Build the address exclusion part of the selector
+      if (excludes.size() > 0)
+      {
+         if (includes.size() > 0) builder.append(" AND (");
+         for (int i = 0; i < excludes.size(); i++)
+         {
+            builder.append("(" + ManagementHelper.HDR_ADDRESS + " NOT LIKE '" + excludes.get(i) + "%')");
+            if (i < excludes.size() - 1) builder.append(" AND ");
+         }
+         if (includes.size() > 0) builder.append(")");
+      }
+      builder.append(")");
+      return builder.toString();
    }
 
    @Override
