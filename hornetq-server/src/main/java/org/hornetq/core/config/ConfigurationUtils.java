@@ -114,7 +114,6 @@ public final class ConfigurationUtils
                   pc.getMaxBackups(),
                   pc.getBackupPortOffset(),
                   pc.getRemoteConnectors(),
-                  pc.getBackupPortOffset(),
                   livePolicy,
                   backupPolicy);
          }
