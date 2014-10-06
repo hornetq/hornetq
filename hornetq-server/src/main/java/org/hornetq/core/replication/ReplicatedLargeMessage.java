@@ -15,6 +15,8 @@
  */
 package org.hornetq.core.replication;
 
+import org.hornetq.api.core.Message;
+
 /**
  * {@link org.hornetq.core.server.LargeServerMessage} methods used by the {@link ReplicationEndpoint}.
  * <p/>
@@ -27,12 +29,12 @@ public interface ReplicatedLargeMessage
    /**
     * @see org.hornetq.core.server.LargeServerMessage#setDurable(boolean)
     */
-   void setDurable(boolean b);
+   Message setDurable(boolean b);
 
    /**
     * @see org.hornetq.core.server.LargeServerMessage#setMessageID(long)
     */
-   void setMessageID(long id);
+   Message setMessageID(long id);
 
    /**
     * @see org.hornetq.core.server.LargeServerMessage#releaseResources()

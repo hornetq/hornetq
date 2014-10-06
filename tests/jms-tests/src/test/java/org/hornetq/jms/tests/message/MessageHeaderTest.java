@@ -1305,8 +1305,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return message;
       }
 
-      public void start() throws HornetQException
+      public FakeSession start() throws HornetQException
       {
+         return this;
       }
 
       public void stop() throws HornetQException

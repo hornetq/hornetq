@@ -113,7 +113,7 @@ public interface ClientSession extends XAResource, AutoCloseable
     *
     * @throws HornetQException if an exception occurs while starting the session
     */
-   void start() throws HornetQException;
+   ClientSession start() throws HornetQException;
 
    /**
     * Stops the session.

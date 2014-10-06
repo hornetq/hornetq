@@ -102,9 +102,10 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return true;
    }
 
-   public void setMessageID(final long id)
+   public ServerMessageImpl setMessageID(final long id)
    {
       messageID = id;
+      return this;
    }
 
    public MessageReference createReference(final Queue queue)

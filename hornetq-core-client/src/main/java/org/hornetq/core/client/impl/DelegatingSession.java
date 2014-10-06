@@ -524,9 +524,10 @@ public class DelegatingSession implements ClientSessionInternal
       session.resetIfNeeded();
    }
 
-   public void start() throws HornetQException
+   public DelegatingSession start() throws HornetQException
    {
       session.start();
+      return this;
    }
 
    public void start(final Xid xid, final int flags) throws XAException
