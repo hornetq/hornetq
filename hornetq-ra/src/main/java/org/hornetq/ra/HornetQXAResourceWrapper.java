@@ -17,6 +17,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.core.client.impl.HornetQXAResource;
 import org.hornetq.utils.VersionLoader;
 
 /**
@@ -26,7 +27,7 @@ import org.hornetq.utils.VersionLoader;
  * Transaction Manager for recovery scenarios.
  */
 
-public class HornetQXAResourceWrapper implements org.jboss.tm.XAResourceWrapper, org.jboss.jca.core.spi.transaction.xa.XAResourceWrapper
+public class HornetQXAResourceWrapper implements org.jboss.tm.XAResourceWrapper, org.jboss.jca.core.spi.transaction.xa.XAResourceWrapper, HornetQXAResource
 {
    private final XAResource xaResource;
 
