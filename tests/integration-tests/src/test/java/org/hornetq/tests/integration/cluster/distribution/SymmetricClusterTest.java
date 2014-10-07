@@ -1810,7 +1810,7 @@ public class SymmetricClusterTest extends ClusterTestBase
     */
    public void testClusterAddressDoesNotCreatesBindingsForStringExcludesAddressFilters() throws Exception
    {
-      setupCluster("!jms.eu.uk", "!jms.eu.uk", "!jms.eu.uk", "!jms.eu.uk", "!jms.eu.uk");
+      setupCluster("jms.eu.de,!jms.eu.uk", "jms.eu.de,!jms.eu.uk", "jms.eu.de,!jms.eu.uk", "jms.eu.de,!jms.eu.uk", "jms.eu.de,!jms.eu.uk");
       startServers();
 
       setupSessionFactory(0, isNetty());
