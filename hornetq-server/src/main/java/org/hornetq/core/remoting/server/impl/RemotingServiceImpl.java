@@ -399,6 +399,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return started;
    }
 
+
+   private RemotingConnection getConnection(final Object remotingConnectionID)
+   {
+      ConnectionEntry entry = connections.get(remotingConnectionID);
+
+      if (entry != null)
+      {
+         return entry.connection;
+      }
+      else
+      {
+         HornetQServerLogger.LOGGER.errorRemovingConnection();
+
+         return null;
+      }
+   }
+
    public RemotingConnection removeConnection(final Object remotingConnectionID)
    {
       ConnectionEntry entry = connections.remove(remotingConnectionID);
@@ -668,10 +685,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
                for (Object id : idsToRemove)
                {
-                  RemotingConnection conn = removeConnection(id);
+                  RemotingConnection conn = getConnection(id);
                   if (conn != null)
                   {
                      conn.fail(HornetQMessageBundle.BUNDLE.clientExited(conn.getRemoteAddress()));
+                     removeConnection(id);
                   }
                }
 

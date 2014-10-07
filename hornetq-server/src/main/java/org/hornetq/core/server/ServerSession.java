@@ -43,7 +43,7 @@ public interface ServerSession
 
    RemotingConnection getRemotingConnection();
 
-   void removeConsumer(long consumerID) throws Exception;
+   boolean removeConsumer(long consumerID) throws Exception;
 
    void acknowledge(long consumerID, long messageID) throws Exception;
 
