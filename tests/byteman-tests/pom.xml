@@ -13,7 +13,7 @@
 
    <properties>
       <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
-      <byteman.version>2.1.4.1</byteman.version>
+      <byteman.version>2.2.0</byteman.version>
       <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
    </properties>
 

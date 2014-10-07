@@ -356,12 +356,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return Collections.unmodifiableSet(consumersClone);
    }
 
-   public void removeConsumer(final long consumerID) throws Exception
+   public boolean removeConsumer(final long consumerID) throws Exception
    {
-      if (consumers.remove(consumerID) == null)
-      {
-         throw new IllegalStateException("Cannot find consumer with id " + consumerID + " to remove");
-      }
+      return consumers.remove(consumerID) != null;
    }
 
    protected void doClose(final boolean failed) throws Exception
@@ -383,14 +380,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
             }
          }
-
-         server.removeSession(name);
-
-         remotingConnection.removeFailureListener(this);
-
-         callback.closed();
-
-         closed = true;
       }
 
       //putting closing of consumers outside the sync block
@@ -399,7 +388,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       for (ServerConsumer consumer : consumersClone)
       {
-         consumer.close(failed);
+         try
+         {
+            consumer.close(failed);
+         }
+         catch (Throwable e)
+         {
+            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            try
+            {
+               consumer.removeItself();
+            }
+            catch (Throwable e2)
+            {
+               HornetQServerLogger.LOGGER.warn(e2.getMessage(), e2);
+            }
+         }
       }
 
       consumers.clear();
@@ -414,6 +418,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             HornetQServerLogger.LOGGER.errorDeletingLargeMessageFile(error);
          }
+      }
+
+
+      synchronized (this)
+      {
+         server.removeSession(name);
+
+         remotingConnection.removeFailureListener(this);
+
+         callback.closed();
+
+         closed = true;
       }
    }
 
