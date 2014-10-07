@@ -409,6 +409,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return filter;
    }
 
+   @Override
    public void close(final boolean failed) throws Exception
    {
       callback.removeReadyListener(this);
@@ -422,16 +423,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          del.finish();
       }
 
-      if (browseOnly)
-      {
-         browserDeliverer.close();
-      }
-      else
-      {
-         messageQueue.removeConsumer(this);
-      }
-
-      session.removeConsumer(id);
+      removeItself();
 
       LinkedList<MessageReference> refs = cancelRefs(failed, false, null);
 
@@ -477,6 +469,21 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          managementService.sendNotification(notification);
       }
+   }
+
+   @Override
+   public void removeItself() throws Exception
+   {
+      if (browseOnly)
+      {
+         browserDeliverer.close();
+      }
+      else
+      {
+         messageQueue.removeConsumer(this);
+      }
+
+      session.removeConsumer(id);
    }
 
    /**

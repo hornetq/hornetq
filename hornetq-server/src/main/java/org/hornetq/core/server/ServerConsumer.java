@@ -31,6 +31,14 @@ public interface ServerConsumer extends Consumer
 
    void close(boolean failed) throws Exception;
 
+   /**
+    * This method is just to remove itself from Queues.
+    * If for any reason during a close an exception occurred, the exception treatment
+    * will call removeItself what should take the consumer out of any queues.
+    * @throws Exception
+    */
+   void removeItself() throws Exception;
+
    List<MessageReference> cancelRefs(boolean failed, boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
 
    void setStarted(boolean started);
