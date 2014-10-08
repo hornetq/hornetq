@@ -2369,6 +2369,47 @@ public class StompV11Test extends StompV11TestBase
       connV11.disconnect();
    }
 
+    @Test
+    public void testSendAndReceiveWithEscapedCharactersInSenderId() throws Exception
+    {
+        connV11.connect(defUser, defPass);
+        ClientStompFrame frame = connV11.createFrame("SEND");
+        frame.addHeader("destination", getQueuePrefix() + getQueueName());
+        frame.addHeader("content-type", "text/plain");
+        frame.setBody("Hello World 1!");
+
+        ClientStompFrame response = connV11.sendFrame(frame);
+        assertNull(response);
+
+        //subscribe
+        StompClientConnection newConn = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+        newConn.connect(defUser, defPass);
+
+        ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+        subFrame.addHeader("id", "ID\\cMYMACHINE-50616-635482262727823605-1\\c1\\c1\\c1");
+        subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+        subFrame.addHeader("ack", "auto");
+
+        newConn.sendFrame(subFrame);
+
+        frame = newConn.receiveFrame();
+
+        System.out.println("received " + frame);
+
+        assertEquals("MESSAGE", frame.getCommand());
+        assertEquals("ID:MYMACHINE-50616-635482262727823605-1:1:1:1", frame.getHeader("subscription"));
+        assertNotNull(frame.getHeader("message-id"));
+        assertEquals(getQueuePrefix() + getQueueName(), frame.getHeader("destination"));
+        assertEquals("Hello World 1!", frame.getBody());
+
+        //unsub
+        ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+        unsubFrame.addHeader("id", "ID\\cMYMACHINE-50616-635482262727823605-1\\c1\\c1\\c1");
+        newConn.sendFrame(unsubFrame);
+
+        newConn.disconnect();
+    }
+
 }
 
 
