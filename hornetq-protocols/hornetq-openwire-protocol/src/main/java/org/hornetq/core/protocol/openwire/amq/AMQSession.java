@@ -49,6 +49,7 @@ import org.hornetq.core.protocol.openwire.OpenWireUtil;
 import org.hornetq.core.protocol.openwire.SendingResult;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
@@ -156,14 +157,14 @@ public class AMQSession implements SessionCallback
    }
 
    @Override
-   public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
+   public int sendMessage(ServerMessage message, ServerConsumer consumerID, int deliveryCount)
    {
-      AMQConsumer consumer = consumers.get(consumerID);
+      AMQConsumer consumer = consumers.get(consumerID.getID());
       return consumer.handleDeliver(message, deliveryCount);
    }
 
    @Override
-   public int sendLargeMessage(ServerMessage message, long consumerID,
+   public int sendLargeMessage(ServerMessage message, ServerConsumer consumerID,
          long bodySize, int deliveryCount)
    {
       // TODO Auto-generated method stub
@@ -171,7 +172,7 @@ public class AMQSession implements SessionCallback
    }
 
    @Override
-   public int sendLargeMessageContinuation(long consumerID, byte[] body,
+   public int sendLargeMessageContinuation(ServerConsumer consumerID, byte[] body,
          boolean continues, boolean requiresResponse)
    {
       // TODO Auto-generated method stub
@@ -200,7 +201,13 @@ public class AMQSession implements SessionCallback
    }
 
    @Override
-   public void disconnect(long consumerId, String queueName)
+   public boolean hasCredits(ServerConsumer consumerID)
+   {
+      return true;
+   }
+
+   @Override
+   public void disconnect(ServerConsumer consumerId, String queueName)
    {
       // TODO Auto-generated method stub
 

@@ -26,8 +26,6 @@ import org.hornetq.utils.FutureLatch;
  */
 public interface ClientConsumerInternal extends ClientConsumer
 {
-   long getID();
-
    SimpleString getQueueName();
 
    SimpleString getFilterString();

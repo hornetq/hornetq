@@ -64,6 +64,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.HornetQServerSideProtocolManagerFactory;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.cluster.qourum.SharedNothingBackupQuorum;
@@ -1555,6 +1556,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          locators[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
       }
+
+      locators[node].setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
 
       locators[node].setBlockOnNonDurableSend(true);
       locators[node].setBlockOnDurableSend(true);

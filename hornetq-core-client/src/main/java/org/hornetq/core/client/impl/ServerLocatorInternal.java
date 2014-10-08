@@ -18,8 +18,8 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.protocol.core.impl.PacketDecoder;
 import org.hornetq.api.core.Pair;
+import org.hornetq.spi.core.remoting.ClientProtocolManager;
 
 /**
  * A ServerLocatorInternal
@@ -80,7 +80,7 @@ public interface ServerLocatorInternal extends ServerLocator
 
    Topology getTopology();
 
-   ServerLocatorInternal setPacketDecoder(PacketDecoder instance);
+   ClientProtocolManager newProtocolManager();
 
    boolean isConnectable();
 }

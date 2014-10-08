@@ -53,9 +53,10 @@ import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
-import org.hornetq.core.protocol.ClientPacketDecoder;
-import org.hornetq.core.protocol.core.impl.PacketDecoder;
+import org.hornetq.core.protocol.core.impl.HornetQClientProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.spi.core.remoting.ClientProtocolManager;
+import org.hornetq.spi.core.remoting.ClientProtocolManagerFactory;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -80,6 +81,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    private static final long serialVersionUID = -1615857864410205260L;
+
+
+   // This is the default value
+   private ClientProtocolManagerFactory protocolManagerFactory = HornetQClientProtocolManagerFactory.getInstance();
 
    private final boolean ha;
 
@@ -207,12 +212,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    * remember that when adding any new classes that we have to support serialization with previous clients.
    * If you need to, make them transient and handle the serialization yourself
    * */
-
-
-   /*
-   * we use the client decoder by default but there are times when we want to use the server packet decoder
-   */
-   private transient PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
 
    private final Exception traceException = new Exception();
 
@@ -642,6 +641,28 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+
+   public ClientProtocolManager newProtocolManager()
+   {
+      return getProtocolManagerFactory().newProtocolManager();
+   }
+
+   public ClientProtocolManagerFactory getProtocolManagerFactory()
+   {
+      if (protocolManagerFactory == null)
+      {
+         // this could happen over serialization from older versions
+         protocolManagerFactory = HornetQClientProtocolManagerFactory.getInstance();
+      }
+      return protocolManagerFactory;
+   }
+
+   public void setProtocolManagerFactory(ClientProtocolManagerFactory protocolManagerFactory)
+   {
+      this.protocolManagerFactory = protocolManagerFactory;
+   }
+
+
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
@@ -737,8 +758,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                           threadPool,
                                                                           scheduledThreadPool,
                                                                           incomingInterceptors,
-                                                                          outgoingInterceptors,
-                                                                          packetDecoder);
+                                                                          outgoingInterceptors);
 
       addToConnecting(factory);
       try
@@ -781,8 +801,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                           threadPool,
                                                                           scheduledThreadPool,
                                                                           incomingInterceptors,
-                                                                          outgoingInterceptors,
-                                                                          packetDecoder);
+                                                                          outgoingInterceptors);
 
       addToConnecting(factory);
       try
@@ -874,8 +893,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                       threadPool,
                                                       scheduledThreadPool,
                                                       incomingInterceptors,
-                                                      outgoingInterceptors,
-                                                      packetDecoder);
+                                                      outgoingInterceptors);
                try
                {
                   addToConnecting(factory);
@@ -1779,13 +1797,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    }
 
    @Override
-   public ServerLocatorImpl setPacketDecoder(PacketDecoder packetDecoder)
-   {
-      this.packetDecoder = packetDecoder;
-      return this;
-   }
-
-   @Override
    public boolean isConnectable()
    {
       return getNumInitialConnectors() > 0 || getDiscoveryGroupConfiguration() != null;
@@ -1841,8 +1852,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          topologyArrayGuard = new String();
       }
-      //is transient so need to create, for compatibility issues
-      packetDecoder = ClientPacketDecoder.INSTANCE;
    }
 
    private final class StaticConnector implements Serializable
@@ -1990,8 +1999,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                                                    threadPool,
                                                                                    scheduledThreadPool,
                                                                                    incomingInterceptors,
-                                                                                   outgoingInterceptors,
-                                                                                   packetDecoder);
+                                                                                   outgoingInterceptors);
 
                factory.disableFinalizeCheck();
 

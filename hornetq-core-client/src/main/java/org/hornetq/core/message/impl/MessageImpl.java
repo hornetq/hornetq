@@ -26,6 +26,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.utils.ByteUtil;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
@@ -945,6 +946,37 @@ public abstract class MessageImpl implements MessageInternal
       return false;
    }
 
+   /**
+    * Debug Helper!!!!
+    *
+    * I'm leaving this message here without any callers for a reason:
+    * During debugs it's important eventually to identify what's on the bodies, and this method will give you a good idea about them.
+    * Add the message.bodyToString() to the Watch variables on the debugger view and this will show up like a charm!!!
+    * @return
+    */
+   public String bodyToString()
+   {
+      getEndOfBodyPosition();
+      int readerIndex1 = this.buffer.readerIndex();
+      buffer.readerIndex(0);
+      byte[] buffer1 = new byte[buffer.writerIndex()];
+      buffer.readBytes(buffer1);
+      buffer.readerIndex(readerIndex1);
+
+      byte[] buffer2 = null;
+      if (bodyBuffer != null)
+      {
+         int readerIndex2 = this.bodyBuffer.readerIndex();
+         bodyBuffer.readerIndex(0);
+         buffer2 = new byte[bodyBuffer.writerIndex() - bodyBuffer.readerIndex()];
+         bodyBuffer.readBytes(buffer2);
+         bodyBuffer.readerIndex(readerIndex2);
+      }
+
+      return "ServerMessage@" + Integer.toHexString(System.identityHashCode(this)) + "[" + ",bodyStart=" + getEndOfBodyPosition() + " buffer=" + ByteUtil.bytesToHex(buffer1, 1) + ", bodyBuffer=" + ByteUtil.bytesToHex(buffer2, 1);
+   }
+
+
 
 
    @Override
@@ -981,6 +1013,10 @@ public abstract class MessageImpl implements MessageInternal
          }
 
          int bodySize = getEndOfBodyPosition();
+
+         // Clebert: I've started sending this on encoding due to conversions between protocols
+         //          and making sure we are not losing the buffer start position between protocols
+         this.endOfBodyPosition = bodySize;
 
          // write it
          buffer.setInt(BUFFER_HEADER_SPACE, bodySize);

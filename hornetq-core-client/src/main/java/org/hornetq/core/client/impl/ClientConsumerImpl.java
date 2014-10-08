@@ -32,6 +32,7 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
+import org.hornetq.spi.core.remoting.ConsumerContext;
 import org.hornetq.spi.core.remoting.SessionContext;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.PriorityLinkedList;
@@ -67,7 +68,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
    private final SessionContext sessionContext;
 
-   private final long id;
+   private final ConsumerContext consumerContext;
 
    private final SimpleString filterString;
 
@@ -137,7 +138,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    // ---------------------------------------------------------------------------------
 
    public ClientConsumerImpl(final ClientSessionInternal session,
-                             final long id,
+                             final ConsumerContext consumerContext,
                              final SimpleString queueName,
                              final SimpleString filterString,
                              final boolean browseOnly,
@@ -150,7 +151,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                              final ClientSession.QueueQuery queueInfo,
                              final ClassLoader contextClassLoader)
    {
-      this.id = id;
+      this.consumerContext = consumerContext;
 
       this.queueName = queueName;
 
@@ -180,9 +181,9 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   public Object getId()
+   public ConsumerContext getConsumerContext()
    {
-      return id;
+      return consumerContext;
    }
 
    private ClientMessage receive(final long timeout, final boolean forcingDelivery) throws HornetQException
@@ -557,11 +558,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    public ClientSession.QueueQuery getQueueInfo()
    {
       return queueInfo;
-   }
-
-   public long getID()
-   {
-      return id;
    }
 
    public SimpleString getFilterString()

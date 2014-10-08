@@ -40,6 +40,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
+import org.hornetq.core.server.cluster.HornetQServerSideProtocolManagerFactory;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.utils.UUID;
@@ -148,6 +149,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    @Override
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
+      serverLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
       ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal) serverLocator.createSessionFactory(targetNodeID);
       setSessionFactory(factory);
 

@@ -79,7 +79,7 @@ public class TransactionImpl implements Transaction
 
       xid = null;
 
-      id = storageManager.generateUniqueID();
+      id = storageManager.generateID();
 
       createTime = System.currentTimeMillis();
 
@@ -92,7 +92,7 @@ public class TransactionImpl implements Transaction
 
       xid = null;
 
-      id = storageManager.generateUniqueID();
+      id = storageManager.generateID();
 
       createTime = System.currentTimeMillis();
    }
@@ -103,7 +103,7 @@ public class TransactionImpl implements Transaction
 
       this.xid = xid;
 
-      id = storageManager.generateUniqueID();
+      id = storageManager.generateID();
 
       createTime = System.currentTimeMillis();
 

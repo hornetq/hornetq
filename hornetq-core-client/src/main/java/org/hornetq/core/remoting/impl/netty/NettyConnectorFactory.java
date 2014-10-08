@@ -18,6 +18,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.ClientProtocolManager;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.spi.core.remoting.ConnectorFactory;
@@ -35,7 +36,8 @@ public class NettyConnectorFactory implements ConnectorFactory
                                     final ConnectionLifeCycleListener listener,
                                     final Executor closeExecutor,
                                     final Executor threadPool,
-                                    final ScheduledExecutorService scheduledThreadPool)
+                                    final ScheduledExecutorService scheduledThreadPool,
+                                    final ClientProtocolManager protocolManager)
    {
       return new NettyConnector(configuration, handler, listener, closeExecutor, threadPool, scheduledThreadPool);
    }

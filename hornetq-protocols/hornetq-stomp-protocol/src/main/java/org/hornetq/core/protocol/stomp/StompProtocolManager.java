@@ -372,7 +372,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
    public ServerMessageImpl createServerMessage()
    {
-      return new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
+      return new ServerMessageImpl(server.getStorageManager().generateID(), 512);
    }
 
    public void commitTransaction(StompConnection connection, String txID) throws Exception
@@ -409,7 +409,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          throw new HornetQStompException("There already is a subscription for: " + subscriptionID +
                                             ". Either use unique subscription IDs or do not create multiple subscriptions for the same destination");
       }
-      long consumerID = server.getStorageManager().generateUniqueID();
+      long consumerID = server.getStorageManager().generateID();
       String clientID = (connection.getClientID() != null) ? connection.getClientID() : null;
       stompSession.addSubscription(consumerID,
                                    subscriptionID,

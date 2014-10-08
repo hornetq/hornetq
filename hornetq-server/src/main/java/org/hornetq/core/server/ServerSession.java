@@ -95,7 +95,7 @@ public interface ServerSession
 
    void deleteQueue(SimpleString name) throws Exception;
 
-   void createConsumer(long consumerID, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws Exception;
+   ServerConsumer createConsumer(long consumerID, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws Exception;
 
    QueueQueryResult executeQueueQuery(SimpleString name) throws Exception;
 

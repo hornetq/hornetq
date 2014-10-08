@@ -25,6 +25,18 @@ import org.hornetq.core.transaction.Transaction;
  */
 public interface ServerConsumer extends Consumer
 {
+   /**
+    * @see #getProtocolContext()
+    * @param protocolContext
+    */
+   void setProtocolContext(Object protocolContext);
+
+   /**
+    * An object set by the Protocol implementation.
+    * it could be anything pre-determined by the implementation
+    */
+   Object getProtocolContext();
+
    long getID();
 
    Object getConnectionID();
@@ -43,15 +55,15 @@ public interface ServerConsumer extends Consumer
 
    void setStarted(boolean started);
 
-   void receiveCredits(int credits) throws Exception;
+   void receiveCredits(int credits);
 
    Queue getQueue();
 
    MessageReference removeReferenceByID(long messageID) throws Exception;
 
-   void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
+   void acknowledge(Transaction tx, long messageID) throws Exception;
 
-   void individualAcknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
+   void individualAcknowledge(Transaction tx, long messageID) throws Exception;
 
    void individualCancel(final long messageID, boolean failed) throws Exception;
 
@@ -64,6 +76,8 @@ public interface ServerConsumer extends Consumer
    long getCreationTime();
 
    String getSessionID();
+
+   void promptDelivery();
 }
 
 

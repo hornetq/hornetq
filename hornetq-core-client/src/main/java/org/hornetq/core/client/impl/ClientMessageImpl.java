@@ -26,6 +26,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.reader.MessageUtil;
 
 /**
  *
@@ -38,7 +39,8 @@ import org.hornetq.core.message.impl.MessageImpl;
 public class ClientMessageImpl extends MessageImpl implements ClientMessageInternal
 {
    // added this constant here so that the client package have no dependency on JMS
-   public static final SimpleString REPLYTO_HEADER_NAME = new SimpleString("JMSReplyTo");
+   public static final SimpleString REPLYTO_HEADER_NAME = MessageUtil.REPLYTO_HEADER_NAME;
+
 
    private int deliveryCount;
 

@@ -13,6 +13,9 @@
 
 package org.hornetq.utils;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
+
 /**
  * @author Clebert Suconic
  */
@@ -20,7 +23,7 @@ package org.hornetq.utils;
 public class ByteUtil
 {
 
-   protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
+   private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
    public static String maxString(String value, int size)
    {
@@ -35,19 +38,26 @@ public class ByteUtil
    }
    public static String bytesToHex(byte[] bytes, int groupSize)
    {
-      char[] hexChars = new char[bytes.length * 2 + numberOfGroups(bytes, groupSize)];
-      int outPos = 0;
-      for (int j = 0; j < bytes.length; j++)
+      if (bytes == null)
       {
-         if (j > 0 && j % groupSize == 0)
-         {
-            hexChars[outPos++] = ' ';
-         }
-         int v = bytes[j] & 0xFF;
-         hexChars[outPos++] = hexArray[v >>> 4];
-         hexChars[outPos++] = hexArray[v & 0x0F];
+         return "null";
       }
-      return new String(hexChars);
+      else
+      {
+         char[] hexChars = new char[bytes.length * 2 + numberOfGroups(bytes, groupSize)];
+         int outPos = 0;
+         for (int j = 0; j < bytes.length; j++)
+         {
+            if (j > 0 && j % groupSize == 0)
+            {
+               hexChars[outPos++] = ' ';
+            }
+            int v = bytes[j] & 0xFF;
+            hexChars[outPos++] = hexArray[v >>> 4];
+            hexChars[outPos++] = hexArray[v & 0x0F];
+         }
+         return new String(hexChars);
+      }
    }
 
    private static int numberOfGroups(byte[] bytes, int groupSize)
@@ -62,5 +72,11 @@ public class ByteUtil
       return groups;
    }
 
+   public static byte[] longToBytes(long x)
+   {
+      ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.heapBuffer(8, 8);
+      buffer.writeLong(x);
+      return buffer.array();
+   }
 
 }

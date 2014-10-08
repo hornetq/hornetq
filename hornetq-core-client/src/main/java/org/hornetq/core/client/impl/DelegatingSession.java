@@ -29,6 +29,7 @@ import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.ConsumerContext;
 import org.hornetq.utils.ConcurrentHashSet;
 
 /**
@@ -395,27 +396,27 @@ public class DelegatingSession implements ClientSessionInternal
    }
 
    @Override
-   public void handleReceiveMessage(long consumerID, ClientMessageInternal message) throws Exception
+   public void handleReceiveMessage(ConsumerContext consumerID, ClientMessageInternal message) throws Exception
    {
       session.handleReceiveMessage(consumerID, message);
    }
 
    @Override
-   public void handleReceiveLargeMessage(long consumerID, ClientLargeMessageInternal clientLargeMessage, long largeMessageSize) throws Exception
+   public void handleReceiveLargeMessage(ConsumerContext consumerID, ClientLargeMessageInternal clientLargeMessage, long largeMessageSize) throws Exception
    {
       session.handleReceiveLargeMessage(consumerID, clientLargeMessage, largeMessageSize);
    }
 
    @Override
-   public void handleReceiveContinuation(long consumerID, byte[] chunk, int flowControlSize, boolean isContinues) throws Exception
+   public void handleReceiveContinuation(ConsumerContext consumerID, byte[] chunk, int flowControlSize, boolean isContinues) throws Exception
    {
       session.handleReceiveContinuation(consumerID, chunk, flowControlSize, isContinues);
    }
 
    @Override
-   public void handleConsumerDisconnect(long consumerID) throws HornetQException
+   public void handleConsumerDisconnect(ConsumerContext consumerContext) throws HornetQException
    {
-      session.handleConsumerDisconnect(consumerID);
+      session.handleConsumerDisconnect(consumerContext);
    }
 
    public boolean isAutoCommitAcks()

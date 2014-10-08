@@ -13,6 +13,7 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.spi.core.remoting.ConsumerContext;
 
 /**
  * A ClientConsumer receives messages from HornetQ queues.
@@ -38,7 +39,7 @@ public interface ClientConsumer extends AutoCloseable
     * HornetQ implements this as a long but this could be protocol dependent.
     * @return
     */
-   Object getId();
+   ConsumerContext getConsumerContext();
 
    /**
     * Receives a message from a queue.

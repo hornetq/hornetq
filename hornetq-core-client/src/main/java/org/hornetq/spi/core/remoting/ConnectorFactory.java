@@ -44,7 +44,8 @@ public interface ConnectorFactory extends TransportConfigurationHelper
                              ConnectionLifeCycleListener listener,
                              Executor closeExecutor,
                              Executor threadPool,
-                             ScheduledExecutorService scheduledThreadPool);
+                             ScheduledExecutorService scheduledThreadPool,
+                             ClientProtocolManager protocolManager);
 
    /**
     * Returns the allowable properties for this connector.
