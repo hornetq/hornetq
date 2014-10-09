@@ -87,9 +87,15 @@ public class OpenWireMessageConverter implements MessageConverter
    private static final String AMQ_MSG_DROPPABLE = AMQ_PREFIX + "DROPPABLE";
 
    @Override
-   public ServerMessage convert(TypedProperties properties, HornetQBuffer buffer)
+   public ServerMessage inbound(Object message)
    {
-      // TODO Auto-generated method stub
+      // TODO: implement this
+      return null;
+   }
+
+   public Object outbound(ServerMessage message, int deliveryCount)
+   {
+      // TODO: implement this
       return null;
    }
 

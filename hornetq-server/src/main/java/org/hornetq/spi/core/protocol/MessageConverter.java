@@ -13,15 +13,15 @@
 
 package org.hornetq.spi.core.protocol;
 
-import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.TypedProperties;
 
 /**
  * @author Clebert Suconic
  */
-
+// TODO: use this interface properly on OpenWire
 public interface MessageConverter
 {
-   ServerMessage convert(TypedProperties properties, HornetQBuffer buffer);
+   ServerMessage inbound(Object messageInbound) throws Exception;
+
+   Object outbound(ServerMessage messageOutbound, int deliveryCount) throws Exception;
 }

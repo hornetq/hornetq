@@ -33,7 +33,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -168,7 +167,7 @@ public class ClusterController implements HornetQComponent
       serverLocator.setReconnectAttempts(-1);
       serverLocator.setInitialConnectAttempts(-1);
       //this is used for replication so need to use the server packet decoder
-      serverLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+      serverLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
       locators.put(name, serverLocator);
    }
 
@@ -185,7 +184,7 @@ public class ClusterController implements HornetQComponent
       serverLocator.setReconnectAttempts(-1);
       serverLocator.setInitialConnectAttempts(-1);
       //this is used for replication so need to use the server packet decoder
-      serverLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+      serverLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
       locators.put(name, serverLocator);
    }
 
@@ -249,7 +248,7 @@ public class ClusterController implements HornetQComponent
     */
    public ClusterControl connectToNodeInCluster(ClientSessionFactoryInternal sf)
    {
-      ((ServerLocatorInternal)sf.getServerLocator()).setPacketDecoder(ServerPacketDecoder.INSTANCE);
+      sf.getServerLocator().setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
       return new ClusterControl(sf, server);
    }
 

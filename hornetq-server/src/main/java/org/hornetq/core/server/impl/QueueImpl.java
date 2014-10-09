@@ -2561,7 +2561,7 @@ public class QueueImpl implements Queue
        and original message id
       */
 
-      long newID = storageManager.generateUniqueID();
+      long newID = storageManager.generateID();
 
       ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, ref, expiry, copyOriginalHeaders);
 

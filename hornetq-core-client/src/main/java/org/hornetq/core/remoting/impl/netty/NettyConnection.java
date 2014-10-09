@@ -20,6 +20,7 @@ import java.util.concurrent.Semaphore;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import io.netty.handler.ssl.SslHandler;
@@ -30,6 +31,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.security.HornetQPrincipal;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.ReadyListener;
@@ -66,7 +68,9 @@ public class NettyConnection implements Connection
 
    private final Set<ReadyListener> readyListeners = new ConcurrentHashSet<ReadyListener>();
 
-   // Static --------------------------------------------------------
+   private RemotingConnection protocolConnection;
+
+// Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
@@ -120,6 +124,16 @@ public class NettyConnection implements Connection
    public Channel getChannel()
    {
       return channel;
+   }
+
+   public RemotingConnection getProtocolConnection()
+   {
+      return protocolConnection;
+   }
+
+   public void setProtocolConnection(RemotingConnection protocolConnection)
+   {
+      this.protocolConnection = protocolConnection;
    }
 
    public void close()
@@ -198,6 +212,11 @@ public class NettyConnection implements Connection
 
    public void write(HornetQBuffer buffer, final boolean flush, final boolean batched)
    {
+      write(buffer, flush, batched, null);
+   }
+
+   public void write(HornetQBuffer buffer, final boolean flush, final boolean batched, final ChannelFutureListener futureListener)
+   {
 
       try
       {
@@ -243,7 +262,7 @@ public class NettyConnection implements Connection
             // use a normal promise
             final ByteBuf buf = buffer.byteBuf();
             final ChannelPromise promise;
-            if (flush)
+            if (flush || futureListener != null)
             {
                promise = channel.newPromise();
             }
@@ -256,7 +275,14 @@ public class NettyConnection implements Connection
             boolean inEventLoop = eventLoop.inEventLoop();
             if (!inEventLoop)
             {
-               channel.writeAndFlush(buf, promise);
+               if (futureListener != null)
+               {
+                  channel.writeAndFlush(buf, promise).addListener(futureListener);
+               }
+               else
+               {
+                  channel.writeAndFlush(buf, promise);
+               }
             }
             else
             {
@@ -268,7 +294,14 @@ public class NettyConnection implements Connection
                   @Override
                   public void run()
                   {
-                     channel.writeAndFlush(buf, promise);
+                     if (futureListener != null)
+                     {
+                        channel.writeAndFlush(buf, promise).addListener(futureListener);
+                     }
+                     else
+                     {
+                        channel.writeAndFlush(buf, promise);
+                     }
                   }
                };
                // execute the task on the eventloop
@@ -361,6 +394,12 @@ public class NettyConnection implements Connection
       {
          return null;
       }
+   }
+
+   @Override
+   public boolean isUsingProtocolHandling()
+   {
+      return true;
    }
 
 

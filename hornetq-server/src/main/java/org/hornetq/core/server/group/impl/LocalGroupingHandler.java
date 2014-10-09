@@ -140,7 +140,7 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
             {
                addRecord = true;
                groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
-               groupBinding.setId(storageManager.generateUniqueID());
+               groupBinding.setId(storageManager.generateID());
                List<GroupBinding> newList = new ArrayList<GroupBinding>();
                List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
                if (oldList != null)
@@ -243,7 +243,7 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
          groupBindings.remove(groupBinding);
          try
          {
-            long tx = storageManager.generateUniqueID();
+            long tx = storageManager.generateID();
             storageManager.deleteGrouping(tx, groupBinding);
             storageManager.commitBindings(tx);
          }
@@ -428,7 +428,7 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
                      {
                         if (txID < 0)
                         {
-                           txID = storageManager.generateUniqueID();
+                           txID = storageManager.generateID();
                         }
                         storageManager.deleteGrouping(txID, val);
                      }
@@ -498,7 +498,7 @@ public final class LocalGroupingHandler extends GroupHandlingAbstract
                   {
                      if (txID < 0)
                      {
-                        txID = storageManager.generateUniqueID();
+                        txID = storageManager.generateID();
                      }
                      storageManager.deleteGrouping(txID, groupBinding);
 

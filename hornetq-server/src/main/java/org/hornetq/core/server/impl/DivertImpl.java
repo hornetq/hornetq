@@ -85,7 +85,7 @@ public class DivertImpl implements Divert
          HornetQServerLogger.LOGGER.trace("Diverting message " + message + " into " + this);
       }
 
-      long id = storageManager.generateUniqueID();
+      long id = storageManager.generateID();
 
       ServerMessage copy = null;
 

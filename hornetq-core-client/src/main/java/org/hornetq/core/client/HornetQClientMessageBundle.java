@@ -241,4 +241,7 @@ public interface HornetQClientMessageBundle
          , format = Message.Format.MESSAGE_FORMAT)
    HornetQLargeMessageInterruptedException largeMessageInterrupted();
 
+   @Message(id = 119061, value =  "error decoding AMQP frame", format = Message.Format.MESSAGE_FORMAT)
+   String decodeError();
+
 }

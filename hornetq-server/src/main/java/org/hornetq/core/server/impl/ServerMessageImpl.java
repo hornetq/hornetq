@@ -326,9 +326,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          ", durable=" + durable + ", address=" + getAddress() + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
    }
 
-   // FIXME - this is stuff that is only used in large messages
-
-   // This is only valid on the client side - why is it here?
    public InputStream getBodyInputStream()
    {
       return null;

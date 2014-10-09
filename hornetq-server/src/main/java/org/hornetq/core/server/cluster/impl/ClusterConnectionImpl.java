@@ -45,7 +45,6 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -56,6 +55,7 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterControl;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.ClusterManager.IncomingInterceptorLookingForExceptionMessage;
+import org.hornetq.core.server.cluster.HornetQServerSideProtocolManagerFactory;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.impl.Proposal;
@@ -649,7 +649,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
          serverLocator.setAfterConnectionInternalListener(this);
 
-         serverLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+         serverLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
 
          serverLocator.start(server.getExecutorFactory().getExecutor());
       }
@@ -842,7 +842,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       targetLocator.setAfterConnectionInternalListener(this);
 
-      targetLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+      serverLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
 
       targetLocator.setNodeID(nodeId);
 
@@ -1363,7 +1363,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
             return;
          }
 
-         RemoteQueueBinding binding = new RemoteQueueBindingImpl(server.getStorageManager().generateUniqueID(),
+         RemoteQueueBinding binding = new RemoteQueueBindingImpl(server.getStorageManager().generateID(),
                                                                  queueAddress,
                                                                  clusterName,
                                                                  routingName,

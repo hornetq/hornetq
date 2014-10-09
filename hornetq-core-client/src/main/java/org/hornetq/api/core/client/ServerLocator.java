@@ -16,6 +16,7 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.client.impl.Topology;
+import org.hornetq.spi.core.remoting.ClientProtocolManagerFactory;
 
 /**
  * The serverLocator locates a server, but beyond that it locates a server based on a list.
@@ -781,4 +782,9 @@ public interface ServerLocator extends AutoCloseable
 
    // XXX No javadocs
    void removeClusterTopologyListener(ClusterTopologyListener listener);
+
+   ClientProtocolManagerFactory getProtocolManagerFactory();
+
+   void setProtocolManagerFactory(ClientProtocolManagerFactory protocolManager);
+
 }

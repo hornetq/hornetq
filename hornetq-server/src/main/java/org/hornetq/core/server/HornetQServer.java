@@ -27,6 +27,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.ha.HAPolicy;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -109,6 +110,8 @@ public interface HornetQServer extends HornetQComponent
                                String defaultAddress,
                                SessionCallback callback,
                                ServerSessionFactory sessionFactory) throws Exception;
+
+   SecurityStore getSecurityStore();
 
    void removeSession(String name) throws Exception;
 

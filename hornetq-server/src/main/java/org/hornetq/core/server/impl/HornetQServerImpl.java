@@ -1096,6 +1096,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   @Override
    public SecurityStore getSecurityStore()
    {
       return securityStore;
@@ -1407,7 +1408,7 @@ public class HornetQServerImpl implements HornetQServer
                                      postOffice,
                                      storageManager);
 
-      Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
+      Binding binding = new DivertBinding(storageManager.generateID(), sAddress, divert);
 
       postOffice.addBinding(binding);
 
@@ -1984,8 +1985,8 @@ public class HornetQServerImpl implements HornetQServer
 
       Filter filter = FilterImpl.createFilter(filterString);
 
-      long txID = storageManager.generateUniqueID();
-      long queueID = storageManager.generateUniqueID();
+      long txID = storageManager.generateID();
+      long queueID = storageManager.generateID();
 
       PageSubscription pageSubscription;
 

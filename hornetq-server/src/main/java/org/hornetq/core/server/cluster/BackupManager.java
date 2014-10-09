@@ -29,7 +29,6 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -219,7 +218,7 @@ public class BackupManager implements HornetQComponent
             backupServerLocator.setIdentity("backupLocatorFor='" + server + "'");
             backupServerLocator.setReconnectAttempts(-1);
             backupServerLocator.setInitialConnectAttempts(-1);
-            backupServerLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+            backupServerLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
          }
       }
 
@@ -372,7 +371,7 @@ public class BackupManager implements HornetQComponent
             }
             ServerLocatorImpl locator = new ServerLocatorImpl(topology, true, tcConfigs);
             locator.setClusterConnection(true);
-            locator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+            locator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
             return locator;
          }
          return null;

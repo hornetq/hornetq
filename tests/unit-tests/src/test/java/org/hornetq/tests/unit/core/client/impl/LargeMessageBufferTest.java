@@ -38,6 +38,8 @@ import org.hornetq.core.client.impl.ClientLargeMessageInternal;
 import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.LargeMessageControllerImpl;
+import org.hornetq.core.protocol.core.impl.HornetQConsumerContext;
+import org.hornetq.spi.core.remoting.ConsumerContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.FutureLatch;
@@ -771,9 +773,9 @@ public class LargeMessageBufferTest extends UnitTestCase
    static class FakeConsumerInternal implements ClientConsumerInternal
    {
 
-      public Object getId()
+      public ConsumerContext getConsumerContext()
       {
-         return this;
+         return new HornetQConsumerContext(0);
       }
 
 

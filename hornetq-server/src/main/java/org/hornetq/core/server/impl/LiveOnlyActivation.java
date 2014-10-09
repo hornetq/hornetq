@@ -21,10 +21,10 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LiveNodeLocator;
+import org.hornetq.core.server.cluster.HornetQServerSideProtocolManagerFactory;
 import org.hornetq.core.server.cluster.ha.LiveOnlyPolicy;
 import org.hornetq.core.server.cluster.ha.ScaleDownPolicy;
 
@@ -129,7 +129,7 @@ public class LiveOnlyActivation extends Activation
       {
          scaleDownServerLocator = ScaleDownPolicy.getScaleDownConnector(scaleDownPolicy, hornetQServer);
          //use a Node Locator to connect to the cluster
-         scaleDownServerLocator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+         scaleDownServerLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
          LiveNodeLocator nodeLocator = scaleDownPolicy.getGroupName() == null ?
                new AnyLiveNodeLocatorForScaleDown(hornetQServer) :
                new NamedLiveNodeLocatorForScaleDown(scaleDownPolicy.getGroupName(), hornetQServer);

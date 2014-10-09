@@ -17,9 +17,9 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
-import org.hornetq.core.protocol.ServerPacketDecoder;
 import org.hornetq.core.server.cluster.ClusterControl;
 import org.hornetq.core.server.cluster.ClusterController;
+import org.hornetq.core.server.cluster.HornetQServerSideProtocolManagerFactory;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.junit.After;
 import org.junit.Before;
@@ -68,7 +68,7 @@ public class ClusterControllerTest extends ClusterTestBase
    {
       try (ServerLocatorImpl locator = (ServerLocatorImpl) HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY)))
       {
-         locator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+         locator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
          ClusterController controller = new ClusterController(getServer(0), getServer(0).getScheduledPool());
          ClusterControl clusterControl = controller.connectToNodeInCluster((ClientSessionFactoryInternal) locator.createSessionFactory());
          clusterControl.authorize();
@@ -80,7 +80,7 @@ public class ClusterControllerTest extends ClusterTestBase
    {
       try (ServerLocatorImpl locator = (ServerLocatorImpl) HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY)))
       {
-         locator.setPacketDecoder(ServerPacketDecoder.INSTANCE);
+         locator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
          ClusterController controller = new ClusterController(getServer(1), getServer(1).getScheduledPool());
          ClusterControl clusterControl = controller.connectToNodeInCluster((ClientSessionFactoryInternal) locator.createSessionFactory());
          try

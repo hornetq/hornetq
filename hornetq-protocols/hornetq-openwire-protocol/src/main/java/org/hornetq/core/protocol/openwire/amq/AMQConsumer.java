@@ -59,7 +59,7 @@ public class AMQConsumer implements BrowserListener
 
       SimpleString selector = info.getSelector() == null ? null : new SimpleString(info.getSelector());
 
-      nativeId = session.getCoreServer().getStorageManager().generateUniqueID();
+      nativeId = session.getCoreServer().getStorageManager().generateID();
 
       SimpleString address = new SimpleString(this.actualDest.getPhysicalName());
 

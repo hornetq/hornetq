@@ -809,7 +809,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       // We have to copy the message and store it separately, otherwise we may lose remote bindings in case of restart before the message
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
-      ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
+      ServerMessage copyRedistribute = message.copy(storageManager.generateID());
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
@@ -881,7 +881,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          // First send a reset message
 
-         ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+         ServerMessage message = new ServerMessageImpl(storageManager.generateID(), 50);
 
          message.setAddress(queueName);
          message.putBooleanProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA, true);
@@ -937,7 +937,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
             }
          }
-         ServerMessage completeMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+         ServerMessage completeMessage = new ServerMessageImpl(storageManager.generateID(), 50);
 
          completeMessage.setAddress(queueName);
          completeMessage.putBooleanProperty(PostOfficeImpl.HDR_RESET_QUEUE_DATA_COMPLETE, true);
@@ -1370,7 +1370,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private ServerMessage createQueueInfoMessage(final NotificationType type, final SimpleString queueName)
    {
-      ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+      ServerMessage message = new ServerMessageImpl(storageManager.generateID(), 50);
 
       message.setAddress(queueName);
 

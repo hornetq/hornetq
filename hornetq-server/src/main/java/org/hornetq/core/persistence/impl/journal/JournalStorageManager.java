@@ -771,12 +771,12 @@ public class JournalStorageManager implements StorageManager
       getContext().executeOnCompletion(run);
    }
 
-   public long generateUniqueID()
+   public long generateID()
    {
       return idGenerator.generateID();
    }
 
-   public long getCurrentUniqueID()
+   public long getCurrentID()
    {
       return idGenerator.getCurrentID();
    }
@@ -846,7 +846,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         long recordID = generateUniqueID();
+         long recordID = generateID();
 
          messageJournal.appendAddRecord(recordID, JournalRecordIds.ADD_LARGE_MESSAGE_PENDING,
                                         new PendingLargeMessageEncoding(messageID),
@@ -1089,7 +1089,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         pageTransaction.setRecordID(generateUniqueID());
+         pageTransaction.setRecordID(generateID());
          messageJournal.appendAddRecordTransactional(txID, pageTransaction.getRecordID(),
                                                      JournalRecordIds.PAGE_TRANSACTION, pageTransaction);
       }
@@ -1215,7 +1215,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-         long id = generateUniqueID();
+         long id = generateID();
 
          messageJournal.appendAddRecord(id,
                                         JournalRecordIds.HEURISTIC_COMPLETION,

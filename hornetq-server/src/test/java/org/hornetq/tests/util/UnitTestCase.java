@@ -2073,6 +2073,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
          runnerThread.join(timeoutMilliseconds);
          if (runnerThread.isAlive())
          {
+            System.err.println("Thread still running, interrupting it now:");
+            for (Object t : runnerThread.getStackTrace())
+            {
+               System.err.println(t);
+            }
             hadToInterrupt = true;
             runnerThread.interrupt();
          }
@@ -2080,6 +2085,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
 
       if (runnerThread.t != null)
       {
+         runnerThread.t.printStackTrace();
          throw runnerThread.t;
       }
 
