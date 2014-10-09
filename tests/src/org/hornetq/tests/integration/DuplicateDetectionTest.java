@@ -163,11 +163,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
     {
         final int TEST_SIZE = 100;
 
-        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+        ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
         locator.setBlockOnNonDurableSend(true);
 
-        ClientSessionFactory sf = createSessionFactory(locator);
+        ClientSessionFactory sf = locator.createSessionFactory();
 
         ClientSession session = sf.createSession(false, true, true);
 
@@ -177,9 +177,9 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
         final SimpleString addressName = new SimpleString("DuplicateDetectionTestAddress");
 
-        for (int i = 0; i < TEST_SIZE; i)
+        for (int i = 0; i < TEST_SIZE; i++)
         {
-            final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue_"  i);
+            final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue_" + i);
 
             if (temporary)
             {
@@ -222,7 +222,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
             producer.close();
             consumer.close();
 
-            Assert.assertEquals(1, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
+            // there will be 2 ID caches, one for messages using "_HQ_DUPL_ID" and one for "_HQ_BRIDGE_DUP"
+            Assert.assertEquals(2, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
             session.deleteQueue(queueName);
             Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
         }
