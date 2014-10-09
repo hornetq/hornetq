@@ -893,7 +893,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                HornetQServerLogger.LOGGER.trace("QueueInfo on sendQueueInfoToQueue = " + info);
             }
-            if (info.getAddress().startsWith(address))
+            if (info.matchesAddress(address))
             {
                message = createQueueInfoMessage(CoreNotificationType.BINDING_ADDED, queueName);
 
