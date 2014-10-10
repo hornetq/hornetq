@@ -148,15 +148,16 @@
                         >core.server</literal>).</para>
                </listitem>
                <listitem>
-                   <para>It is possible to stop the server and force failover to occur with any currently attached clients.</para>
-                   <para>to do this use the <literal>forceFailover()</literal> on the <literal
+                  <para>It is possible to stop the server and force failover to occur with any currently attached clients.</para>
+                  <para>to do this use the <literal>forceFailover()</literal> on the <literal
                         >HornetQServerControl</literal> (with the ObjectName <literal
                         >org.hornetq:module=Core,type=Server</literal> or the resource name <literal
                         >core.server</literal>) </para>
-                   <para>
-                       <note>Since this method actually stops the server you will probably receive some sort of error
-                       depending on which management service you use to call it.</note>
-                   </para>
+                  <note>
+                     <para>Since this method actually stops the server you will probably receive some sort of error
+                        depending on which management service you use to call it.
+                     </para>
+                  </note>
                </listitem>
             </itemizedlist>
          </section>
