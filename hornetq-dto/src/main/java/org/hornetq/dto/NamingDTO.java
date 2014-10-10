@@ -12,29 +12,24 @@
  */
 package org.hornetq.dto;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "broker")
+@XmlRootElement(name = "naming")
 @XmlAccessorType(XmlAccessType.FIELD)
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public class BrokerDTO
+public class NamingDTO
 {
+   @XmlAttribute
+   public String bindAddress = "localhost";
 
-   @XmlElementRef
-   public CoreDTO core;
+   @XmlAttribute
+   public int port = 1099;
 
-   @XmlElementRef(required = false)
-   public JmsDTO jms;
+   @XmlAttribute
+   public String rmiBindAddress = "localhost";
 
-   @XmlElementRef
-   public SecurityDTO security;
-
-   @XmlElementRef
-   public NamingDTO naming;
-
+   @XmlAttribute
+   public int rmiPort = 1098;
 }
