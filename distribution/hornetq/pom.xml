@@ -28,8 +28,7 @@
 
    <properties>
       <schemaLocation>${project.build.directory}/${project.artifactId}-${project.version}-bin/${project.artifactId}-${project.version}/schema</schemaLocation>
-      <standalone>src/main/resources/config/stand-alone</standalone>
-      <as6>src/main/resources/config/jboss-as-6</as6>
+      <configLocation>src/main/resources/config</configLocation>
    </properties>
 
    <dependencies>
@@ -107,11 +106,6 @@
      <dependency>
         <groupId>org.hornetq</groupId>
         <artifactId>jnp-client</artifactId>
-        <version>${project.version}</version>
-     </dependency>
-     <dependency>
-        <groupId>org.hornetq</groupId>
-        <artifactId>jboss-mc</artifactId>
         <version>${project.version}</version>
      </dependency>
       <dependency>
@@ -235,70 +229,84 @@
             <configuration>
                <validationSets>
                   <validationSet>
-                     <dir>${standalone}/clustered</dir>
+                     <dir>${configLocation}/clustered</dir>
                      <systemId>${schemaLocation}/hornetq-configuration.xsd</systemId>
                      <includes>
                         <include>hornetq-configuration.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${standalone}/non-clustered</dir>
+                     <dir>${configLocation}/non-clustered</dir>
                      <systemId>${schemaLocation}/hornetq-configuration.xsd</systemId>
                      <includes>
                         <include>hornetq-configuration.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${as6}/clustered</dir>
+                     <dir>${configLocation}/replicated</dir>
                      <systemId>${schemaLocation}/hornetq-configuration.xsd</systemId>
                      <includes>
                         <include>hornetq-configuration.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${as6}/non-clustered</dir>
+                     <dir>${configLocation}/shared-store</dir>
                      <systemId>${schemaLocation}/hornetq-configuration.xsd</systemId>
                      <includes>
                         <include>hornetq-configuration.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${standalone}/clustered</dir>
+                     <dir>${configLocation}/clustered</dir>
                      <systemId>${schemaLocation}/hornetq-jms.xsd</systemId>
                      <includes>
                         <include>hornetq-jms.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${standalone}/non-clustered</dir>
+                     <dir>${configLocation}/non-clustered</dir>
                      <systemId>${schemaLocation}/hornetq-jms.xsd</systemId>
                      <includes>
                         <include>hornetq-jms.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${as6}/clustered</dir>
+                     <dir>${configLocation}/replicated</dir>
                      <systemId>${schemaLocation}/hornetq-jms.xsd</systemId>
                      <includes>
                         <include>hornetq-jms.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${as6}/non-clustered</dir>
+                     <dir>${configLocation}/shared-store</dir>
                      <systemId>${schemaLocation}/hornetq-jms.xsd</systemId>
                      <includes>
                         <include>hornetq-jms.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${standalone}/clustered</dir>
+                     <dir>${configLocation}/clustered</dir>
                      <systemId>${schemaLocation}/hornetq-users.xsd</systemId>
                      <includes>
                         <include>hornetq-users.xml</include>
                      </includes>
                   </validationSet>
                   <validationSet>
-                     <dir>${standalone}/non-clustered</dir>
+                     <dir>${configLocation}/non-clustered</dir>
+                     <systemId>${schemaLocation}/hornetq-users.xsd</systemId>
+                     <includes>
+                        <include>hornetq-users.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>${configLocation}/replicated</dir>
+                     <systemId>${schemaLocation}/hornetq-users.xsd</systemId>
+                     <includes>
+                        <include>hornetq-users.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>${configLocation}/shared-store</dir>
                      <systemId>${schemaLocation}/hornetq-users.xsd</systemId>
                      <includes>
                         <include>hornetq-users.xml</include>
@@ -307,7 +315,6 @@
                </validationSets>
             </configuration>
          </plugin>
-
       </plugins>
    </build>
 

@@ -14,13 +14,12 @@
 
 <broker xmlns="http://hornetq.org/schema">
 
-  <core configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-configuration.xml"></core>
+   <core configuration="${hornetq.home}/config/stand-alone/shared-store/hornetq-configuration.xml"></core>
+   <jms configuration="${hornetq.home}/config/stand-alone/shared-store/hornetq-jms.xml"></jms>
 
-  <jms configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-jms.xml"></jms>
+   <basic-security/>
 
-  <basic-security/>
-
-  <naming bindAddress="localhost" port="1099" rmiBindAddress="localhost" rmiPort="1098"/>
+   <naming bindAddress="localhost" port="1099" rmiBindAddress="localhost" rmiPort="1098"/>
 
 </broker>
 

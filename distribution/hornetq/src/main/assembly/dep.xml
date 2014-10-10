@@ -119,9 +119,6 @@
          <include>licenses/*</include>
          <include>examples/**</include>
        </includes>
-       <excludes>
-         <exclude>config/**/trunk/**</exclude>
-       </excludes>
      </fileSet>
      <fileSet>
        <directory>../../examples</directory>
