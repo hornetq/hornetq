@@ -75,7 +75,17 @@ public class Run implements Action
 
       namingServer = new StandaloneNamingServer(server);
 
+      namingServer.setBindAddress(broker.naming.bindAddress);
+
+      namingServer.setPort(broker.naming.port);
+
+      namingServer.setRmiBindAddress(broker.naming.rmiBindAddress);
+
+      namingServer.setRmiPort(broker.naming.rmiPort);
+
       namingServer.start();
+
+      HornetQBootstrapLogger.LOGGER.startedNamingService(broker.naming.bindAddress, broker.naming.port, broker.naming.rmiBindAddress, broker.naming.rmiPort);
 
       if (jms != null)
       {
@@ -85,6 +95,8 @@ public class Run implements Action
       {
          jmsServerManager = new JMSServerManagerImpl(server);
       }
+
+      HornetQBootstrapLogger.LOGGER.serverStarting();
 
       jmsServerManager.start();
 

@@ -15,4 +15,5 @@ CoreDTO
 JmsDTO
 SecurityDTO
 BasicSecurityDTO
+NamingDTO
 
