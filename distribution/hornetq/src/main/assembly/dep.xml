@@ -31,9 +31,8 @@
             <include>org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec</include>
             <include>org.jboss.naming:jnpserver</include>
             <include>io.netty:netty-all</include>
-            <include>org.apache.qpid:proton-api</include>
+            <include>org.apache.qpid:proton</include>
             <include>org.apache.qpid:proton-jms</include>
-            <include>org.apache.qpid:proton-j-impl</include>
             <include>org.apache.activemq:activemq-client</include>
             <include>org.slf4j:slf4j-api</include>
             <include>io.airlift:airline</include>
@@ -73,7 +72,7 @@
       </dependencySet>
        <dependencySet>
            <includes>
-               <include>org.apache.qpid:proton-api</include>
+               <include>org.apache.qpid:proton</include>
            </includes>
            <outputDirectory>lib</outputDirectory>
            <unpack>false</unpack>
@@ -86,14 +85,6 @@
            <outputDirectory>lib</outputDirectory>
            <unpack>false</unpack>
            <outputFileNameMapping>proton-jms.jar</outputFileNameMapping>
-       </dependencySet>
-       <dependencySet>
-           <includes>
-               <include>org.apache.qpid:proton-j-impl</include>
-           </includes>
-           <outputDirectory>lib</outputDirectory>
-           <unpack>false</unpack>
-           <outputFileNameMapping>proton-j-impl.jar</outputFileNameMapping>
        </dependencySet>
       <dependencySet>
          <includes>

@@ -143,14 +143,6 @@
       <!-- dependencies -->
        <dependency>
            <groupId>org.apache.qpid</groupId>
-           <artifactId>proton-api</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.apache.qpid</groupId>
-           <artifactId>proton-j-impl</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.apache.qpid</groupId>
            <artifactId>proton-jms</artifactId>
        </dependency>
        <dependency>
