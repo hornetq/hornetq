@@ -41,7 +41,7 @@ import java.util.TimerTask;
 public class Run implements Action
 {
 
-   @Arguments(description = "Broker Configuration URI, default 'xml:${HORNETQ_HOME}/config/hornetq.xml'")
+   @Arguments(description = "Broker Configuration URI, default 'xml:${HORNETQ_HOME}/config/non-clustered/bootstrap.xml'")
    String configuration;
    private StandaloneNamingServer namingServer;
    private JMSServerManager jmsServerManager;
@@ -54,7 +54,7 @@ public class Run implements Action
 
       if (configuration == null)
       {
-         configuration = "xml:" + System.getProperty("hornetq.home") + "/config/hornetq.xml";
+         configuration = "xml:" + System.getProperty("hornetq.home") + "/config/non-clustered/bootstrap.xml";
       }
 
       System.out.println("Loading configuration file: " + configuration);

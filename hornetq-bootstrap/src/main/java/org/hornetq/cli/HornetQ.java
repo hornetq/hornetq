@@ -51,7 +51,7 @@ public class HornetQ
       {
          System.err.println(configException.getMessage());
          System.out.println();
-         System.out.println("Configuration should be specified as 'schema:location'. Default configuration is 'xml:config/hornetq.xml'");
+         System.out.println("Configuration should be specified as 'schema:location'. Default configuration is 'xml:${HORNETQ_HOME}/config/non-clustered/bootstrap.xml'");
       }
 
    }

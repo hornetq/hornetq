@@ -7,7 +7,7 @@
    -->
    <shared-store>false</shared-store>
 
-   <backup>${hornetq.backup:false}</backup>
+   <backup>false</backup>
 
    <paging-directory>${data.dir:../data}/paging</paging-directory>
    

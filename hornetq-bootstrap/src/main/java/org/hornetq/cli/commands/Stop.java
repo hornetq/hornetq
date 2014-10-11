@@ -22,14 +22,16 @@ import java.io.File;
 @Command(name = "stop", description = "stops the broker instance")
 public class Stop implements Action
 {
-   @Arguments(description = "Broker Configuration URI, default 'xml:config/hornetq.xml'")
-   String configuration = "xml:config/hornetq.xml";
-
-   private static final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
+   @Arguments(description = "Broker Configuration URI, default 'xml:${HORNETQ_HOME}/config/non-clustered/bootstrap.xml'")
+   String configuration;
 
    @Override
    public Object execute(ActionContext context) throws Exception
    {
+      if (configuration == null)
+      {
+         configuration = "xml:" + System.getProperty("hornetq.home") + "/config/non-clustered/bootstrap.xml";
+      }
       BrokerDTO broker = BrokerFactory.createBroker(configuration);
 
       File file = new File(broker.core.configuration).getParentFile();
