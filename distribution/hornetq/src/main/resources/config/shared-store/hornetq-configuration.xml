@@ -5,9 +5,6 @@
    if you want to run this as a backup on different ports you would need to set the following variable
    export CLUSTER_PROPS="-Djnp.port=1199 -Djnp.rmiPort=1198 -Djnp.host=localhost -Dhornetq.remoting.netty.host=localhost -Dhornetq.remoting.netty.port=5545 -Dhornetq.remoting.netty.batch.port=5555 -Dhornetq.backup=true"
    -->
-   <shared-store>true</shared-store>
-
-   <backup>false</backup>
 
    <paging-directory>${data.dir:../data}/paging</paging-directory>
    
@@ -74,6 +71,12 @@
 	      <discovery-group-ref discovery-group-name="dg-group1"/>
       </cluster-connection>
    </cluster-connections>
+
+   <ha-policy>
+      <shared-store>
+         <master/>
+      </shared-store>
+   </ha-policy>
    
    <security-settings>
       <security-setting match="#">
