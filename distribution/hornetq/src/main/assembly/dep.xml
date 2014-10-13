@@ -30,8 +30,11 @@
             <!-- dependencies -->
             <include>org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec</include>
             <include>org.jboss.naming:jnpserver</include>
+            <include>org.jboss.logmanager:jboss-logmanager</include>
+            <include>org.jboss:jboss-common-core</include>
             <include>io.netty:netty-all</include>
             <include>org.apache.qpid:proton</include>
+            <include>org.apache.qpid:proton-j</include>
             <include>org.apache.qpid:proton-jms</include>
             <include>org.apache.activemq:activemq-client</include>
             <include>org.slf4j:slf4j-api</include>
