@@ -33,7 +33,6 @@
             <include>org.jboss.logmanager:jboss-logmanager</include>
             <include>org.jboss:jboss-common-core</include>
             <include>io.netty:netty-all</include>
-            <include>org.apache.qpid:proton</include>
             <include>org.apache.qpid:proton-j</include>
             <include>org.apache.qpid:proton-jms</include>
             <include>org.apache.activemq:activemq-client</include>
@@ -72,31 +71,6 @@
         </includes>
         <outputDirectory>docs/api/${artifact.artifactId}</outputDirectory>
         <unpack>true</unpack>
-      </dependencySet>
-       <dependencySet>
-           <includes>
-               <include>org.apache.qpid:proton</include>
-           </includes>
-           <outputDirectory>lib</outputDirectory>
-           <unpack>false</unpack>
-           <outputFileNameMapping>proton-api.jar</outputFileNameMapping>
-       </dependencySet>
-       <dependencySet>
-           <includes>
-               <include>org.apache.qpid:proton-jms</include>
-           </includes>
-           <outputDirectory>lib</outputDirectory>
-           <unpack>false</unpack>
-           <outputFileNameMapping>proton-jms.jar</outputFileNameMapping>
-       </dependencySet>
-      <dependencySet>
-         <includes>
-            <include>io.airlift:airline</include>
-            <include>com.google.guava:guava</include>
-            <include>javax.inject:javax.inject</include>
-         </includes>
-         <outputDirectory>lib</outputDirectory>
-         <unpack>false</unpack>
       </dependencySet>
    </dependencySets>
    <fileSets>
