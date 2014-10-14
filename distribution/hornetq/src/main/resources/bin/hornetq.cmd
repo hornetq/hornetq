@@ -31,11 +31,7 @@ echo.
 
 :RUN_JAVA
 
-for /R %HORNETQ_HOME%\lib %%A in (*.jar) do (
-  set CLASSPATH=!CLASSPATH!;%%A
-)
-
-if "%JVM_FLAGS%" == "" set JVM_FLAGS=-XX:+UseParallelGC  -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms512M -Xmx1024M -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Djava.util.logging.config.file=%HORNETQ_HOME%\config\logging.properties -Djava.library.path=.
+if "%JVM_FLAGS%" == "" set JVM_FLAGS=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms512M -Xmx1024M -Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory -Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces -Dhornetq.home=$HORNETQ_HOME -Ddata.dir=$HORNETQ_HOME/data -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dlogging.configuration="file:%HORNETQ_HOME%\config\logging.properties" -Djava.library.path="%HORNETQ_HOME%/bin/lib/linux-i686:%HORNETQ_HOME%/bin/lib/linux-x86_64"
 
 if "x%HORNETQ_OPTS%" == "x" goto noHORNETQ_OPTS
   set JVM_FLAGS=%JVM_FLAGS% %HORNETQ_OPTS%
@@ -49,13 +45,9 @@ if "x%HORNETQ_PROFILE%" == "x" goto noPROFILE
   set JVM_FLAGS=-agentlib:yjpagent %JVM_FLAGS%
 :noPROFILE
 
-if "%JMX_OPTS%" == "" set JMX_OPTS=-Dcom.sun.management.jmxremote
 rem set JMX_OPTS=-Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false
-set JVM_FLAGS=%JVM_FLAGS% %JMX_OPTS%
 
-set JVM_FLAGS=%JVM_FLAGS% -Dhornetq.home="%HORNETQ_HOME%"
-if NOT "x%HORNETQ_BASE%" == "x" set JVM_FLAGS=%JVM_FLAGS% -Dhornetq.base="%HORNETQ_BASE%"
-set JVM_FLAGS=%JVM_FLAGS% -classpath "%CLASSPATH%"
+set JVM_FLAGS=%JVM_FLAGS% %JMX_OPTS% -Dhornetq.home="%HORNETQ_HOME%" -classpath "%HORNETQ_HOME%\lib\*"
 
 "%_JAVACMD%" %JVM_FLAGS% org.hornetq.cli.HornetQ %*
 

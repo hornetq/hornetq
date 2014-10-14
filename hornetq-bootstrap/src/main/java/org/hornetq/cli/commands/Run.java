@@ -54,7 +54,7 @@ public class Run implements Action
 
       if (configuration == null)
       {
-         configuration = "xml:" + System.getProperty("hornetq.home") + "/config/non-clustered/bootstrap.xml";
+         configuration = "xml:" + System.getProperty("hornetq.home").replace("\\", "/") + "/config/non-clustered/bootstrap.xml";
       }
 
       System.out.println("Loading configuration file: " + configuration);

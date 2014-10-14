@@ -28,7 +28,7 @@ public class CoreFactory
       if (core.configuration != null)
       {
          CoreFactoryHandler factory = null;
-         URI configURI = new URI(core.configuration);
+         URI configURI = new URI(core.configuration.replace("\\", "/"));
          try
          {
             FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/core/");
