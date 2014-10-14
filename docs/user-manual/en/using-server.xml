@@ -166,8 +166,8 @@
             <programlisting>
 &lt;broker xmlns="http://hornetq.org/schema">
 
-   &lt;core configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-configuration.xml">&lt;/core>
-   &lt;jms configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-jms.xml">&lt;/jms>
+   &lt;file:core configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-configuration.xml">&lt;/core>
+   &lt;file:jms configuration="${hornetq.home}/config/stand-alone/non-clustered/hornetq-jms.xml">&lt;/jms>
 
    &lt;basic-security/>
 

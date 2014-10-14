@@ -12,27 +12,35 @@
  */
 package org.hornetq.factory;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.IOException;
+import java.net.URI;
 
+import org.hornetq.cli.ConfigurationException;
 import org.hornetq.dto.JmsDTO;
 import org.hornetq.jms.server.config.JMSConfiguration;
-import org.hornetq.jms.server.impl.JMSServerConfigParserImpl;
+import org.hornetq.utils.FactoryFinder;
 
 public class JmsFactory
 {
    public static JMSConfiguration create(JmsDTO jms) throws Exception
    {
-      JMSConfiguration configuration = null;
-
       if (jms != null && jms.configuration != null)
       {
-         try (InputStream configIn = new FileInputStream(jms.configuration))
+         JmsFactoryHandler factory = null;
+         URI configURI = new URI(jms.configuration);
+         try
          {
-            configuration = new JMSServerConfigParserImpl().parseConfiguration(configIn);
+            FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/jms/");
+            factory = (JmsFactoryHandler)finder.newInstance(configURI.getScheme());
          }
+         catch (IOException ioe )
+         {
+            throw new ConfigurationException("Invalid configuration URI, can't find configuration scheme: " + configURI.getScheme());
+         }
+
+         return factory.createConfiguration(configURI);
       }
 
-      return configuration;
+      return null;
    }
 }

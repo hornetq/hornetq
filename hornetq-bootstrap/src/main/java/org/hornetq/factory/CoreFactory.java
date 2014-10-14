@@ -12,24 +12,36 @@
  */
 package org.hornetq.factory;
 
+import org.hornetq.cli.ConfigurationException;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.FileConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.dto.CoreDTO;
+import org.hornetq.utils.FactoryFinder;
+
+import java.io.IOException;
+import java.net.URI;
 
 public class CoreFactory
 {
-
    public static Configuration create(CoreDTO core) throws Exception
    {
-      Configuration configuration = null;
-
       if (core.configuration != null)
       {
-         configuration = new FileConfiguration("file:" + core.configuration);
-         ((FileConfiguration)configuration).start();
-      }
+         CoreFactoryHandler factory = null;
+         URI configURI = new URI(core.configuration);
+         try
+         {
+            FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/core/");
+            factory = (CoreFactoryHandler)finder.newInstance(configURI.getScheme());
+         }
+         catch (IOException ioe )
+         {
+            throw new ConfigurationException("Invalid configuration URI, can't find configuration scheme: " + configURI.getScheme());
+         }
 
-      return configuration;
+         return factory.createConfiguration(configURI);
+      }
+      return new ConfigurationImpl();
    }
 
 }
