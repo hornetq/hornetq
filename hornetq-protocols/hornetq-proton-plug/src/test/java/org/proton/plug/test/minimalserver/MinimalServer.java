@@ -37,9 +37,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import org.proton.plug.AMQPServerConnectionContext;
-import org.proton.plug.ServerSASL;
 import org.proton.plug.context.server.ProtonServerConnectionContextFactory;
-import org.proton.plug.sasl.ServerSASLPlain;
 import org.proton.plug.test.Constants;
 
 /**
@@ -143,10 +141,6 @@ public class MinimalServer
       {
          super.channelActive(ctx);
          connection = ProtonServerConnectionContextFactory.getFactory().createConnection(new MinimalConnectionSPI(ctx.channel()));
-         if (sasl)
-         {
-            connection.createServerSASL(new ServerSASL[]{new ServerSASLPlain()});
-         }
          //ctx.read();
       }
 

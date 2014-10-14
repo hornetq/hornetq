@@ -42,6 +42,7 @@ import org.proton.plug.AMQPSessionCallback;
 import org.proton.plug.AMQPSessionContext;
 import org.proton.plug.SASLResult;
 import org.proton.plug.context.ProtonPlugSender;
+import org.proton.plug.sasl.PlainSASLResult;
 
 /**
  * @author Clebert Suconic
@@ -83,10 +84,21 @@ public class ProtonSessionIntegrationCallback implements AMQPSessionCallback, Se
 
       String name = UUIDGenerator.getInstance().generateStringUUID();
 
-      serverSession = manager.getServer().createSession(name, // String name,
-                                                        "change-me", // connection.getLogin(), // String username,
-                                                        "change-me", // connection.getPasscode(), // String password,
-                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, // int minLargeMessageSize,
+      String user = null;
+      String passcode = null;
+      if (saslResult != null)
+      {
+         user = saslResult.getUser();
+         if (saslResult instanceof PlainSASLResult)
+         {
+            passcode = ((PlainSASLResult)saslResult).getPassword();
+         }
+      }
+
+      serverSession = manager.getServer().createSession(name,
+                                                        user,
+                                                        passcode,
+                                                        HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                         protonSPI.getProtonConnectionDelegate(), // RemotingConnection remotingConnection,
                                                         false, // boolean autoCommitSends
                                                         false, // boolean autoCommitAcks,

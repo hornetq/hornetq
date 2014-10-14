@@ -11,12 +11,32 @@
  * permissions and limitations under the License.
  */
 
-package org.proton.plug;
+package org.proton.plug.sasl;
+
+import org.proton.plug.SASLResult;
+import org.proton.plug.ServerSASL;
 
 /**
  * @author Clebert Suconic
  */
 
-public interface AMQPServerConnectionContext extends AMQPConnectionContext
+public class AnonymousServerSASL implements ServerSASL
 {
+   public AnonymousServerSASL()
+   {
+   }
+
+   @Override
+   public String getName()
+   {
+      return "ANONYMOUS";
+   }
+
+   @Override
+   public SASLResult processSASL(byte[] bytes)
+   {
+      new Exception("test").printStackTrace();
+      return new PlainSASLResult(true, null, null);
+   }
 }
+

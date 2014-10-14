@@ -69,6 +69,8 @@ public class ProtonHandlerImpl extends ProtonInitializable implements ProtonHand
 
    protected volatile boolean dataReceived;
 
+   protected boolean receivedFirstPacket = false;
+
    private int offset = 0;
 
    public ProtonHandlerImpl()
@@ -143,12 +145,33 @@ public class ProtonHandlerImpl extends ProtonInitializable implements ProtonHand
          while (buffer.readableBytes() > 0)
          {
             int capacity = transport.capacity();
+
+            if (!receivedFirstPacket)
+            {
+               try
+               {
+                  if (buffer.getByte(4) == 0x03)
+                  {
+                     dispatchSASL();
+                  }
+               }
+               catch (Throwable ignored)
+               {
+                  ignored.printStackTrace();
+               }
+
+               receivedFirstPacket = true;
+            }
+
+
             if (capacity > 0)
             {
                ByteBuffer tail = transport.tail();
                int min = Math.min(capacity, buffer.readableBytes());
                tail.limit(min);
                buffer.readBytes(tail);
+
+
                flush();
             }
             else
@@ -338,6 +361,14 @@ public class ProtonHandlerImpl extends ProtonInitializable implements ProtonHand
             collector.pop();
          }
          return ev;
+      }
+   }
+
+   private void dispatchSASL()
+   {
+      for (EventHandler h: handlers)
+      {
+         h.onSASLInit(this, getConnection());
       }
    }
 

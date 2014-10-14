@@ -22,13 +22,14 @@ import org.apache.qpid.proton.engine.Transport;
 /**
  * EventHandler
  * <p/>
- * TODO: this needs a better home on Proton
  *
  * @author rhs
  */
 
 public interface EventHandler
 {
+
+   void onSASLInit(ProtonHandler handler, Connection connection);
 
    void onInit(Connection connection) throws Exception;
 

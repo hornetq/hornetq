@@ -21,11 +21,14 @@ import io.netty.channel.ChannelFutureListener;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.protocol.proton.HornetQProtonRemotingConnection;
 import org.hornetq.core.protocol.proton.ProtonProtocolManager;
+import org.hornetq.core.protocol.proton.sasl.HornetQPlainSASL;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.ReusableLatch;
 import org.proton.plug.AMQPConnectionCallback;
 import org.proton.plug.AMQPConnectionContext;
 import org.proton.plug.AMQPSessionCallback;
+import org.proton.plug.ServerSASL;
+import org.proton.plug.sasl.AnonymousServerSASL;
 
 /**
  * @author Clebert Suconic
@@ -49,6 +52,11 @@ public class HornetQProtonConnectionCallback implements AMQPConnectionCallback
       this.connection = connection;
    }
 
+   @Override
+   public ServerSASL[] getSASLMechnisms()
+   {
+      return new ServerSASL[]{new AnonymousServerSASL(), new HornetQPlainSASL(manager.getServer().getSecurityStore(), manager.getServer().getSecurityManager())};
+   }
 
    @Override
    public void close()

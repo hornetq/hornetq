@@ -33,8 +33,9 @@ public interface AMQPConnectionCallback
 
    AMQPSessionCallback createSessionCallback(AMQPConnectionContext connection);
 
-   // TODO: REMOVE THIS! The caller doing this can do it
    void setConnection(AMQPConnectionContext connection);
 
    AMQPConnectionContext getConnection();
+
+   ServerSASL[] getSASLMechnisms();
 }

@@ -1809,7 +1809,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       catch (HornetQException e)
       {
-         if (!autoCommitSends)
+         if (!autoCommitSends && tx != null)
          {
             tx.markAsRollbackOnly(e);
          }

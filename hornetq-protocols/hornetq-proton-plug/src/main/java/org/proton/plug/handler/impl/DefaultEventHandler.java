@@ -25,7 +25,7 @@ import org.proton.plug.handler.EventHandler;
  *
  * @author Clebert Suconic
  */
-public class DefaultEventHandler implements EventHandler
+public abstract class DefaultEventHandler implements EventHandler
 {
    @Override
    public void onInit(Connection connection) throws Exception

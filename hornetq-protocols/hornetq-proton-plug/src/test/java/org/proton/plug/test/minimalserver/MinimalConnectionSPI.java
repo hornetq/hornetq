@@ -24,6 +24,9 @@ import io.netty.channel.ChannelFutureListener;
 import org.proton.plug.AMQPConnectionContext;
 import org.proton.plug.AMQPConnectionCallback;
 import org.proton.plug.AMQPSessionCallback;
+import org.proton.plug.ServerSASL;
+import org.proton.plug.sasl.AnonymousServerSASL;
+import org.proton.plug.sasl.ServerSASLPlain;
 import org.proton.plug.util.ByteUtil;
 import org.proton.plug.util.DebugInfo;
 import org.proton.plug.util.ReusableLatch;
@@ -63,6 +66,11 @@ public class MinimalConnectionSPI implements AMQPConnectionCallback
 
    final ReusableLatch latch = new ReusableLatch(0);
 
+   @Override
+   public ServerSASL[] getSASLMechnisms()
+   {
+      return new ServerSASL[]{new AnonymousServerSASL(), new ServerSASLPlain()};
+   }
 
    @Override
    public void onTransport(final ByteBuf bytes, final AMQPConnectionContext connection)
