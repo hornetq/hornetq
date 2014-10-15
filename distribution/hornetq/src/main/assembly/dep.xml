@@ -94,7 +94,6 @@
          <include>bin/*</include>
          <include>config/**</include>
          <include>licenses/*</include>
-         <include>examples/**</include>
        </includes>
      </fileSet>
      <fileSet>
