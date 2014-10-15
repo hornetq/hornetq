@@ -20,7 +20,10 @@ import io.netty.buffer.ByteBuf;
 import org.proton.plug.AMQPConnectionContext;
 import org.proton.plug.AMQPConnectionCallback;
 import org.proton.plug.AMQPSessionCallback;
+import org.proton.plug.ServerSASL;
 import org.proton.plug.context.server.ProtonServerConnectionContext;
+import org.proton.plug.sasl.AnonymousServerSASL;
+import org.proton.plug.sasl.ServerSASLPlain;
 import org.proton.plug.test.minimalserver.MinimalSessionSPI;
 import org.proton.plug.util.ByteUtil;
 import org.proton.plug.util.DebugInfo;
@@ -63,6 +66,13 @@ public class ProtonINVMSPI implements AMQPConnectionCallback
    {
       mainExecutor.shutdown();
    }
+
+   @Override
+   public ServerSASL[] getSASLMechnisms()
+   {
+      return new ServerSASL[]{new AnonymousServerSASL(), new ServerSASLPlain()};
+   }
+
 
    @Override
    public void onTransport(final ByteBuf bytes, final AMQPConnectionContext connection)
@@ -127,6 +137,13 @@ public class ProtonINVMSPI implements AMQPConnectionCallback
       {
 
       }
+
+      @Override
+      public ServerSASL[] getSASLMechnisms()
+      {
+         return new ServerSASL[]{new AnonymousServerSASL(), new ServerSASLPlain()};
+      }
+
 
       @Override
       public void onTransport(final ByteBuf bytes, final AMQPConnectionContext connection)

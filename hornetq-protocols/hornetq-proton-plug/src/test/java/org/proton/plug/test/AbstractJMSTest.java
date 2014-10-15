@@ -112,7 +112,7 @@ public class AbstractJMSTest
          }
          else
          {
-            return new ConnectionFactoryImpl("localhost", Constants.PORT, "aaaaaaaa", "aaaaaaa");
+            return new ConnectionFactoryImpl("localhost", Constants.PORT, null, null);
          }
 
       }

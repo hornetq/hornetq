@@ -35,8 +35,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.apache.qpid.amqp_1_0.client.Receiver;
+import org.apache.qpid.amqp_1_0.client.Sender;
 import org.apache.qpid.amqp_1_0.jms.impl.ConnectionFactoryImpl;
 import org.apache.qpid.amqp_1_0.jms.impl.QueueImpl;
+import org.apache.qpid.amqp_1_0.type.UnsignedInteger;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -70,7 +73,8 @@ public class ProtonTest extends ServiceTestBase
       return Arrays.asList(new Object[][]{
          {"AMQP", 0},
          {"HornetQ (InVM)", 1},
-         {"HornetQ (Netty)", 2}
+         {"HornetQ (Netty)", 2},
+         {"AMQP_ANONYMOUS", 3}
       });
    }
 
@@ -82,7 +86,7 @@ public class ProtonTest extends ServiceTestBase
    {
       this.coreAddress = "jms.queue.exampleQueue";
       this.protocol = protocol;
-      if (protocol == 0)
+      if (protocol == 0 || protocol == 3)
       {
          this.address = coreAddress;
       }
@@ -257,7 +261,7 @@ public class ProtonTest extends ServiceTestBase
       session.commit();
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(coreAddress)).getBindable();
-      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && getMessageCount(q) != numMessages;)
+      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && getMessageCount(q) != numMessages; )
       {
          Thread.sleep(1);
       }
@@ -305,7 +309,7 @@ public class ProtonTest extends ServiceTestBase
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(coreAddress)).getBindable();
 
 
-      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && getMessageCount(q) != numMessages;)
+      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && getMessageCount(q) != numMessages; )
       {
          Thread.sleep(1);
       }
@@ -342,7 +346,7 @@ public class ProtonTest extends ServiceTestBase
       connection.close();
       Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(coreAddress)).getBindable();
 
-      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && getMessageCount(q) != numMessages;)
+      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && getMessageCount(q) != numMessages; )
       {
          Thread.sleep(1);
       }
@@ -471,9 +475,9 @@ public class ProtonTest extends ServiceTestBase
       long taken = (System.currentTimeMillis() - time);
       System.out.println("Microbenchamrk ran in " + taken + " milliseconds, sending/receiving " + numMessages);
 
-      double messagesPerSecond = ((double)numMessages / (double) taken) * 1000;
+      double messagesPerSecond = ((double) numMessages / (double) taken) * 1000;
 
-      System.out.println(((int)messagesPerSecond) + " messages per second");
+      System.out.println(((int) messagesPerSecond) + " messages per second");
 
    }
 
@@ -490,7 +494,7 @@ public class ProtonTest extends ServiceTestBase
       byte[] bytes = new byte[0xf + 1];
       for (int i = 0; i <= 0xf; i++)
       {
-         bytes[i] = (byte)i;
+         bytes[i] = (byte) i;
       }
 
       MessageProducer p = session.createProducer(queue);
@@ -510,13 +514,13 @@ public class ProtonTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         BytesMessage m = (BytesMessage)consumer.receive(5000);
+         BytesMessage m = (BytesMessage) consumer.receive(5000);
          assertNotNull("Could not receive message count=" + i + " on consumer", m);
 
          m.reset();
 
          long size = m.getBodyLength();
-         byte[] bytesReceived = new byte[(int)size];
+         byte[] bytesReceived = new byte[(int) size];
          m.readBytes(bytesReceived);
 
 
@@ -543,7 +547,7 @@ public class ProtonTest extends ServiceTestBase
       byte[] bytes = new byte[0xf + 1];
       for (int i = 0; i <= 0xf; i++)
       {
-         bytes[i] = (byte)i;
+         bytes[i] = (byte) i;
       }
 
       MessageProducer p = session.createProducer(queue);
@@ -599,7 +603,7 @@ public class ProtonTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         MapMessage m = (MapMessage)consumer.receive(5000);
+         MapMessage m = (MapMessage) consumer.receive(5000);
          assertNotNull("Could not receive message count=" + i + " on consumer", m);
 
          Assert.assertEquals(i, m.getInt("i"));
@@ -638,7 +642,7 @@ public class ProtonTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         StreamMessage m = (StreamMessage)consumer.receive(5000);
+         StreamMessage m = (StreamMessage) consumer.receive(5000);
          assertNotNull("Could not receive message count=" + i + " on consumer", m);
 
          assertEquals(i, m.readInt());
@@ -672,7 +676,7 @@ public class ProtonTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         TextMessage m = (TextMessage)consumer.receive(5000);
+         TextMessage m = (TextMessage) consumer.receive(5000);
          assertNotNull("Could not receive message count=" + i + " on consumer", m);
          Assert.assertEquals("text" + i, m.getText());
       }
@@ -707,10 +711,10 @@ public class ProtonTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ObjectMessage msg = (ObjectMessage)consumer.receive(5000);
+         ObjectMessage msg = (ObjectMessage) consumer.receive(5000);
          assertNotNull("Could not receive message count=" + i + " on consumer", msg);
 
-         AnythingSerializable someSerialThing = (AnythingSerializable)msg.getObject();
+         AnythingSerializable someSerialThing = (AnythingSerializable) msg.getObject();
          assertEquals(i, someSerialThing.getCount());
       }
 
@@ -776,9 +780,58 @@ public class ProtonTest extends ServiceTestBase
       connection.close();
    }
 
+
+   @Test
+   public void testUsingPlainAMQP() throws Exception
+   {
+      if (this.protocol != 0 && protocol != 3)
+      {
+         return;
+      }
+
+      org.apache.qpid.amqp_1_0.client.Connection connection = null;
+
+      try
+      {
+         // Step 1. Create an amqp qpid 1.0 connection
+         connection = new org.apache.qpid.amqp_1_0.client.Connection("localhost", 5672, null, null);
+
+         // Step 2. Create a session
+         org.apache.qpid.amqp_1_0.client.Session session = connection.createSession();
+
+         // Step 3. Create a sender
+         Sender sender = session.createSender("jms.queue.exampleQueue");
+
+         // Step 4. send a simple message
+         sender.send(new org.apache.qpid.amqp_1_0.client.Message("I am an amqp message"));
+
+         // Step 5. create a moving receiver, this means the message will be removed from the queue
+         Receiver rec = session.createMovingReceiver("jms.queue.exampleQueue");
+
+         // Step 6. set some credit so we can receive
+         rec.setCredit(UnsignedInteger.valueOf(1), false);
+
+         // Step 7. receive the simple message
+         org.apache.qpid.amqp_1_0.client.Message m = rec.receive(5000);
+         System.out.println("message = " + m.getPayload());
+
+         // Step 8. acknowledge the message
+         rec.acknowledge(m);
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            // Step 9. close the connection
+            connection.close();
+         }
+      }
+   }
+
+
    private javax.jms.Queue createQueue(String address)
    {
-      if (protocol == 0)
+      if (protocol == 0 || protocol == 3)
       {
          return new QueueImpl(address);
       }
@@ -792,7 +845,21 @@ public class ProtonTest extends ServiceTestBase
    private javax.jms.Connection createConnection() throws JMSException
    {
       Connection connection;
-      if (protocol == 0)
+      if (protocol == 3)
+      {
+         factory = new ConnectionFactoryImpl("localhost", 5672, null, null);
+         connection = factory.createConnection();
+         connection.setExceptionListener(new ExceptionListener()
+         {
+            @Override
+            public void onException(JMSException exception)
+            {
+               exception.printStackTrace();
+            }
+         });
+         connection.start();
+      }
+      else if (protocol == 0)
       {
          factory = new ConnectionFactoryImpl("localhost", 5672, "guest", "guest");
          connection = factory.createConnection();
@@ -840,6 +907,7 @@ public class ProtonTest extends ServiceTestBase
    public static class AnythingSerializable implements Serializable
    {
       private int count;
+
       public AnythingSerializable(int count)
       {
          this.count = count;

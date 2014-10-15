@@ -62,7 +62,8 @@ public class ProtonTest extends AbstractJMSTest
    public static Collection<Object[]> data()
    {
       List<Object[]> list = Arrays.asList(new Object[][]{
-         {Boolean.FALSE, Boolean.TRUE}});
+         {Boolean.FALSE, Boolean.TRUE},
+         {Boolean.FALSE, Boolean.FALSE}});
 
       System.out.println("Size = " + list.size());
       return list;
@@ -79,7 +80,7 @@ public class ProtonTest extends AbstractJMSTest
    {
       DumbServer.clear();
       AbstractJMSTest.forceGC();
-      server.start("127.0.0.1", Constants.PORT, useSASL);
+      server.start("127.0.0.1", Constants.PORT, true);
       connection = createConnection();
 
    }

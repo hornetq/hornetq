@@ -155,6 +155,13 @@ public abstract class AbstractConnectionContext extends ProtonInitializable impl
    // This listener will perform a bunch of things here
    class LocalListener extends DefaultEventHandler
    {
+
+      @Override
+      public void onSASLInit(ProtonHandler handler, Connection connection)
+      {
+         handler.createServerSASL(connectionCallback.getSASLMechnisms());
+      }
+
       @Override
       public void onTransport(Transport transport)
       {

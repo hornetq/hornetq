@@ -21,7 +21,6 @@ import org.apache.qpid.proton.engine.Session;
 import org.proton.plug.AMQPConnectionCallback;
 import org.proton.plug.AMQPServerConnectionContext;
 import org.proton.plug.AMQPSessionCallback;
-import org.proton.plug.ServerSASL;
 import org.proton.plug.context.AbstractConnectionContext;
 import org.proton.plug.context.AbstractProtonSessionContext;
 import org.proton.plug.exceptions.HornetQAMQPException;
@@ -35,11 +34,6 @@ public class ProtonServerConnectionContext extends AbstractConnectionContext imp
    public ProtonServerConnectionContext(AMQPConnectionCallback connectionSP)
    {
       super(connectionSP);
-   }
-
-   public void createServerSASL(ServerSASL[] saslMechanisms)
-   {
-      handler.createServerSASL(saslMechanisms);
    }
 
    protected AbstractProtonSessionContext newSessionExtension(Session realSession) throws HornetQAMQPException
