@@ -1775,6 +1775,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          toCancel.addAll(consumer.cancelRefs(clientFailed, lastMessageAsDelived, theTx));
       }
 
+      //we need to check this before we cancel the refs and add them to the tx, any delivering refs will have been delivered
+      //after the last tx was rolled back so we should handle them separately. if not they
+      //will end up added to the tx but never ever handled even tho they were removed from the consumers delivering refs.
+      //we add them to a new tx and roll them back as the calling client will assume that this has happened.
+      if (theTx.getState() == State.ROLLEDBACK)
+      {
+         Transaction newTX = newTransaction();
+         cancelAndRollback(clientFailed, newTX, wasStarted, toCancel);
+         throw new IllegalStateException("Transaction has already been rolled back");
+      }
+      cancelAndRollback(clientFailed, theTx, wasStarted, toCancel);
+   }
+
+   private void cancelAndRollback(boolean clientFailed, Transaction theTx, boolean wasStarted, List<MessageReference> toCancel) throws Exception
+   {
       for (MessageReference ref : toCancel)
       {
          ref.getQueue().cancel(theTx, ref);
