@@ -30,7 +30,7 @@ public class Stop implements Action
    {
       if (configuration == null)
       {
-         configuration = "xml:" + System.getProperty("hornetq.home") + "/config/non-clustered/bootstrap.xml";
+         configuration = "xml:" + System.getProperty("hornetq.home").replace("\\", "/") + "/config/non-clustered/bootstrap.xml";
       }
       BrokerDTO broker = BrokerFactory.createBroker(configuration);
 

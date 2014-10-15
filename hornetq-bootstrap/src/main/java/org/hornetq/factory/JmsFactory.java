@@ -27,7 +27,7 @@ public class JmsFactory
       if (jms != null && jms.configuration != null)
       {
          JmsFactoryHandler factory = null;
-         URI configURI = new URI(jms.configuration);
+         URI configURI = new URI(jms.configuration.replace("\\", "/"));
          try
          {
             FactoryFinder finder = new FactoryFinder("META-INF/services/org/hornetq/broker/jms/");
