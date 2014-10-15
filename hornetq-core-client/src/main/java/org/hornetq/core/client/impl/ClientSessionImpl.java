@@ -1800,12 +1800,19 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
 
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
 
-         SessionXAResponseMessage response = (SessionXAResponseMessage) channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
-
-         if (wasStarted)
+         SessionXAResponseMessage response;
+         try
          {
-            start();
+            response = (SessionXAResponseMessage)channel.sendBlocking(packet, PacketImpl.SESS_XA_RESP);
          }
+         finally
+         {
+            if (wasStarted)
+            {
+               start();
+            }
+         }
+
 
          workDone = false;
 
