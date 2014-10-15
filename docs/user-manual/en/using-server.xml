@@ -35,24 +35,26 @@
         <title>Starting and Stopping the standalone server</title>
         <para>In the distribution you will find a directory called <literal>bin</literal>.</para>
         <para><literal>cd</literal> into that directory and you will find a Unix/Linux script called
-                <literal>hornetq</literal>.</para>
+                <literal>hornetq</literal> and a Windows script called <literal>hornetq.cmd</literal>.</para>
         <para>To start the HornetQ instance on Unix/Linux type <literal>./hornetq run</literal></para>
+        <para>To start the HornetQ instance on Windows type <literal>hornetq.cmd run</literal></para>
         <para>These scripts are very simple and basically just set-up the classpath and some JVM
             parameters and bootstrap the server using <ulink
                    url="https://github.com/airlift/airline">Airline</ulink>.</para>
         <para>To stop the HornetQ instance you will use the same <literal>hornetq</literal> script.</para>
         <para>To run on Unix/Linux type <literal>./hornetq stop</literal></para>
+        <para>To run on Windows type <literal>hornetq.cmd stop</literal></para>
         <para>Please note that HornetQ requires a Java 6 or later runtime to run.</para>
-        <para>By default the <literal>config/hornetq.xml</literal> configuration is used. The configuration can be
-            changed by running <literal>./hornetq run -- xml:../config/hornetq-clustered.xml</literal> or
-            another config of your choosing.</para>
+        <para>By default the <literal>config/non-clustered/bootstrap.xml</literal> configuration is used. The
+            configuration can be changed e.g. by running
+            <literal>./hornetq run -- xml:../config/clustered/bootstrap.xml</literal> or another config of
+            your choosing.</para>
     </section>
     <section>
         <title>Server JVM settings</title>
-        <para>The run script <literal>hornetq</literal> sets some JVM
-            settings for tuning the garbage collection policy and heap size. We
-            recommend using a parallel garbage collection algorithm to smooth out latency and
-            minimise large GC pauses.</para>
+        <para>The run scripts set some JVM settings for tuning the garbage collection policy
+            and heap size. We recommend using a parallel garbage collection algorithm to smooth
+            out latency and minimise large GC pauses.</para>
         <para>By default HornetQ runs in a maximum of 1GiB of RAM. To increase the memory settings
             change the <literal>-Xms</literal> and <literal>-Xmx</literal> memory settings as you
             would for any Java program.</para>
@@ -83,7 +85,7 @@
         <title>Library Path</title>
         <para>If you're using the <link linkend="aio-journal">Asynchronous IO Journal</link> on
             Linux, you need to specify <literal>java.library.path</literal> as a property on your
-            Java options. This is done automatically in the <literal>run.sh</literal> script.</para>
+            Java options. This is done automatically in the scripts.</para>
         <para>If you don't specify <literal>java.library.path</literal> at your Java options then
             the JVM will use the environment variable <literal>LD_LIBRARY_PATH</literal>.</para>
     </section>
@@ -95,7 +97,7 @@
     </section>
     <section id="using-server.configuration">
         <title>Configuration files</title>
-        <para>The configuration file used to bootstrap the server (e.g. <literal>hornetq.xml</literal>
+        <para>The configuration file used to bootstrap the server (e.g. <literal>bootstrap.xml</literal>
             by default) references the specific broker configuration files.</para>
         <itemizedlist>
             <listitem>
@@ -129,11 +131,6 @@
                     don't need to deploy JMS objects on the server side, then you don't need this
                     file. For more information on using JMS, please see <xref linkend="using-jms"
                     />.</para>
-            </listitem>
-            <listitem>
-                <para><literal>logging.properties</literal> This is used to configure the logging
-                    handlers used by the Java logger. For more information on configuring logging,
-                    please see <xref linkend="logging"/>.</para>
             </listitem>
         </itemizedlist>
         <note>
@@ -171,6 +168,8 @@
 
    &lt;basic-security/>
 
+   &lt;naming bindAddress="localhost" port="1099" rmiBindAddress="localhost" rmiPort="1098"/>
+
 &lt;/broker></programlisting>
         </para>
         <itemizedlist>
@@ -188,6 +187,11 @@
                     just translates and delegates its work to the core server. If you don't need to
                     deploy JMS Queues, Topics and ConnectionFactories from server side configuration
                     and don't require the JMS management interface this can be disabled.</para>
+            </listitem>
+            <listitem>
+                <para>naming</para>
+                <para>Instantiates a naming server which implements JNDI. This is used by JMS
+                    clients</para>
             </listitem>
         </itemizedlist>
     </section>
