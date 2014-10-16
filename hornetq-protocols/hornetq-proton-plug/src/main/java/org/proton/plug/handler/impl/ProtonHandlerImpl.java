@@ -322,7 +322,10 @@ public class ProtonHandlerImpl extends ProtonInitializable implements ProtonHand
             byte[] dataSASL = new byte[serverSasl.pending()];
             serverSasl.recv(dataSASL, 0, dataSASL.length);
 
-            System.out.println("Working on sasl::" + ByteUtil.bytesToHex(dataSASL, 2));
+            if (DebugInfo.debug)
+            {
+               System.out.println("Working on sasl::" + ByteUtil.bytesToHex(dataSASL, 2));
+            }
 
             saslResult = mechanism.processSASL(dataSASL);
 

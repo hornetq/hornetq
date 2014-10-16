@@ -35,7 +35,6 @@ public class AnonymousServerSASL implements ServerSASL
    @Override
    public SASLResult processSASL(byte[] bytes)
    {
-      new Exception("test").printStackTrace();
       return new PlainSASLResult(true, null, null);
    }
 }
