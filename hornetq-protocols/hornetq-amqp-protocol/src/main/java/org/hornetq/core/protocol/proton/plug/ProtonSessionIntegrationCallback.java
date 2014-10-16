@@ -133,8 +133,6 @@ public class ProtonSessionIntegrationCallback implements AMQPSessionCallback, Se
    @Override
    public void startSender(Object brokerConsumer) throws Exception
    {
-      System.out.println("Start sender ");
-
       ServerConsumer serverConsumer = (ServerConsumer) brokerConsumer;
       // flow control is done at proton
       serverConsumer.receiveCredits(-1);
