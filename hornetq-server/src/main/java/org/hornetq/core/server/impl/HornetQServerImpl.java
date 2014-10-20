@@ -1531,6 +1531,13 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
+   private void callActivationCompleteCallbacks()
+   {
+      for (ActivateCallback callback : activateCallbacks)
+      {
+         callback.activationComplete();
+      }
+   }
 
    /**
     * Sets up HornetQ Executor Services.
@@ -1830,6 +1837,8 @@ public class HornetQServerImpl implements HornetQServer
       {
          activationLatch.countDown();
       }
+
+      callActivationCompleteCallbacks();
    }
 
    private void deploySecurityFromConfiguration()
