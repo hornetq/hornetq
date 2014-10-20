@@ -342,6 +342,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
+   @Override
+   public void activationComplete()
+   {
+
+   }
+
    public void recoverJndiBindings(String name, PersistedType type) throws NamingException
    {
       List<String> bindings = unRecoveredJndi.get(name);
