@@ -667,11 +667,7 @@ public class HornetQServerImpl implements HornetQServer
          stopComponent(deploymentManager);
       }
 
-      if (managementService != null)
-         managementService.unregisterServer();
-
       stopComponent(backupManager);
-      stopComponent(managementService);
       activation.preStorageClose();
       stopComponent(pagingManager);
 
@@ -682,6 +678,11 @@ public class HornetQServerImpl implements HornetQServer
       // error shutdown
       if (remotingService != null)
          remotingService.stop(criticalIOError);
+
+      // Stop the management service after the remoting service to ensure all acceptors are deregistered with JMX
+      if (managementService != null)
+         managementService.unregisterServer();
+      stopComponent(managementService);
 
       stopComponent(securityManager);
       stopComponent(resourceManager);
