@@ -234,8 +234,7 @@ public class OpenWireProtocolManager implements ProtocolManager
       });
    }
 
-   public boolean send(final OpenWireConnection connection,
-         final Command command)
+   public boolean send(final OpenWireConnection connection, final Command command)
    {
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {

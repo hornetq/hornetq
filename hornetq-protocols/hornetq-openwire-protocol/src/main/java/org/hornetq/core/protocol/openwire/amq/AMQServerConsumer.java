@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.protocol.openwire.amq;
 
+import java.util.List;
+
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.QueueBinding;
@@ -132,12 +134,29 @@ public class AMQServerConsumer extends ServerConsumerImpl
       }
    }
 
-   public void amqPutBackToDeliveringList(MessageReference ref)
+   public void amqPutBackToDeliveringList(final List<MessageReference> refs)
    {
       synchronized (this.deliveringRefs)
       {
-         ref.incrementDeliveryCount();
-         deliveringRefs.add(ref);
+         for (MessageReference ref : refs)
+         {
+            ref.incrementDeliveryCount();
+            deliveringRefs.add(ref);
+         }
+         //adjust the order. Suppose deliveringRefs has 2 existing
+         //refs m1, m2, and refs has 3 m3, m4, m5
+         //new order must be m3, m4, m5, m1, m2
+         if (refs.size() > 0)
+         {
+            long first = refs.get(0).getMessage().getMessageID();
+            MessageReference m = deliveringRefs.peek();
+            while (m.getMessage().getMessageID() != first)
+            {
+               deliveringRefs.poll();
+               deliveringRefs.add(m);
+               m = deliveringRefs.peek();
+            }
+         }
       }
    }
 

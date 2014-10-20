@@ -19,6 +19,8 @@ public class MessageInfo
    public MessageId amqId;
    public long nativeId;
    public int size;
+   //mark message that is acked within a local tx
+   public boolean localAcked;
 
    public MessageInfo(MessageId amqId, long nativeId, int size)
    {
@@ -30,6 +32,16 @@ public class MessageInfo
    @Override
    public String toString()
    {
-      return "native mid: " + this.nativeId + " amqId: " + amqId;
+      return "native mid: " + this.nativeId + " amqId: " + amqId + " local acked: " + localAcked;
+   }
+
+   public void setLocalAcked(boolean ack)
+   {
+      localAcked = ack;
+   }
+
+   public boolean isLocalAcked()
+   {
+      return localAcked;
    }
 }

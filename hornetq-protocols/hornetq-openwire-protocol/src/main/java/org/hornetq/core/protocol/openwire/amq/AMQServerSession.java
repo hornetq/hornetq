@@ -12,7 +12,13 @@
  */
 package org.hornetq.core.protocol.openwire.amq;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -147,7 +153,7 @@ public class AMQServerSession extends ServerSessionImpl
    }
 
    //amq specific behavior
-   public void amqRollback() throws Exception
+   public void amqRollback(Set<Long> acked) throws Exception
    {
       if (tx == null)
       {
@@ -161,18 +167,39 @@ public class AMQServerSession extends ServerSessionImpl
       if (oper != null)
       {
          List<MessageReference> ackRefs = oper.getReferencesToAcknowledge();
+         Map<Long, List<MessageReference>> toAcks = new HashMap<Long, List<MessageReference>>();
          for (MessageReference ref : ackRefs)
          {
             Long consumerId = ref.getConsumerId();
-            ServerConsumer consumer = this.consumers.get(consumerId);
-            if (consumer != null)
+
+            if (this.consumers.containsKey(consumerId))
             {
-               ((AMQServerConsumer)consumer).amqPutBackToDeliveringList(ref);
+               if (acked.contains(ref.getMessage().getMessageID()))
+               {
+                  List<MessageReference> ackList = toAcks.get(consumerId);
+                  if (ackList == null)
+                  {
+                     ackList = new ArrayList<MessageReference>();
+                     toAcks.put(consumerId, ackList);
+                  }
+                  ackList.add(ref);
+               }
             }
             else
             {
                //consumer must have been closed, cancel to queue
                ref.getQueue().cancel(tx, ref);
+            }
+         }
+         //iterate consumers
+         if (toAcks.size() > 0)
+         {
+            Iterator<Entry<Long, List<MessageReference>>> iter = toAcks.entrySet().iterator();
+            while (iter.hasNext())
+            {
+               Entry<Long, List<MessageReference>> entry = iter.next();
+               ServerConsumer consumer = consumers.get(entry.getKey());
+               ((AMQServerConsumer)consumer).amqPutBackToDeliveringList(entry.getValue());
             }
          }
       }

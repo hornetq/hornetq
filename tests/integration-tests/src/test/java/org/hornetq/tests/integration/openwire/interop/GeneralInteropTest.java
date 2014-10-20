@@ -193,7 +193,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Queue queue = session.createQueue(queueName);
          MessageProducer producer = session.createProducer(queue);
@@ -217,7 +217,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          javax.jms.Message message = session.createMessage();
 
@@ -248,7 +248,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          BytesMessage bytesMessage = session.createBytesMessage();
 
@@ -280,7 +280,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          ObjectMessage objectMessage = session.createObjectMessage(object);
 
@@ -304,7 +304,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          StreamMessage msg = session.createStreamMessage();
          msg.writeBoolean(true);
@@ -338,7 +338,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MapMessage mapMessage = session.createMapMessage();
          mapMessage.setBoolean("aboolean", true);
@@ -372,7 +372,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
       Connection jmsConn = null;
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          TextMessage msg = session.createTextMessage(text);
          Queue queue = session.createQueue(address);
@@ -398,7 +398,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
 
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          jmsConn.start();
 
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -509,7 +509,7 @@ public class GeneralInteropTest extends BasicOpenWireTest
 
       try
       {
-         jmsConn = cf.createConnection();
+         jmsConn = coreCf.createConnection();
          jmsConn.start();
 
          Session session = jmsConn.createSession(false, Session.AUTO_ACKNOWLEDGE);

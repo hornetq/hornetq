@@ -20,9 +20,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jms.ConnectionFactory;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.security.Role;
@@ -31,6 +34,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.unit.util.InVMNamingContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.After;
@@ -47,8 +51,10 @@ public class OpenWireTestBase extends ServiceTestBase
    protected boolean realStore = false;
    protected boolean enableSecurity = false;
 
-   protected ConnectionFactory cf;
+   protected ConnectionFactory coreCf;
    protected InVMNamingContext namingContext;
+
+   protected MBeanServer mbeanServer;
 
    @Override
    @Before
@@ -122,6 +128,8 @@ public class OpenWireTestBase extends ServiceTestBase
       jmsServer.start();
 
       registerConnectionFactory();
+
+      mbeanServer = MBeanServerFactory.createMBeanServer();
       System.out.println("debug: server started");
    }
 
@@ -137,7 +145,7 @@ public class OpenWireTestBase extends ServiceTestBase
 
       createCF(connectorConfigs, "/cf");
 
-      cf = (ConnectionFactory) namingContext.lookup("/cf");
+      coreCf = (ConnectionFactory) namingContext.lookup("/cf");
    }
 
    protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
@@ -164,10 +172,17 @@ public class OpenWireTestBase extends ServiceTestBase
       jmsServer.createConnectionFactory(false, configuration, jndiBindings);
    }
 
+   protected JMSServerControl getJMSServerControl() throws Exception
+   {
+      return ManagementControlHelper.createJMSServerControl(mbeanServer);
+   }
+
    @Override
    @After
    public void tearDown() throws Exception
    {
+      MBeanServerFactory.releaseMBeanServer(mbeanServer);
+      mbeanServer = null;
       server.stop();
       super.tearDown();
    }

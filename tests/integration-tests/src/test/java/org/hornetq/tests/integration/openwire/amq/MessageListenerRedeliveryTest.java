@@ -372,7 +372,7 @@ public class MessageListenerRedeliveryTest extends BasicOpenWireTest
 
       final Message[] dlqMessage = new Message[1];
       ActiveMQDestination dlqDestination = new ActiveMQQueue("ActiveMQ.DLQ");
-      this.makeSureCoreQueueExist("ActiveMQ.DLQ");//deleted it after fixed
+      this.makeSureCoreQueueExist("ActiveMQ.DLQ");
       MessageConsumer dlqConsumer = session.createConsumer(dlqDestination);
       final CountDownLatch gotDlqMessage = new CountDownLatch(1);
       dlqConsumer.setMessageListener(new MessageListener()

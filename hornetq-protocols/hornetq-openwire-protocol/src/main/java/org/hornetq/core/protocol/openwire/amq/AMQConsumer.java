@@ -14,6 +14,7 @@ package org.hornetq.core.protocol.openwire.amq;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +25,7 @@ import org.apache.activemq.command.ConsumerInfo;
 import org.apache.activemq.command.MessageAck;
 import org.apache.activemq.command.MessageDispatch;
 import org.apache.activemq.command.MessageId;
+import org.apache.activemq.command.TransactionId;
 import org.apache.activemq.wireformat.WireFormat;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.openwire.OpenWireMessageConverter;
@@ -203,21 +205,24 @@ public class AMQConsumer implements BrowserListener
 
    public void acknowledge(MessageAck ack) throws Exception
    {
-      MessageId last = ack.getLastMessageId();
-      MessageInfo mi;
+      MessageId first = ack.getFirstMessageId();
+      MessageId lastm = ack.getLastMessageId();
+      TransactionId tid = ack.getTransactionId();
+      boolean isLocalTx = (tid != null) && tid.isLocalTransaction();
+      boolean single = lastm.equals(first);
+
+      MessageInfo mi = null;
       int n = 0;
 
-      byte ackType = ack.getAckType();
-
-      if (ackType == MessageAck.INDIVIDUAL_ACK_TYPE)
+      if (ack.isIndividualAck())
       {
-         n = 1;
          Iterator<MessageInfo> iter = deliveringRefs.iterator();
          while (iter.hasNext())
          {
             mi = iter.next();
-            if (mi.amqId.equals(last))
+            if (mi.amqId.equals(lastm))
             {
+               n++;
                iter.remove();
                session.getCoreSession().individualAcknowledge(nativeId, mi.nativeId);
                session.getCoreSession().commit();
@@ -225,43 +230,97 @@ public class AMQConsumer implements BrowserListener
             }
          }
       }
-      else if (ackType == MessageAck.REDELIVERED_ACK_TYPE)
+      else if (ack.isRedeliveredAck())
       {
          //client tells that this message is for redlivery.
          //do nothing until poisoned.
+         n = 1;
       }
-      else if (ackType == MessageAck.POSION_ACK_TYPE)
+      else if (ack.isPoisonAck())
       {
          //send to dlq
-         n = 1;
          Iterator<MessageInfo> iter = deliveringRefs.iterator();
+         boolean firstFound = false;
          while (iter.hasNext())
          {
             mi = iter.next();
-            if (mi.amqId.equals(last))
+            if (mi.amqId.equals(first))
             {
+               n++;
                iter.remove();
                session.getCoreSession().moveToDeadLetterAddress(nativeId, mi.nativeId, ack.getPoisonCause());
                session.getCoreSession().commit();
-               break;
+               if (single)
+               {
+                  break;
+               }
+               firstFound = true;
+            }
+            else if (firstFound || first == null)
+            {
+               n++;
+               iter.remove();
+               session.getCoreSession().moveToDeadLetterAddress(nativeId, mi.nativeId, ack.getPoisonCause());
+               session.getCoreSession().commit();
+               if (mi.amqId.equals(lastm))
+               {
+                  break;
+               }
             }
          }
       }
+      else if (ack.isDeliveredAck() || ack.isExpiredAck())
+      {
+         //ToDo: implement with tests
+         n = 1;
+      }
       else
       {
-         do
+         Iterator<MessageInfo> iter = deliveringRefs.iterator();
+         boolean firstFound = false;
+         while (iter.hasNext())
          {
-            mi = deliveringRefs.poll();
-
-            if (mi == null)
+            MessageInfo ami = iter.next();
+            if (ami.amqId.equals(first))
             {
-               throw new IllegalStateException("No messages in the list for ack " + last);
+               n++;
+               if (!isLocalTx)
+               {
+                  iter.remove();
+               }
+               else
+               {
+                  ami.setLocalAcked(true);
+               }
+               if (single)
+               {
+                  mi = ami;
+                  break;
+               }
+               firstFound = true;
             }
-            n++;
+            else if (firstFound || first == null)
+            {
+               n++;
+               if (!isLocalTx)
+               {
+                  iter.remove();
+               }
+               else
+               {
+                  ami.setLocalAcked(true);
+               }
+               if (ami.amqId.equals(lastm))
+               {
+                  mi = ami;
+                  break;
+               }
+            }
          }
-         while (!mi.amqId.equals(last));
-
-         session.getCoreSession().acknowledge(nativeId, mi.nativeId);
+         if (mi != null && !isLocalTx)
+         {
+            session.getCoreSession().acknowledge(nativeId, mi.nativeId);
+         }
       }
 
       acquireCredit(n);
@@ -282,5 +341,50 @@ public class AMQConsumer implements BrowserListener
    {
       // TODO Auto-generated method stub
       return false;
+   }
+
+   //this is called before session commit a local tx
+   public void finishTx() throws Exception
+   {
+      MessageInfo lastMi = null;
+
+      MessageInfo mi = null;
+      Iterator<MessageInfo> iter = deliveringRefs.iterator();
+      while (iter.hasNext())
+      {
+         mi = iter.next();
+         if (mi.isLocalAcked())
+         {
+            iter.remove();
+            lastMi = mi;
+         }
+      }
+
+      if (lastMi != null)
+      {
+         session.getCoreSession().acknowledge(nativeId, lastMi.nativeId);
+      }
+   }
+
+   public void rollbackTx(Set<Long> acked) throws Exception
+   {
+      MessageInfo lastMi = null;
+
+      MessageInfo mi = null;
+      Iterator<MessageInfo> iter = deliveringRefs.iterator();
+      while (iter.hasNext())
+      {
+         mi = iter.next();
+         if (mi.isLocalAcked())
+         {
+            acked.add(mi.nativeId);
+            lastMi = mi;
+         }
+      }
+
+      if (lastMi != null)
+      {
+         session.getCoreSession().acknowledge(nativeId, lastMi.nativeId);
+      }
    }
 }
