@@ -1288,6 +1288,9 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    public Response processCommitTransactionOnePhase(TransactionInfo info) throws Exception
    {
       protocolManager.commitTransactionOnePhase(info);
+      TransactionId txId = info.getTransactionId();
+      txMap.remove(txId);
+
       return null;
    }
 
@@ -1295,6 +1298,9 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    public Response processCommitTransactionTwoPhase(TransactionInfo info) throws Exception
    {
       protocolManager.commitTransactionTwoPhase(info);
+      TransactionId txId = info.getTransactionId();
+      txMap.remove(txId);
+
       return null;
    }
 
@@ -1343,6 +1349,9 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    @Override
    public Response processForgetTransaction(TransactionInfo info) throws Exception
    {
+      TransactionId txId = info.getTransactionId();
+      txMap.remove(txId);
+
       protocolManager.forgetTransaction(info.getTransactionId());
       return null;
    }
@@ -1678,6 +1687,8 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    public Response processRollbackTransaction(TransactionInfo info) throws Exception
    {
       protocolManager.rollbackTransaction(info);
+      TransactionId txId = info.getTransactionId();
+      txMap.remove(txId);
       return null;
    }
 

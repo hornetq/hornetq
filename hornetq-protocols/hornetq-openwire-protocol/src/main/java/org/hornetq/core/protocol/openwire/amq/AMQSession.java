@@ -14,8 +14,11 @@ package org.hornetq.core.protocol.openwire.amq;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -235,7 +238,7 @@ public class AMQSession implements SessionCallback
       {
          ((AMQServerSession)coreSession).amqCloseConsumer(nativeId, true);
       }
-      consumers.remove(nativeId);
+      AMQConsumer consumer = consumers.remove(nativeId);
    }
 
    public void createProducer(ProducerInfo info)
@@ -388,6 +391,12 @@ public class AMQSession implements SessionCallback
       }
       else
       {
+         Iterator<AMQConsumer> iter = consumers.values().iterator();
+         while (iter.hasNext())
+         {
+            AMQConsumer consumer = iter.next();
+            consumer.finishTx();
+         }
          this.coreSession.commit();
       }
 
@@ -421,9 +430,16 @@ public class AMQSession implements SessionCallback
       }
       else
       {
+         Iterator<AMQConsumer> iter = consumers.values().iterator();
+         Set<Long> acked = new HashSet<Long>();
+         while (iter.hasNext())
+         {
+            AMQConsumer consumer = iter.next();
+            consumer.rollbackTx(acked);
+         }
          //on local rollback, amq broker doesn't do anything about the delivered
          //messages, which stay at clients until next time
-         this.coreSession.amqRollback();
+         this.coreSession.amqRollback(acked);
       }
 
       this.txId = null;
