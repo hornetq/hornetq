@@ -13,12 +13,12 @@
             <master>
                <group-name>purple</group-name>
                <check-for-live-server>true</check-for-live-server>
-               <clustername>abcdefg</clustername>
+               <cluster-name>abcdefg</cluster-name>
             </master>
             <slave>
                <group-name>tiddles</group-name>
                <max-saved-replicated-journals-size>22</max-saved-replicated-journals-size>
-               <clustername>33rrrrr</clustername>
+               <cluster-name>33rrrrr</cluster-name>
                <restart-backup>false</restart-backup>
                <scale-down>
                   <!--a grouping of servers that can be scaled down to-->

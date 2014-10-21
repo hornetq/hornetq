@@ -66,7 +66,7 @@
 &lt;/ha-policy>
            </programlisting>
            <para>
-              As well as these 2 strategies there is also a 3rd called <literal>none</literal>. This of course means there
+              As well as these 2 strategies there is also a 3rd called <literal>live-only</literal>. This of course means there
               will be no Backup Strategy and is the default if none is provided, however this is used to configure
               <literal>scale-down</literal> which we will cover in a later chapter.
            </para>
@@ -273,7 +273,7 @@
                              up. This option is only necessary for performing 'fail-back' on replicating servers.</entry>
                        </row>
                        <row>
-                          <entry><literal>clustername</literal></entry>
+                          <entry><literal>cluster-name</literal></entry>
                           <entry>Name of the cluster configuration to use for replication. This setting is only necessary if you
                              configure multiple cluster connections. If configured then the connector configuration of the
                              cluster configuration with this name will be used when connecting to the cluster to discover
@@ -301,7 +301,7 @@
                     </thead>
                     <tbody>
                        <row>
-                          <entry><literal>clustername</literal></entry>
+                          <entry><literal>cluster-name</literal></entry>
                           <entry>Name of the cluster configuration to use for replication. This setting is only necessary if you
                              configure multiple cluster connections. If configured then the connector configuration of the
                              cluster configuration with this name will be used when connecting to the cluster to discover
@@ -658,13 +658,13 @@
       <para>The configuration for a live server to scale down would be something like:</para>
       <programlisting>
 &lt;ha-policy>
-   &lt;none>
+   &lt;live-only>
       &lt;scale-down>
          &lt;connectors>
             &lt;connector-ref>server1-connector&lt;/connector-ref>
          &lt;/connectors>
       &lt;/scale-down>
-   &lt;/none>
+   &lt;/live-only>
 &lt;/ha-policy>
       </programlisting>
       <para>In this instance the server is configured to use a specific connector to scale down, if a connector is not
@@ -672,11 +672,11 @@
          It is also possible to use discovery to scale down, this would look like:</para>
       <programlisting>
 &lt;ha-policy>
-   &lt;none>
+   &lt;live-only>
       &lt;scale-down>
          &lt;discovery-group>my-discovery-group&lt;/discovery-group>
       &lt;/scale-down>
-   &lt;/none>
+   &lt;/live-only>
 &lt;/ha-policy>
       </programlisting>
       <section id="ha.scaledown.group">
@@ -685,12 +685,12 @@
          is done by configuring the group like so:</para>
          <programlisting>
 &lt;ha-policy>
-   &lt;none>
+   &lt;live-only>
       &lt;scale-down>
          ...
          &lt;group-name>my-group&lt;/group-name>
       &lt;/scale-down>
-   &lt;/none>
+   &lt;/live-only>
 &lt;/ha-policy>
          </programlisting>
          <para>In this scenario only servers that belong to the group <literal>my-group</literal> will be scaled down to</para>
@@ -714,12 +714,12 @@
          &lt;master>
             &lt;group-name>purple&lt;/group-name>
             &lt;check-for-live-server>true&lt;/check-for-live-server>
-            &lt;clustername>abcdefg&lt;/clustername>
+            &lt;cluster-name>abcdefg&lt;/cluster-name>
          &lt;/master>
          &lt;slave>
             &lt;group-name>tiddles&lt;/group-name>
             &lt;max-saved-replicated-journals-size>22&lt;/max-saved-replicated-journals-size>
-            &lt;clustername>33rrrrr&lt;/clustername>
+            &lt;cluster-name>33rrrrr&lt;/cluster-name>
             &lt;restart-backup>false&lt;/restart-backup>
             &lt;scale-down>
                &lt;!--a grouping of servers that can be scaled down to-->

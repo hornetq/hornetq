@@ -65,13 +65,13 @@
 
    <!--a live server that will scale down on server shutdown-->
    <ha-policy>
-      <none>
+      <live-only>
          <scale-down>
             <connectors>
                <connector-ref>server0-connector</connector-ref>
             </connectors>
          </scale-down>
-      </none>
+      </live-only>
    </ha-policy>
    
    <!-- Other config -->
