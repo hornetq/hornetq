@@ -913,19 +913,28 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      removeFromJNDI(queues, queueJNDI, name);
+      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null, !removeConsumers, removeConsumers);
 
-      queues.remove(name);
-      queueJNDI.remove(name);
+      // if the queue has consumers and 'removeConsumers' is false then the queue won't actually be removed
+      // therefore only remove the queue from JNDI, etc. if the queue is actually removed
+      if (this.server.getPostOffice().getBinding(HornetQDestination.createQueueAddressFromName(name)) == null)
+      {
+         removeFromJNDI(queues, queueJNDI, name);
 
-      jmsManagementService.unregisterQueue(name);
+         queues.remove(name);
+         queueJNDI.remove(name);
 
-      server.destroyQueue(HornetQDestination.createQueueAddressFromName(name), null, false, removeConsumers);
+         jmsManagementService.unregisterQueue(name);
 
-      storage.deleteDestination(PersistedType.Queue, name);
+         storage.deleteDestination(PersistedType.Queue, name);
 
-      sendNotification(JMSNotificationType.QUEUE_DESTROYED, name);
-      return true;
+         sendNotification(JMSNotificationType.QUEUE_DESTROYED, name);
+         return true;
+      }
+      else
+      {
+         return false;
+      }
    }
 
    public synchronized boolean destroyTopic(final String name) throws Exception
@@ -936,14 +945,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public synchronized boolean destroyTopic(final String name, final boolean removeConsumers) throws Exception
    {
       checkInitialised();
-
-      removeFromJNDI(topics, topicJNDI, name);
-
-      topics.remove(name);
-      topicJNDI.remove(name);
-
-      jmsManagementService.unregisterTopic(name);
-
       AddressControl addressControl = (AddressControl) server.getManagementService()
          .getResource(ResourceNames.CORE_ADDRESS + HornetQDestination.createTopicAddressFromName(name));
       if (addressControl != null)
@@ -963,11 +964,30 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                server.destroyQueue(SimpleString.toSimpleString(queueName), null, !removeConsumers, removeConsumers);
             }
          }
-      }
-      storage.deleteDestination(PersistedType.Topic, name);
 
-      sendNotification(JMSNotificationType.TOPIC_DESTROYED, name);
-      return true;
+         if (addressControl.getQueueNames().length == 0)
+         {
+            removeFromJNDI(topics, topicJNDI, name);
+
+            topics.remove(name);
+            topicJNDI.remove(name);
+
+            jmsManagementService.unregisterTopic(name);
+
+            storage.deleteDestination(PersistedType.Topic, name);
+
+            sendNotification(JMSNotificationType.TOPIC_DESTROYED, name);
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+      }
+      else
+      {
+         return false;
+      }
    }
 
    public synchronized void createConnectionFactory(final String name,
