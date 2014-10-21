@@ -56,7 +56,7 @@ public interface AMQPSessionCallback
 
    void rollbackCurrentTX() throws Exception;
 
-   void close();
+   void close() throws Exception;
 
 
    void ack(Object brokerConsumer, Object message) throws Exception;
