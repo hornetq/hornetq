@@ -1226,7 +1226,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
    private static final ArrayList<String> HA_LIST = new ArrayList<>();
    static
    {
-      HA_LIST.add("none");
+      HA_LIST.add("live-only");
       HA_LIST.add("shared-store");
       HA_LIST.add("replication");
    }
@@ -1280,9 +1280,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
                   mainConfig.setHAPolicyConfiguration(createColocatedHaPolicy(colocatedNode, false));
                }
             }
-            else if (haNode.getTagName().equals("none"))
+            else if (haNode.getTagName().equals("live-only"))
             {
-               NodeList noneNodeList = e.getElementsByTagName("none");
+               NodeList noneNodeList = e.getElementsByTagName("live-only");
                Element noneNode = (Element) noneNodeList.item(0);
                mainConfig.setHAPolicyConfiguration(createLiveOnlyHaPolicy(noneNode));
             }
@@ -1307,7 +1307,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       configuration.setGroupName(getString(policyNode, "group-name", configuration.getGroupName(), Validators.NO_CHECK));
 
-      configuration.setClusterName(getString(policyNode, "clustername", configuration.getClusterName(), Validators.NO_CHECK));
+      configuration.setClusterName(getString(policyNode, "cluster-name", configuration.getClusterName(), Validators.NO_CHECK));
 
       return configuration;
    }
@@ -1324,7 +1324,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       configuration.setFailbackDelay(getLong(policyNode, "failback-delay", configuration.getFailbackDelay(), Validators.GT_ZERO));
 
-      configuration.setClusterName(getString(policyNode, "clustername", configuration.getClusterName(), Validators.NO_CHECK));
+      configuration.setClusterName(getString(policyNode, "cluster-name", configuration.getClusterName(), Validators.NO_CHECK));
 
       configuration.setMaxSavedReplicatedJournalsSize(getInteger(policyNode, "max-saved-replicated-journals-size",
             configuration.getMaxSavedReplicatedJournalsSize(), Validators.MINUS_ONE_OR_GE_ZERO));

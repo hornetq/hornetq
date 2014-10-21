@@ -7,7 +7,7 @@
          <slave>
             <group-name>tiddles</group-name>
             <max-saved-replicated-journals-size>22</max-saved-replicated-journals-size>
-            <clustername>33rrrrr</clustername>
+            <cluster-name>33rrrrr</cluster-name>
             <restart-backup>false</restart-backup>
          </slave>
       </replication>

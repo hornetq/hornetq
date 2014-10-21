@@ -164,14 +164,14 @@
       <ha-policy>
          <!--only one of the following-->
          <!--on server shutdown scale down to another live server-->
-         <none>
+         <live-only>
             <scale-down>
                <!--a grouping of servers that can be scaled down to-->
                <group-name>boo!</group-name>
                <!--either a discovery group-->
                <discovery-group>wahey</discovery-group>
             </scale-down>
-         </none>
+         </live-only>
 
       </ha-policy>
       <cluster-connections>

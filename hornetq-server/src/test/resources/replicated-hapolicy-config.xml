@@ -7,7 +7,7 @@
          <master>
             <group-name>purple</group-name>
             <check-for-live-server>true</check-for-live-server>
-            <clustername>abcdefg</clustername>
+            <cluster-name>abcdefg</cluster-name>
          </master>
       </replication>
    </ha-policy>

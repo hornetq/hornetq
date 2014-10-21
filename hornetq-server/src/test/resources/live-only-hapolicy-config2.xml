@@ -5,7 +5,7 @@
    <ha-policy>
       <!--only one of the following-->
       <!--on server shutdown scale down to another live server-->
-      <none>
+      <live-only>
          <scale-down>
             <!--a grouping of servers that can be scaled down to-->
             <group-name>boo!</group-name>
@@ -15,7 +15,7 @@
                <connector-ref>sd-connector2</connector-ref>
             </connectors>
          </scale-down>
-      </none>
+      </live-only>
    </ha-policy>
 
 </configuration>

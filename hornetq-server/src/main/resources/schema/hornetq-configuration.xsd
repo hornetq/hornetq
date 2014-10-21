@@ -1556,7 +1556,7 @@
    </xsd:complexType>
    <xsd:complexType name="haPolicyType">
       <xsd:choice>
-         <xsd:element name="none" type="haNonePolicyType" minOccurs="0" maxOccurs="1">
+         <xsd:element name="live-only" type="haLiveOnlyPolicyType" minOccurs="0" maxOccurs="1">
             <xsd:annotation>
                <xsd:documentation>
                   A live only server with no HA capabilities apart from scale down.
@@ -1753,7 +1753,7 @@
       </xsd:choice>
    </xsd:complexType>
 
-   <xsd:complexType name="haNonePolicyType">
+   <xsd:complexType name="haLiveOnlyPolicyType">
       <xsd:all>
          <xsd:element name="scale-down" type="scaleDownType" minOccurs="0" maxOccurs="1">
             <xsd:annotation>
@@ -1774,7 +1774,7 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
-         <xsd:element name="clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
+         <xsd:element name="cluster-name" type="xsd:string" maxOccurs="1" minOccurs="0">
             <xsd:annotation>
                <xsd:documentation>
                   Name of the cluster configuration to use for replication. This setting is only necessary in case you
@@ -1805,7 +1805,7 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
-         <xsd:element name="clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
+         <xsd:element name="cluster-name" type="xsd:string" maxOccurs="1" minOccurs="0">
             <xsd:annotation>
                <xsd:documentation>
                   Name of the cluster configuration to use for replication. This setting is only necessary in case you
@@ -1866,7 +1866,7 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
-         <xsd:element name="clustername" type="xsd:string" maxOccurs="1" minOccurs="0">
+         <xsd:element name="cluster-name" type="xsd:string" maxOccurs="1" minOccurs="0">
             <xsd:annotation>
                <xsd:documentation>
                   Name of the cluster configuration to use for replication. This setting is only necessary in case you
