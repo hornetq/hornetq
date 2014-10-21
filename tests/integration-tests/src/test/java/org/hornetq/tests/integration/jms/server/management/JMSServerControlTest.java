@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
+import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -353,6 +354,112 @@ public class JMSServerControlTest extends ManagementTestBase
          {
             assertTrue(e.getCause() instanceof HornetQObjectClosedException);
          }
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
+   }
+
+   @Test
+   public void testDestroyQueueWithConsumersWithoutForcingTheConsumersToClose() throws Exception
+   {
+      String queueJNDIBinding = RandomUtil.randomString();
+      String queueName = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, queueJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      JMSServerControl control = createManagementControl();
+      control.createQueue(queueName, queueJNDIBinding);
+
+      UnitTestCase.checkBinding(context, queueJNDIBinding);
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      HornetQConnection connection = (HornetQConnection) cf.createConnection();
+      connection.start();
+      try
+      {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer producer = session.createProducer(HornetQJMSClient.createQueue(queueName));
+         producer.send(session.createTextMessage());
+         // create a consumer will create a Core queue bound to the topic address
+         HornetQMessageConsumer cons = (HornetQMessageConsumer) session.createConsumer(HornetQJMSClient.createQueue(queueName));
+
+         try
+         {
+            control.destroyQueue(queueName, false);
+            fail();
+         }
+         catch (HornetQIllegalStateException e)
+         {
+            // ignore
+         }
+
+         UnitTestCase.checkBinding(context, queueJNDIBinding);
+         checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+         Assert.assertNotNull(fakeJMSStorageManager.destinationMap.get(queueName));
+
+         assertFalse(cons.isClosed());
+
+         assertNotNull(cons.receive(5000));
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
+   }
+
+
+   @Test
+   public void testDestroyTopicWithConsumersWithoutForcingTheConsumersToClose() throws Exception
+   {
+      String topicJNDIBinding = RandomUtil.randomString();
+      String topicName = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      JMSServerControl control = createManagementControl();
+      control.createTopic(topicName, topicJNDIBinding);
+
+      UnitTestCase.checkBinding(context, topicJNDIBinding);
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(false, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      HornetQConnection connection = (HornetQConnection) cf.createConnection();
+      connection.start();
+      try
+      {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         // create a consumer will create a Core queue bound to the topic address
+         HornetQMessageConsumer cons = (HornetQMessageConsumer) session.createConsumer(HornetQJMSClient.createTopic(topicName));
+         MessageProducer producer = session.createProducer(HornetQJMSClient.createTopic(topicName));
+         producer.send(session.createTextMessage());
+
+         try
+         {
+            control.destroyTopic(topicName, false);
+            fail();
+         }
+         catch (HornetQIllegalStateException e)
+         {
+            // ignore
+         }
+
+         UnitTestCase.checkBinding(context, topicJNDIBinding);
+         checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+         assertFalse(cons.isClosed());
+
+         assertNotNull(cons.receive(5000));
       }
       finally
       {
