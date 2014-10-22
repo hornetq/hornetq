@@ -188,9 +188,9 @@ public class ProtonSessionIntegrationCallback implements AMQPSessionCallback, Se
    }
 
    @Override
-   public void close()
+   public void close() throws Exception
    {
-
+      serverSession.close(false);
    }
 
    @Override
@@ -253,13 +253,11 @@ public class ProtonSessionIntegrationCallback implements AMQPSessionCallback, Se
    @Override
    public void sendProducerCreditsMessage(int credits, SimpleString address)
    {
-      System.out.println("sendProducerCredits " + credits);
    }
 
    @Override
    public void sendProducerCreditsFailMessage(int credits, SimpleString address)
    {
-      System.out.println("sendProducerCredits Fail Message" + credits);
    }
 
    @Override
@@ -287,21 +285,18 @@ public class ProtonSessionIntegrationCallback implements AMQPSessionCallback, Se
    @Override
    public int sendLargeMessage(ServerMessage message, ServerConsumer consumer, long bodySize, int deliveryCount)
    {
-      System.out.println("send Large message");
       return 0;
    }
 
    @Override
    public int sendLargeMessageContinuation(ServerConsumer consumer, byte[] body, boolean continues, boolean requiresResponse)
    {
-      System.out.println("send large message continuation");
       return 0;
    }
 
    @Override
    public void closed()
    {
-      System.out.println("close");
    }
 
    @Override

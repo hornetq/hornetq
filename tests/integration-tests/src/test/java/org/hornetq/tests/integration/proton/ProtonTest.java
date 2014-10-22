@@ -145,12 +145,25 @@ public class ProtonTest extends ServiceTestBase
    @After
    public void tearDown() throws Exception
    {
-      if (connection != null)
+      try
       {
-         connection.close();
+         if (connection != null)
+         {
+            connection.close();
+         }
+
+         for (long timeout = System.currentTimeMillis() + 1000; timeout > System.currentTimeMillis() && server.getRemotingService().getConnections().size() != 0; )
+         {
+            Thread.sleep(1);
+         }
+
+         assertEquals("The remoting connection wasn't removed after connection.close()", 0, server.getRemotingService().getConnections().size());
+         server.stop();
       }
-      server.stop();
-      super.tearDown();
+      finally
+      {
+         super.tearDown();
+      }
    }
 
 
@@ -241,6 +254,25 @@ public class ProtonTest extends ServiceTestBase
       // There is a bug on the qpid client library currently, we can expect having to interrupt the thread on browsers.
       // but we can't have it on 10 iterations... something must be broken if that's the case
       assertTrue("Test had to interrupt on all ocasions.. this is beyond the expected for the test", success);
+   }
+
+   @Test
+   public void testConnection() throws Exception
+   {
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      MessageConsumer cons = session.createConsumer(createQueue(address));
+
+      org.hornetq.core.server.Queue serverQueue = server.locateQueue(SimpleString.toSimpleString(coreAddress));
+
+      assertEquals(1, serverQueue.getConsumerCount());
+
+      cons.close();
+
+      assertEquals(0, serverQueue.getConsumerCount());
+
+      session.close();
+
    }
 
    @Test
@@ -614,7 +646,6 @@ public class ProtonTest extends ServiceTestBase
       long taken = (System.currentTimeMillis() - time) / 1000;
       System.out.println("taken = " + taken);
    }
-
 
 
    @Test
