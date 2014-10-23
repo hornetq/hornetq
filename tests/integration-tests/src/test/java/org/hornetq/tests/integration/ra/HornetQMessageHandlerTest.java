@@ -14,6 +14,7 @@ package org.hornetq.tests.integration.ra;
 
 import javax.jms.Message;
 import javax.resource.ResourceException;
+import javax.resource.spi.InvalidPropertyException;
 import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -714,6 +715,40 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.endpointDeactivation(endpointFactory2, spec2);
       qResourceAdapter.stop();
 
+   }
+
+   @Test
+   public void testNullSubscriptionName() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      spec.setSubscriptionDurability("Durable");
+      spec.setClientID("id-1");
+      spec.setSetupAttempts(1);
+      spec.setShareSubscriptions(true);
+      spec.setMaxSession(1);
+
+
+      CountDownLatch latch = new CountDownLatch(5);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      try
+      {
+         qResourceAdapter.endpointActivation(endpointFactory, spec);
+         fail();
+      }
+      catch (Exception e)
+      {
+         assertTrue(e instanceof InvalidPropertyException);
+         assertEquals("subscriptionName", ((InvalidPropertyException)e).getInvalidPropertyDescriptors()[0].getName());
+      }
    }
 
    @Test
