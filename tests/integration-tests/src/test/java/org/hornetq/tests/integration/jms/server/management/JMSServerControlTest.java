@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQObjectClosedException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -395,9 +394,9 @@ public class JMSServerControlTest extends ManagementTestBase
             control.destroyQueue(queueName, false);
             fail();
          }
-         catch (HornetQIllegalStateException e)
+         catch (Exception e)
          {
-            // ignore
+            assertTrue(e.getMessage().startsWith("HQ119025"));
          }
 
          UnitTestCase.checkBinding(context, queueJNDIBinding);
@@ -450,9 +449,9 @@ public class JMSServerControlTest extends ManagementTestBase
             control.destroyTopic(topicName, false);
             fail();
          }
-         catch (HornetQIllegalStateException e)
+         catch (Exception e)
          {
-            // ignore
+            assertTrue(e.getMessage().startsWith("HQ119025"));
          }
 
          UnitTestCase.checkBinding(context, topicJNDIBinding);
