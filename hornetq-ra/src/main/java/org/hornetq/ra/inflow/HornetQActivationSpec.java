@@ -790,7 +790,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
             errorMessages.add("Destination is mandatory.");
          }
 
-         if (Topic.class.getName().equals(destinationType) && isSubscriptionDurable() && (subscriptionName == null || subscriptionName.length() == 0))
+         if ((destinationType == null || destinationType.length() == 0 || Topic.class.getName().equals(destinationType)) && isSubscriptionDurable() && (subscriptionName == null || subscriptionName.length() == 0))
          {
             propsNotSet.add(new PropertyDescriptor("subscriptionName", HornetQActivationSpec.class));
             errorMessages.add("If subscription is durable then subscription name must be specified.");

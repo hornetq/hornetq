@@ -727,7 +727,6 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
-      spec.setDestinationType("javax.jms.Topic");
       spec.setDestination("mdbTopic");
       spec.setSubscriptionDurability("Durable");
       spec.setClientID("id-1");
