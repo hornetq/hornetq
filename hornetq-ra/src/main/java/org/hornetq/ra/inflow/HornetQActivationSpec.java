@@ -12,6 +12,7 @@
  */
 package org.hornetq.ra.inflow;
 
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.resource.ResourceException;
@@ -788,6 +789,12 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
          {
             propsNotSet.add(new PropertyDescriptor("destination", HornetQActivationSpec.class));
             errorMessages.add("Destination is mandatory.");
+         }
+
+         if (destinationType != null && !Topic.class.getName().equals(destinationType) && !Queue.class.getName().equals(destinationType))
+         {
+            propsNotSet.add(new PropertyDescriptor("destinationType", HornetQActivationSpec.class));
+            errorMessages.add("If set, the destinationType must be either 'javax.jms.Topic' or 'javax.jms.Queue'.");
          }
 
          if ((destinationType == null || destinationType.length() == 0 || Topic.class.getName().equals(destinationType)) && isSubscriptionDurable() && (subscriptionName == null || subscriptionName.length() == 0))

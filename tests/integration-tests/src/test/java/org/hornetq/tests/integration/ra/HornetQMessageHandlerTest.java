@@ -750,6 +750,38 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       }
    }
 
+
+   @Test
+   public void testBadDestinationType() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("badDestinationType");
+      spec.setDestination("mdbTopic");
+      spec.setSetupAttempts(1);
+      spec.setShareSubscriptions(true);
+      spec.setMaxSession(1);
+
+      CountDownLatch latch = new CountDownLatch(5);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      try
+      {
+         qResourceAdapter.endpointActivation(endpointFactory, spec);
+         fail();
+      }
+      catch (Exception e)
+      {
+         assertTrue(e instanceof InvalidPropertyException);
+         assertEquals("destinationType", ((InvalidPropertyException)e).getInvalidPropertyDescriptors()[0].getName());
+      }
+   }
+
    @Test
    public void testSelectorNotChangedWithTopic() throws Exception
    {
