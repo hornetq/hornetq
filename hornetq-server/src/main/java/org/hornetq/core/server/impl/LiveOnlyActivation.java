@@ -87,7 +87,7 @@ public class LiveOnlyActivation extends Activation
    {
       // connect to the scale-down target first so that when we freeze/disconnect the clients we can tell them where
       // we're sending the messages
-      if (liveOnlyPolicy.getScaleDownPolicy() != null && liveOnlyPolicy.getScaleDownPolicy().isScaleDown())
+      if (liveOnlyPolicy.getScaleDownPolicy() != null && liveOnlyPolicy.getScaleDownPolicy().isEnabled())
       {
          connectToScaleDownTarget(liveOnlyPolicy.getScaleDownPolicy());
       }
@@ -104,7 +104,7 @@ public class LiveOnlyActivation extends Activation
    public void postConnectionFreeze()
    {
       if (liveOnlyPolicy.getScaleDownPolicy() != null
-            && liveOnlyPolicy.getScaleDownPolicy().isScaleDown()
+            && liveOnlyPolicy.getScaleDownPolicy().isEnabled()
             && scaleDownClientSessionFactory != null)
       {
          try

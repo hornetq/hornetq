@@ -37,26 +37,26 @@ public class ScaleDownPolicy
 
    private String clusterName;
 
-   private boolean scaleDown;
+   private boolean enabled;
 
    public ScaleDownPolicy()
    {
    }
 
-   public ScaleDownPolicy(List<String> connectors, String groupName, String clusterName, boolean scaleDown)
+   public ScaleDownPolicy(List<String> connectors, String groupName, String clusterName, boolean enabled)
    {
       this.connectors = connectors;
       this.groupName = groupName;
       this.clusterName = clusterName;
-      this.scaleDown = scaleDown;
+      this.enabled = enabled;
    }
 
-   public ScaleDownPolicy(String discoveryGroup, String groupName, String clusterName, boolean scaleDown)
+   public ScaleDownPolicy(String discoveryGroup, String groupName, String clusterName, boolean enabled)
    {
       this.discoveryGroup = discoveryGroup;
       this.groupName = groupName;
       this.clusterName = clusterName;
-      this.scaleDown = scaleDown;
+      this.enabled = enabled;
    }
 
 
@@ -100,14 +100,14 @@ public class ScaleDownPolicy
       this.clusterName = clusterName;
    }
 
-   public boolean isScaleDown()
+   public boolean isEnabled()
    {
-      return scaleDown;
+      return enabled;
    }
 
-   public void setScaleDown(boolean scaleDown)
+   public void setEnabled(boolean enabled)
    {
-      this.scaleDown = scaleDown;
+      this.enabled = enabled;
    }
 
    public static ServerLocatorInternal getScaleDownConnector(ScaleDownPolicy scaleDownPolicy, HornetQServer hornetQServer) throws HornetQException

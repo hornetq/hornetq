@@ -28,7 +28,7 @@ public class ScaleDownConfiguration implements Serializable
 
    private String clusterName = null;
 
-   private boolean scaleDown = HornetQDefaultConfiguration.isDefaultScaleDown();
+   private boolean enabled = HornetQDefaultConfiguration.isDefaultScaleDownEnabled();
 
    public List<String> getConnectors()
    {
@@ -80,14 +80,14 @@ public class ScaleDownConfiguration implements Serializable
       return this;
    }
 
-   public boolean isScaleDown()
+   public boolean isEnabled()
    {
-      return scaleDown;
+      return enabled;
    }
 
-   public ScaleDownConfiguration setScaleDown(boolean scaleDown)
+   public ScaleDownConfiguration setEnabled(boolean enabled)
    {
-      this.scaleDown = scaleDown;
+      this.enabled = enabled;
       return this;
    }
 }

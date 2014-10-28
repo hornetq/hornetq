@@ -78,6 +78,7 @@ public class HAPolicyConfigurationTest extends UnitTestCase
          LiveOnlyPolicy liveOnlyPolicy = (LiveOnlyPolicy) haPolicy;
          ScaleDownPolicy scaleDownPolicy = liveOnlyPolicy.getScaleDownPolicy();
          assertNotNull(scaleDownPolicy);
+         assertFalse(scaleDownPolicy.isEnabled());
          assertEquals(scaleDownPolicy.getGroupName(), "boo!");
          assertEquals(scaleDownPolicy.getDiscoveryGroup(), null);
          List<String> connectors = scaleDownPolicy.getConnectors();

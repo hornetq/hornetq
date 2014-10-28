@@ -1967,7 +1967,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
             liveOnlyPolicy.setScaleDownPolicy(new ScaleDownPolicy());
          }
 
-         liveOnlyPolicy.getScaleDownPolicy().setScaleDown(true);
+         liveOnlyPolicy.getScaleDownPolicy().setEnabled(true);
 
          if (connector != null)
          {

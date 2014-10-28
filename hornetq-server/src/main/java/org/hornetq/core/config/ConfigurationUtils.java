@@ -129,12 +129,12 @@ public final class ConfigurationUtils
          if (scaleDownConfiguration.getDiscoveryGroup() != null)
          {
             return new ScaleDownPolicy(scaleDownConfiguration.getDiscoveryGroup(), scaleDownConfiguration.getGroupName(),
-                  scaleDownConfiguration.getClusterName(), scaleDownConfiguration.isScaleDown());
+                  scaleDownConfiguration.getClusterName(), scaleDownConfiguration.isEnabled());
          }
          else
          {
             return new ScaleDownPolicy(scaleDownConfiguration.getConnectors(), scaleDownConfiguration.getGroupName(),
-                  scaleDownConfiguration.getClusterName(), scaleDownConfiguration.isScaleDown());
+                  scaleDownConfiguration.getClusterName(), scaleDownConfiguration.isEnabled());
          }
       }
       return null;

@@ -7,6 +7,7 @@
       <!--on server shutdown scale down to another live server-->
       <live-only>
          <scale-down>
+            <enabled>false</enabled>
             <!--a grouping of servers that can be scaled down to-->
             <group-name>boo!</group-name>
             <!--or some connectors-->

@@ -1427,7 +1427,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
          Element scaleDownElement = (Element) scaleDownNode.item(0);
 
-         scaleDownConfiguration.setScaleDown(getBoolean(scaleDownElement, "scale-down", scaleDownConfiguration.isScaleDown()));
+         scaleDownConfiguration.setEnabled(getBoolean(scaleDownElement, "enabled", scaleDownConfiguration.isEnabled()));
 
          String scaleDownDiscoveryGroup = getString(scaleDownElement, "discovery-group", scaleDownConfiguration.getDiscoveryGroup(), Validators.NO_CHECK);
 
