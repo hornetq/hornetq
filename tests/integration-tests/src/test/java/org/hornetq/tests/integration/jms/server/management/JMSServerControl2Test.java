@@ -1075,11 +1075,11 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                       JMSServerControl2Test.CONNECTION_TTL,
                                                       JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf.createConnection();
-         Session session = connection.createSession();
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
          Connection connection2 = cf.createConnection();
-         Session session2 = connection2.createSession();
+         Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer messageConsumer2 = session2.createConsumer(queue2);
 
          Assert.assertEquals(2, server.getConnectionCount());
@@ -1153,11 +1153,11 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                       JMSServerControl2Test.CONNECTION_TTL,
                                                       JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf.createConnection("fakeUser", "fakePassword");
-         Session session = connection.createSession();
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
          Connection connection2 = cf.createConnection();
-         Session session2 = connection2.createSession();
+         Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer messageConsumer2 = session2.createConsumer(queue2);
 
          Assert.assertEquals(2, server.getConnectionCount());

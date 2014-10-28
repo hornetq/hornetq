@@ -1317,6 +1317,6 @@ public interface HornetQServerLogger extends BasicLogger
    void impossibleToRouteGrouped();
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 224063, value = "Failed to close consumer connections for address {0}", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 224070, value = "Failed to close consumer connections for address {0}", format = Message.Format.MESSAGE_FORMAT)
    void failedToCloseConsumerConnectionsForAddress(String address, @Cause Exception e);
 }
