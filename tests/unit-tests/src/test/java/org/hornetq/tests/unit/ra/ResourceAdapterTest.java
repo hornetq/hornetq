@@ -489,7 +489,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          spec.setUser("user");
          spec.setPassword("password");
 
-         spec.setDestinationType("Topic");
+         spec.setDestinationType("javax.jms.Topic");
          spec.setDestination("test");
 
          spec.setMinSession(1);
@@ -512,7 +512,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    }
 
    @Test
-   public void testForConnectionLeakDuringActivationWithMissingDestination() throws Exception
+   public void testForConnectionLeakDuringActivationWhenSessionCreationFails() throws Exception
    {
       HornetQServer server = createServer(false);
       HornetQResourceAdapter ra = null;
@@ -520,20 +520,17 @@ public class ResourceAdapterTest extends ServiceTestBase
 
       try
       {
+         server.getConfiguration().setSecurityEnabled(true);
          server.start();
 
          ra = new HornetQResourceAdapter();
 
          ra.setConnectorClassName(INVM_CONNECTOR_FACTORY);
-         ra.setUserName("userGlobal");
-         ra.setPassword("passwordGlobal");
+         ra.setUserName("badUser");
+         ra.setPassword("badPassword");
          ra.setTransactionManagerLocatorClass("");
          ra.setTransactionManagerLocatorMethod("");
          ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
-
-         Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
-
-         conn.close();
 
          HornetQActivationSpec spec = new HornetQActivationSpec();
 
@@ -544,7 +541,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          spec.setUser("user");
          spec.setPassword("password");
 
-         spec.setDestinationType("Topic");
+         spec.setDestinationType("javax.jms.Topic");
          spec.setDestination("test");
 
          spec.setMinSession(1);
@@ -553,7 +550,15 @@ public class ResourceAdapterTest extends ServiceTestBase
 
          activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
 
-         activation.start();
+         try
+         {
+            activation.start();
+         }
+         catch (Exception e)
+         {
+            // ignore
+         }
+
          assertEquals(0, server.getRemotingService().getConnections().size());
       }
       finally
