@@ -55,13 +55,19 @@ import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -1258,6 +1264,94 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
 
+   }
+
+   public synchronized boolean closeConsumerConnectionsForAddress(final String address)
+   {
+      boolean closed = false;
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         for (Binding binding : postOffice.getMatchingBindings(SimpleString.toSimpleString(address)).getBindings())
+         {
+            if (binding instanceof LocalQueueBinding)
+            {
+               Queue queue = ((LocalQueueBinding) binding).getQueue();
+               for (Consumer consumer : queue.getConsumers())
+               {
+                  if (consumer instanceof ServerConsumer)
+                  {
+                     ServerConsumer serverConsumer = (ServerConsumer) consumer;
+                     RemotingConnection connection = null;
+
+                     for (RemotingConnection potentialConnection : remotingService.getConnections())
+                     {
+                        if (potentialConnection.getID().toString().equals(serverConsumer.getConnectionID()))
+                        {
+                           connection = potentialConnection;
+                        }
+                     }
+
+                     if (connection != null)
+                     {
+                        remotingService.removeConnection(connection.getID());
+                        connection.fail(HornetQMessageBundle.BUNDLE.consumerConnectionsClosedByManagement(address));
+                        closed = true;
+                     }
+                  }
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.failedToCloseConsumerConnectionsForAddress(address, e);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+      return closed;
+   }
+
+   public synchronized boolean closeConnectionsForUser(final String userName)
+   {
+      boolean closed = false;
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         for (ServerSession serverSession : server.getSessions())
+         {
+            if (serverSession.getUsername() != null && serverSession.getUsername().equals(userName))
+            {
+               RemotingConnection connection = null;
+
+               for (RemotingConnection potentialConnection : remotingService.getConnections())
+               {
+                  if (potentialConnection.getID().toString().equals(serverSession.getConnectionID()))
+                  {
+                     connection = potentialConnection;
+                  }
+               }
+
+               if (connection != null)
+               {
+                  remotingService.removeConnection(connection.getID());
+                  connection.fail(HornetQMessageBundle.BUNDLE.connectionsForUserClosedByManagement(userName));
+                  closed = true;
+               }
+            }
+         }
+      }
+      finally
+      {
+         blockOnIO();
+      }
+      return closed;
    }
 
    public String[] listConnectionIDs()
