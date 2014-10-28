@@ -53,7 +53,7 @@ public class ScaleDown3NodeTest extends ClusterTestBase
       haPolicyConfiguration1.setScaleDownConfiguration(scaleDownConfiguration1);
       scaleDownConfiguration0.setGroupName("bill");
       scaleDownConfiguration1.setGroupName("bill");
-      scaleDownConfiguration1.setScaleDown(false);
+      scaleDownConfiguration1.setEnabled(false);
 
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 0, 1, 2);
       setupClusterConnection("cluster0", "testAddress", false, 1, isNetty(), 1, 0, 2);

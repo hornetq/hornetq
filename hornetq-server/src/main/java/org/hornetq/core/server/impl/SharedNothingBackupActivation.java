@@ -107,7 +107,7 @@ public final class SharedNothingBackupActivation extends Activation
                return;
          }
 
-         boolean scalingDown = replicaPolicy.getScaleDownPolicy() != null && replicaPolicy.getScaleDownPolicy().isScaleDown();
+         boolean scalingDown = replicaPolicy.getScaleDownPolicy() != null && replicaPolicy.getScaleDownPolicy().isEnabled();
 
          if (!hornetQServer.initialisePart1(scalingDown))
             return;

@@ -383,7 +383,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public void setScaleDown(boolean scaleDown) throws Exception
          {
-            proxy.invokeOperation("setScaleDown", scaleDown);
+            proxy.invokeOperation("setEnabled", scaleDown);
          }
 
          public boolean isScaleDown()

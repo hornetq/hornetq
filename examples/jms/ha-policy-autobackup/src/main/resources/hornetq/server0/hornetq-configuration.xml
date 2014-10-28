@@ -44,11 +44,11 @@
             <max-backups>1</max-backups>
             <request-backup>true</request-backup>
             <backup-request-retry-interval>1000</backup-request-retry-interval>
-            <remote-connectors>
+            <excludes>
                <connector-ref>invm-connector</connector-ref>
                <connector-ref>server1-connector</connector-ref>
                <connector-ref>netty-connector</connector-ref>
-            </remote-connectors>
+            </excludes>
             <master/>
             <slave>
                <scale-down>

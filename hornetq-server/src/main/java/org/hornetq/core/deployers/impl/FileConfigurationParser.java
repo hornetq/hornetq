@@ -1386,7 +1386,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
       configuration.setBackupPortOffset(backupPortOffset);
 
-      NodeList remoteConnectorNode = policyNode.getElementsByTagName("remote-connectors");
+      NodeList remoteConnectorNode = policyNode.getElementsByTagName("excludes");
 
       if (remoteConnectorNode != null && remoteConnectorNode.getLength() > 0)
       {
@@ -1397,7 +1397,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
             if (child.getNodeName().equals("connector-ref"))
             {
                String connectorName = getTrimmedTextContent(child);
-               configuration.getRemoteConnectors().add(connectorName);
+               configuration.getExcludedConnectors().add(connectorName);
             }
          }
       }
@@ -1427,7 +1427,7 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
 
          Element scaleDownElement = (Element) scaleDownNode.item(0);
 
-         scaleDownConfiguration.setScaleDown(getBoolean(scaleDownElement, "scale-down", scaleDownConfiguration.isScaleDown()));
+         scaleDownConfiguration.setEnabled(getBoolean(scaleDownElement, "enabled", scaleDownConfiguration.isEnabled()));
 
          String scaleDownDiscoveryGroup = getString(scaleDownElement, "discovery-group", scaleDownConfiguration.getDiscoveryGroup(), Validators.NO_CHECK);
 

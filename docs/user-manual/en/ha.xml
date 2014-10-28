@@ -572,27 +572,24 @@
            <graphic fileref="images/ha-colocated.png" align="center"/>
            <section id="ha.colocated.connectorsandacceptors">
               <title>Configuring Connectors and Acceptors</title>
-              <para>If the backup being created has a <literal>backup-strategy</literal> of <literal>FULL</literal> then
-                 the connectors and acceptors will be inherited from the live server creating it and offset depending on
-              the setting of <literal>backup-port-offset</literal> configuration element. If this is set to say 100
-              (which is the default) and a connector is using port 5445 then this will be set to 5545 for the first server
-                 created, 5645 for the second and so on.</para>
+              <para>If the HA Policy is colocated then connectors and acceptors will be inherited from the live server
+                 creating it and offset depending on the setting of <literal>backup-port-offset</literal> configuration element.
+                 If this is set to say 100 (which is the default) and a connector is using port 5445 then this will be
+                 set to 5545 for the first server created, 5645 for the second and so on.</para>
               <note><para>for INVM connectors and Acceptors the id will have <literal>colocated_backup_n</literal> appended,
               where n is the backup server number.</para></note>
-              <para>If the backup being created has a <literal>backup-strategy</literal> of <literal>SCALE_DOWN</literal>
-              then the Acceptors will be cleared and the Connectors will be left as is (as we assume they are all external)</para>
               <section id="ha.colocated.connectorsandacceptors.remote">
                  <title>Remote Connectors</title>
-                 <para>It may be that some of the Connectors configured are for external servers and hence should not be offset.
+                 <para>It may be that some of the Connectors configured are for external servers and hence should be excluded from the offset.
                  for instance a Connector used by the cluster connection to do quorum voting for a replicated backup server,
                   these can be omitted from being offset by adding them to the <literal>ha-policy</literal> configuration like so:</para>
                  <programlisting>
 &lt;ha-policy>
    &lt;replication>
       &lt;colocated>
-         &lt;remote-connectors>
+         &lt;excludes>
             &lt;connector-ref>remote-connector&lt;/connector-ref>
-         &lt;/remote-connectors>
+         &lt;/excludes>
 .........
 &lt;/ha-policy>
                  </programlisting>

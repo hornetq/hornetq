@@ -44,9 +44,9 @@ public class ScaleDownFailoverTest extends ClusterTestBase
       setupLiveServer(2, isFileStorage(), false, isNetty(), true);
       ScaleDownConfiguration scaleDownConfiguration = new ScaleDownConfiguration();
       ScaleDownConfiguration scaleDownConfiguration2 = new ScaleDownConfiguration();
-      scaleDownConfiguration2.setScaleDown(false);
+      scaleDownConfiguration2.setEnabled(false);
       ScaleDownConfiguration scaleDownConfiguration3 = new ScaleDownConfiguration();
-      scaleDownConfiguration3.setScaleDown(false);
+      scaleDownConfiguration3.setEnabled(false);
       ((LiveOnlyPolicyConfiguration) servers[0].getConfiguration().getHAPolicyConfiguration()).setScaleDownConfiguration(scaleDownConfiguration);
       ((LiveOnlyPolicyConfiguration) servers[1].getConfiguration().getHAPolicyConfiguration()).setScaleDownConfiguration(scaleDownConfiguration2);
       ((LiveOnlyPolicyConfiguration) servers[2].getConfiguration().getHAPolicyConfiguration()).setScaleDownConfiguration(scaleDownConfiguration3);

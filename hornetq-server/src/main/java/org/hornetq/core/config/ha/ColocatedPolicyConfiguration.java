@@ -30,7 +30,7 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
 
    private int backupPortOffset = HornetQDefaultConfiguration.getDefaultHapolicyBackupPortOffset();
 
-   private List<String> remoteConnectors = new ArrayList<>();
+   private List<String> excludedConnectors = new ArrayList<>();
 
    private int portOffset = HornetQDefaultConfiguration.getDefaultHapolicyBackupPortOffset();
 
@@ -103,14 +103,14 @@ public class ColocatedPolicyConfiguration implements HAPolicyConfiguration
       return this;
    }
 
-   public List<String> getRemoteConnectors()
+   public List<String> getExcludedConnectors()
    {
-      return remoteConnectors;
+      return excludedConnectors;
    }
 
-   public ColocatedPolicyConfiguration setRemoteConnectors(List<String> remoteConnectors)
+   public ColocatedPolicyConfiguration setExcludedConnectors(List<String> excludedConnectors)
    {
-      this.remoteConnectors = remoteConnectors;
+      this.excludedConnectors = excludedConnectors;
       return this;
    }
 

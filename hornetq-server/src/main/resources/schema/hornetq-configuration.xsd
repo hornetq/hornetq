@@ -1643,10 +1643,10 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
-         <xsd:element name="remote-connectors" maxOccurs="1" minOccurs="0">
+         <xsd:element name="excludes" maxOccurs="1" minOccurs="0">
             <xsd:annotation>
                <xsd:documentation>
-                  the remote connectors that shouldn't have their ports offset, typically remote connectors or the
+                  the connectors that shouldn't have their ports offset, typically remote connectors or the
                   connector used in the cluster connection if scalinmg down
                </xsd:documentation>
             </xsd:annotation>
@@ -2001,8 +2001,8 @@
    </xsd:complexType>
    <xsd:complexType name="scaleDownType">
       <xsd:sequence>
-         <xsd:element name="scale-down" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
-            <xsd:annotation hq:linkend="ha.scale-down" hq:field_name="DEFAULT_SCALE_DOWN">
+         <xsd:element name="enabled" type="xsd:boolean" default="true" maxOccurs="1" minOccurs="0">
+            <xsd:annotation hq:linkend="ha.scale-down" hq:field_name="DEFAULT_SCALE_DOWN_ENABLED">
                <xsd:documentation>
                   its possible that you only want a server to partake in scale down as a receiver, via a group.
                   In this case set scale-down to false

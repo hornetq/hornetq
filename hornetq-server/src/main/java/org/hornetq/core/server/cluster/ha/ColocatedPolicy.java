@@ -36,7 +36,7 @@ public class ColocatedPolicy implements HAPolicy<LiveActivation>
    private int backupPortOffset = HornetQDefaultConfiguration.getDefaultHapolicyBackupPortOffset();
 
    /*backup stuff*/
-   private List<String> remoteConnectors = new ArrayList<>();
+   private List<String> excludedConnectors = new ArrayList<>();
 
    private BackupPolicy backupPolicy;
 
@@ -47,7 +47,7 @@ public class ColocatedPolicy implements HAPolicy<LiveActivation>
                           long backupRequestRetryInterval,
                           int maxBackups,
                           int backupPortOffset,
-                          List<String> remoteConnectors,
+                          List<String> excludedConnectors,
                           HAPolicy livePolicy,
                           BackupPolicy backupPolicy)
    {
@@ -56,7 +56,7 @@ public class ColocatedPolicy implements HAPolicy<LiveActivation>
       this.backupRequestRetryInterval = backupRequestRetryInterval;
       this.maxBackups = maxBackups;
       this.backupPortOffset = backupPortOffset;
-      this.remoteConnectors = remoteConnectors;
+      this.excludedConnectors = excludedConnectors;
       this.livePolicy = livePolicy;
       this.backupPolicy = backupPolicy;
    }
@@ -155,14 +155,14 @@ public class ColocatedPolicy implements HAPolicy<LiveActivation>
       this.backupPortOffset = backupPortOffset;
    }
 
-   public List<String> getRemoteConnectors()
+   public List<String> getExcludedConnectors()
    {
-      return remoteConnectors;
+      return excludedConnectors;
    }
 
-   public void setRemoteConnectors(List<String> remoteConnectors)
+   public void setExcludedConnectors(List<String> excludedConnectors)
    {
-      this.remoteConnectors = remoteConnectors;
+      this.excludedConnectors = excludedConnectors;
    }
 
    public HAPolicy<LiveActivation> getLivePolicy()
