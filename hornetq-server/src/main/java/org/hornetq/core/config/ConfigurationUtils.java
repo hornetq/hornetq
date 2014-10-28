@@ -113,7 +113,7 @@ public final class ConfigurationUtils
                   pc.getBackupRequestRetryInterval(),
                   pc.getMaxBackups(),
                   pc.getBackupPortOffset(),
-                  pc.getRemoteConnectors(),
+                  pc.getExcludedConnectors(),
                   livePolicy,
                   backupPolicy);
          }

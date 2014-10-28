@@ -1643,10 +1643,10 @@
                </xsd:documentation>
             </xsd:annotation>
          </xsd:element>
-         <xsd:element name="remote-connectors" maxOccurs="1" minOccurs="0">
+         <xsd:element name="excludes" maxOccurs="1" minOccurs="0">
             <xsd:annotation>
                <xsd:documentation>
-                  the remote connectors that shouldn't have their ports offset, typically remote connectors or the
+                  the connectors that shouldn't have their ports offset, typically remote connectors or the
                   connector used in the cluster connection if scalinmg down
                </xsd:documentation>
             </xsd:annotation>

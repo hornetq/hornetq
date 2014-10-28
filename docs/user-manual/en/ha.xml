@@ -590,9 +590,9 @@
 &lt;ha-policy>
    &lt;replication>
       &lt;colocated>
-         &lt;remote-connectors>
+         &lt;excludes>
             &lt;connector-ref>remote-connector&lt;/connector-ref>
-         &lt;/remote-connectors>
+         &lt;/excludes>
 .........
 &lt;/ha-policy>
                  </programlisting>

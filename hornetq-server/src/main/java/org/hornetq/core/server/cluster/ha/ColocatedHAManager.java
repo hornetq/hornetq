@@ -158,7 +158,7 @@ public class ColocatedHAManager implements HAManager
          haPolicy.getBackupPolicy().setRestartBackup(false);
          //set the backup policy
          backup.setHAPolicy(haPolicy.getBackupPolicy());
-         updateSharedStoreConfiguration(configuration, name, portOffset, haPolicy.getRemoteConnectors(), journalDirectory, bindingsDirectory, largeMessagesDirectory, pagingDirectory, haPolicy.getBackupPolicy().getScaleDownPolicy() == null);
+         updateSharedStoreConfiguration(configuration, name, portOffset, haPolicy.getExcludedConnectors(), journalDirectory, bindingsDirectory, largeMessagesDirectory, pagingDirectory, haPolicy.getBackupPolicy().getScaleDownPolicy() == null);
 
          backupServers.put(configuration.getName(), backup);
          backup.start();
@@ -194,7 +194,7 @@ public class ColocatedHAManager implements HAManager
          haPolicy.getBackupPolicy().setRestartBackup(false);
          //set the backup policy
          backup.setHAPolicy(haPolicy.getBackupPolicy());
-         updateReplicatedConfiguration(configuration, name, portOffset, haPolicy.getRemoteConnectors(), haPolicy.getBackupPolicy().getScaleDownPolicy() == null);
+         updateReplicatedConfiguration(configuration, name, portOffset, haPolicy.getExcludedConnectors(), haPolicy.getBackupPolicy().getScaleDownPolicy() == null);
          backup.addActivationParam(ActivationParams.REPLICATION_ENDPOINT, member);
          backupServers.put(configuration.getName(), backup);
          backup.start();
