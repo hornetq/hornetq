@@ -172,13 +172,17 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (HornetQException e)
       {
-         HornetQServerLogger.LOGGER.failedToCreateSession(e);
-         response = new HornetQExceptionMessage(e);
-
          if (e.getType() == HornetQExceptionType.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
          {
             incompatibleVersion = true;
+            HornetQServerLogger.LOGGER.debug("Sending HornetQException after Incompatible client", e);
          }
+         else
+         {
+            HornetQServerLogger.LOGGER.failedToCreateSession(e);
+         }
+
+         response = new HornetQExceptionMessage(e);
       }
       catch (Exception e)
       {
