@@ -196,13 +196,18 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (HornetQException e)
       {
-         log.error("Failed to create session ", e);
-         response = new HornetQExceptionMessage((HornetQException)e);
 
          if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
          {
+            log.debug("Sending HornetQException after Incompatible client", e);
             incompatibleVersion = true;
          }
+         else
+         {
+            log.error("Failed to create session ", e);
+         }
+
+         response = new HornetQExceptionMessage((HornetQException)e);
       }
       catch (Exception e)
       {
