@@ -554,14 +554,7 @@ public interface HornetQServerLogger extends BasicLogger
    void errorProcessingIOCallback(Integer errorCode, String errorMessage);
 
    @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222064, value = "Client with version {0} and address {1} is not compatible with server version {2}. " +
-         "Please ensure all clients and servers are upgraded to the same version for them to interoperate properly",
-         format = Message.Format.MESSAGE_FORMAT)
-   void incompatibleVersion(Integer version, String remoteAddress, String fullVersion);
-
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 222065, value = "Client is not being consistent on the request versioning. It just sent a version id={0}" +
-         " while it informed {1} previously", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 222065, value = "Client is not being consistent on the request versioning. It just sent a version id={0} while it informed {1} previously", format = Message.Format.MESSAGE_FORMAT)
    void incompatibleVersionAfterConnect(int version, int clientVersion);
 
    @LogMessage(level = Logger.Level.WARN)
@@ -1305,4 +1298,7 @@ public interface HornetQServerLogger extends BasicLogger
             format = Message.Format.MESSAGE_FORMAT)
    void impossibleToRouteGrouped();
 
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 224063, value = "Failed to close consumer connections for address {0}", format = Message.Format.MESSAGE_FORMAT)
+   void failedToCloseConsumerConnectionsForAddress(String address, @Cause Exception e);
 }

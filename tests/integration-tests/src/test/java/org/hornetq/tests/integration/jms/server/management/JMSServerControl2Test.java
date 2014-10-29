@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSConnectionInfo;
 import org.hornetq.api.jms.management.JMSConsumerInfo;
@@ -125,6 +126,30 @@ public class JMSServerControl2Test extends ManagementTestBase
    public void testCloseConnectionsForUnknownAddressForNetty() throws Exception
    {
       doCloseConnectionsForUnknownAddress(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
+   }
+
+   @Test
+   public void testCloseConsumerConnectionsForAddressForInVM() throws Exception
+   {
+      doCloseConsumerConnectionsForAddress(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
+   }
+
+   @Test
+   public void testCloseConsumerConnectionsForAddressForNetty() throws Exception
+   {
+      doCloseConsumerConnectionsForAddress(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
+   }
+
+   @Test
+   public void testCloseConnectionsForUserForInVM() throws Exception
+   {
+      doCloseConnectionsForUser(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
+   }
+
+   @Test
+   public void testCloseConnectionsForUserForNetty() throws Exception
+   {
+      doCloseConnectionsForUser(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
    @Test
@@ -1008,6 +1033,162 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          connection.close();
 
+      }
+      finally
+      {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+
+   private void doCloseConsumerConnectionsForAddress(final String acceptorFactory, final String connectorFactory) throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+      String queueName2 = RandomUtil.randomString();
+
+      try
+      {
+         startHornetQServer(acceptorFactory);
+         serverManager.createQueue(false, queueName, null, true, queueName);
+         Queue queue = HornetQJMSClient.createQueue(queueName);
+         serverManager.createQueue(false, queueName2, null, true, queueName2);
+         Queue queue2 = HornetQJMSClient.createQueue(queueName2);
+
+         JMSServerControl control = createManagementControl();
+         QueueControl queueControl = createManagementControl("jms.queue." + queueName, "jms.queue." + queueName);
+         QueueControl queueControl2 = createManagementControl("jms.queue." + queueName2, "jms.queue." + queueName2);
+
+         Assert.assertEquals(0, server.getConnectionCount());
+         Assert.assertEquals(0, control.listRemoteAddresses().length);
+         Assert.assertEquals(0, queueControl.getConsumerCount());
+         Assert.assertEquals(0, queueControl2.getConsumerCount());
+
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory,
+                                                      JMSServerControl2Test.CONNECTION_TTL,
+                                                      JMSServerControl2Test.PING_PERIOD);
+         Connection connection = cf.createConnection();
+         Session session = connection.createSession();
+         MessageConsumer messageConsumer = session.createConsumer(queue);
+
+         Connection connection2 = cf.createConnection();
+         Session session2 = connection2.createSession();
+         MessageConsumer messageConsumer2 = session2.createConsumer(queue2);
+
+         Assert.assertEquals(2, server.getConnectionCount());
+
+         String[] remoteAddresses = control.listRemoteAddresses();
+         Assert.assertEquals(2, remoteAddresses.length);
+
+         Assert.assertEquals(1, queueControl.getConsumerCount());
+         Assert.assertEquals(1, queueControl2.getConsumerCount());
+
+         final CountDownLatch exceptionLatch = new CountDownLatch(1);
+         connection.setExceptionListener(new ExceptionListener()
+         {
+            public void onException(final JMSException e)
+            {
+               exceptionLatch.countDown();
+            }
+         });
+
+         Assert.assertTrue(control.closeConsumerConnectionsForAddress("jms.queue." + queueName));
+
+         boolean gotException = exceptionLatch.await(2 * JMSServerControl2Test.CONNECTION_TTL, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("did not received the expected JMSException", gotException);
+
+         remoteAddresses = control.listRemoteAddresses();
+         Assert.assertEquals("got " + Arrays.asList(remoteAddresses), 1, remoteAddresses.length);
+         Assert.assertEquals(1, server.getConnectionCount());
+
+         Assert.assertEquals(0, queueControl.getConsumerCount());
+         Assert.assertEquals(1, queueControl2.getConsumerCount());
+
+         connection2.close();
+      }
+      finally
+      {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+
+   private void doCloseConnectionsForUser(final String acceptorFactory, final String connectorFactory) throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+      String queueName2 = RandomUtil.randomString();
+
+      try
+      {
+         startHornetQServer(acceptorFactory);
+         serverManager.createQueue(false, queueName, null, true, queueName);
+         Queue queue = HornetQJMSClient.createQueue(queueName);
+         serverManager.createQueue(false, queueName2, null, true, queueName2);
+         Queue queue2 = HornetQJMSClient.createQueue(queueName2);
+
+         JMSServerControl control = createManagementControl();
+         QueueControl queueControl = createManagementControl("jms.queue." + queueName, "jms.queue." + queueName);
+         QueueControl queueControl2 = createManagementControl("jms.queue." + queueName2, "jms.queue." + queueName2);
+
+         Assert.assertEquals(0, server.getConnectionCount());
+         Assert.assertEquals(0, control.listRemoteAddresses().length);
+         Assert.assertEquals(0, queueControl.getConsumerCount());
+         Assert.assertEquals(0, queueControl2.getConsumerCount());
+
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory,
+                                                      JMSServerControl2Test.CONNECTION_TTL,
+                                                      JMSServerControl2Test.PING_PERIOD);
+         Connection connection = cf.createConnection("fakeUser", "fakePassword");
+         Session session = connection.createSession();
+         MessageConsumer messageConsumer = session.createConsumer(queue);
+
+         Connection connection2 = cf.createConnection();
+         Session session2 = connection2.createSession();
+         MessageConsumer messageConsumer2 = session2.createConsumer(queue2);
+
+         Assert.assertEquals(2, server.getConnectionCount());
+
+         String[] remoteAddresses = control.listRemoteAddresses();
+         Assert.assertEquals(2, remoteAddresses.length);
+
+         Assert.assertEquals(1, queueControl.getConsumerCount());
+         Assert.assertEquals(1, queueControl2.getConsumerCount());
+
+         final CountDownLatch exceptionLatch = new CountDownLatch(1);
+         connection.setExceptionListener(new ExceptionListener()
+         {
+            public void onException(final JMSException e)
+            {
+               exceptionLatch.countDown();
+            }
+         });
+
+         Assert.assertTrue(control.closeConnectionsForUser("fakeUser"));
+
+         boolean gotException = exceptionLatch.await(2 * JMSServerControl2Test.CONNECTION_TTL, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("did not received the expected JMSException", gotException);
+
+         remoteAddresses = control.listRemoteAddresses();
+         Assert.assertEquals("got " + Arrays.asList(remoteAddresses), 1, remoteAddresses.length);
+         Assert.assertEquals(1, server.getConnectionCount());
+
+         Assert.assertEquals(0, queueControl.getConsumerCount());
+         Assert.assertEquals(1, queueControl2.getConsumerCount());
+
+         connection2.close();
       }
       finally
       {

@@ -490,6 +490,18 @@ public interface HornetQServerControl
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    /**
+    * Closes all the connections of clients connected to this server which matches the specified IP address.
+    */
+   @Operation(desc = "Closes all the consumer connections for the given HornetQ address", impact = MBeanOperationInfo.INFO)
+   boolean closeConsumerConnectionsForAddress(@Parameter(desc = "a HornetQ address", name = "address") String address) throws Exception;
+
+   /**
+    * Closes all the connections of sessions with a matching user name.
+    */
+   @Operation(desc = "Closes all the connections for sessions with the given user name", impact = MBeanOperationInfo.INFO)
+   boolean closeConnectionsForUser(@Parameter(desc = "a user name", name = "userName") String address) throws Exception;
+
+   /**
     * Lists all the IDs of the connections connected to this server.
     */
    @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
