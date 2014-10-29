@@ -131,7 +131,6 @@ public class HornetQPacketHandler implements ChannelHandler
          Version version = server.getVersion();
          if (!version.isCompatible(request.getVersion()))
          {
-            HornetQServerLogger.LOGGER.incompatibleVersion(request.getVersion(), connection.getRemoteAddress(), version.getFullVersion());
             throw HornetQMessageBundle.BUNDLE.incompatibleClientServer();
          }
 
