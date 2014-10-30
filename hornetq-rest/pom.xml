@@ -10,7 +10,7 @@
 
     <properties>
         <resteasy.version>2.0.1.GA</resteasy.version>
-        <hornetq.version>2.2.30.Final</hornetq.version>
+        <hornetq.version>2.2.X.SNAPSHOT</hornetq.version>
     </properties>
 
     <licenses>
