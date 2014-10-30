@@ -702,6 +702,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                log.debug("Message " + message + " is not going anywhere as it didn't have a binding on address:" + address);
             }
+
+            if (message.isLargeMessage())
+            {
+                ((LargeServerMessage)message).deleteFile();
+            }
          }
       }
       else

@@ -289,6 +289,29 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   public void testDeleteOnNoBinding() throws Exception
+   {
+       final int messageSize = (int)(3.5 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+       HornetQServer server = createServer(true, isNetty());
+
+       server.start();
+
+       ClientSessionFactory sf = locator.createSessionFactory();
+
+       ClientSession session = sf.createSession(false, true, false);
+
+       ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+       Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+       producer.send(clientFile);
+
+       session.close();
+
+       validateNoFilesOnLargeDir();
+   }
+
    public void testLargeBufferTransacted() throws Exception
    {
       doTestLargeBuffer(true);
