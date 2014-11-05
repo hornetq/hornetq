@@ -289,12 +289,12 @@
          <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>proton-j</artifactId>
-            <version>0.8.redhat-001</version>
+            <version>0.8</version>
          </dependency>
          <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>proton-jms</artifactId>
-            <version>0.8.redhat-001</version>
+            <version>0.8</version>
          </dependency>
          <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -432,8 +432,12 @@
          <name>JBoss releases</name>
          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
       </repository>
+      <!--
+	This is a repository for intermediate releases from Proton.
+        In case there's an API broken, we will release an intermediate release here, on that case we will uncomment this and
+        use this repository again
+
       <repository>
-         <!-- this repository is for intermediate Proton releases -->
          <snapshots>
             <enabled>false</enabled>
             <updatePolicy>never</updatePolicy>
@@ -446,6 +450,7 @@
          <name>Fuse releases</name>
          <url>https://repository.jboss.org/nexus/content/repositories/fs-releases/</url>
       </repository>
+      -->
    </repositories>
    <pluginRepositories>
       <pluginRepository>

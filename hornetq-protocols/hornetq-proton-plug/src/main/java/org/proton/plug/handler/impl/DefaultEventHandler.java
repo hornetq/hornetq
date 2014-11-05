@@ -34,7 +34,7 @@ public abstract class DefaultEventHandler implements EventHandler
    }
 
    @Override
-   public void onOpen(Connection connection) throws Exception
+   public void onLocalOpen(Connection connection) throws Exception
    {
 
    }
@@ -46,7 +46,7 @@ public abstract class DefaultEventHandler implements EventHandler
    }
 
    @Override
-   public void onClose(Connection connection) throws Exception
+   public void onLocalClose(Connection connection) throws Exception
    {
 
    }
@@ -69,7 +69,7 @@ public abstract class DefaultEventHandler implements EventHandler
    }
 
    @Override
-   public void onOpen(Session session) throws Exception
+   public void onLocalOpen(Session session) throws Exception
    {
 
    }
@@ -81,7 +81,7 @@ public abstract class DefaultEventHandler implements EventHandler
    }
 
    @Override
-   public void onClose(Session session) throws Exception
+   public void onLocalClose(Session session) throws Exception
    {
 
    }
@@ -105,7 +105,7 @@ public abstract class DefaultEventHandler implements EventHandler
    }
 
    @Override
-   public void onOpen(Link link) throws Exception
+   public void onLocalOpen(Link link) throws Exception
    {
 
    }
@@ -117,7 +117,7 @@ public abstract class DefaultEventHandler implements EventHandler
    }
 
    @Override
-   public void onClose(Link link) throws Exception
+   public void onLocalClose(Link link) throws Exception
    {
 
    }

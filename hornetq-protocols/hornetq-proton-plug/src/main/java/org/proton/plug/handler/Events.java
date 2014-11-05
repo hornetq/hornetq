@@ -37,14 +37,14 @@ public final class Events
          case CONNECTION_INIT:
             handler.onInit(event.getConnection());
             break;
-         case CONNECTION_OPEN:
-            handler.onOpen(event.getConnection());
+         case CONNECTION_LOCAL_OPEN:
+            handler.onLocalOpen(event.getConnection());
             break;
          case CONNECTION_REMOTE_OPEN:
             handler.onRemoteOpen(event.getConnection());
             break;
-         case CONNECTION_CLOSE:
-            handler.onClose(event.getConnection());
+         case CONNECTION_LOCAL_CLOSE:
+            handler.onLocalClose(event.getConnection());
             break;
          case CONNECTION_REMOTE_CLOSE:
             handler.onRemoteClose(event.getConnection());
@@ -55,14 +55,14 @@ public final class Events
          case SESSION_INIT:
             handler.onInit(event.getSession());
             break;
-         case SESSION_OPEN:
-            handler.onOpen(event.getSession());
+         case SESSION_LOCAL_OPEN:
+            handler.onLocalOpen(event.getSession());
             break;
          case SESSION_REMOTE_OPEN:
             handler.onRemoteOpen(event.getSession());
             break;
-         case SESSION_CLOSE:
-            handler.onClose(event.getSession());
+         case SESSION_LOCAL_CLOSE:
+            handler.onLocalClose(event.getSession());
             break;
          case SESSION_REMOTE_CLOSE:
             handler.onRemoteClose(event.getSession());
@@ -73,14 +73,14 @@ public final class Events
          case LINK_INIT:
             handler.onInit(event.getLink());
             break;
-         case LINK_OPEN:
-            handler.onOpen(event.getLink());
+         case LINK_LOCAL_OPEN:
+            handler.onLocalOpen(event.getLink());
             break;
          case LINK_REMOTE_OPEN:
             handler.onRemoteOpen(event.getLink());
             break;
-         case LINK_CLOSE:
-            handler.onClose(event.getLink());
+         case LINK_LOCAL_CLOSE:
+            handler.onLocalClose(event.getLink());
             break;
          case LINK_REMOTE_CLOSE:
             handler.onRemoteClose(event.getLink());
@@ -91,7 +91,7 @@ public final class Events
          case LINK_FINAL:
             handler.onFinal(event.getLink());
             break;
-         case LINK_DETACH:
+         case LINK_LOCAL_DETACH:
             handler.onDetach(event.getLink());
             break;
          case LINK_REMOTE_DETACH:
