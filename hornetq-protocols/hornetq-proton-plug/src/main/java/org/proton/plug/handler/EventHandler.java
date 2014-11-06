@@ -33,11 +33,11 @@ public interface EventHandler
 
    void onInit(Connection connection) throws Exception;
 
-   void onOpen(Connection connection) throws Exception;
+   void onLocalOpen(Connection connection) throws Exception;
 
    void onRemoteOpen(Connection connection) throws Exception;
 
-   void onClose(Connection connection) throws Exception;
+   void onLocalClose(Connection connection) throws Exception;
 
    void onRemoteClose(Connection connection) throws Exception;
 
@@ -45,11 +45,11 @@ public interface EventHandler
 
    void onInit(Session session) throws Exception;
 
-   void onOpen(Session session) throws Exception;
+   void onLocalOpen(Session session) throws Exception;
 
    void onRemoteOpen(Session session) throws Exception;
 
-   void onClose(Session session) throws Exception;
+   void onLocalClose(Session session) throws Exception;
 
    void onRemoteClose(Session session) throws Exception;
 
@@ -57,11 +57,11 @@ public interface EventHandler
 
    void onInit(Link link) throws Exception;
 
-   void onOpen(Link link) throws Exception;
+   void onLocalOpen(Link link) throws Exception;
 
    void onRemoteOpen(Link link) throws Exception;
 
-   void onClose(Link link) throws Exception;
+   void onLocalClose(Link link) throws Exception;
 
    void onRemoteClose(Link link) throws Exception;
 

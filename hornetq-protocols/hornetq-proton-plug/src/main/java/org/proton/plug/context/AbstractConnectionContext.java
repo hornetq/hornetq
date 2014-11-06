@@ -198,7 +198,7 @@ public abstract class AbstractConnectionContext extends ProtonInitializable impl
       }
 
       @Override
-      public void onOpen(Session session) throws Exception
+      public void onLocalOpen(Session session) throws Exception
       {
          getSessionExtension(session);
       }
@@ -215,7 +215,7 @@ public abstract class AbstractConnectionContext extends ProtonInitializable impl
 
 
       @Override
-      public void onClose(Session session) throws Exception
+      public void onLocalClose(Session session) throws Exception
       {
       }
 
