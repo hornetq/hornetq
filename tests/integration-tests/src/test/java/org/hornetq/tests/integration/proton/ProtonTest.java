@@ -26,6 +26,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.StreamMessage;
+import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -166,6 +167,27 @@ public class ProtonTest extends ServiceTestBase
       }
    }
 
+
+   @Test
+   public void testTemporaryQueue() throws Throwable
+   {
+
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      TemporaryQueue queue = session.createTemporaryQueue();
+      System.out.println("queue:" + queue.getQueueName());
+      MessageProducer p = session.createProducer(queue);
+
+      TextMessage message = session.createTextMessage();
+      message.setText("Message temporary");
+      p.send(message);
+
+      MessageConsumer cons = session.createConsumer(queue);
+      connection.start();
+
+      message = (TextMessage)cons.receive(5000);
+      assertNotNull(message);
+
+   }
 
    /*
    // Uncomment testLoopBrowser to validate the hunging on the test

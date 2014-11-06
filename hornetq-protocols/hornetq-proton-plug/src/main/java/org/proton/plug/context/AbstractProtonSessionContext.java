@@ -14,7 +14,9 @@
 package org.proton.plug.context;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Receiver;
@@ -120,7 +122,14 @@ public abstract class AbstractProtonSessionContext extends ProtonInitializable i
          return;
       }
 
-      for (AbstractProtonReceiverContext protonProducer : receivers.values())
+
+
+      // Making a copy to avoid ConcurrentModificationException during the iteration
+      Set<AbstractProtonReceiverContext> receiversCopy = new HashSet<>();
+      receiversCopy.addAll(receivers.values());
+
+
+      for (AbstractProtonReceiverContext protonProducer : receiversCopy)
       {
          try
          {
@@ -133,7 +142,11 @@ public abstract class AbstractProtonSessionContext extends ProtonInitializable i
          }
       }
       receivers.clear();
-      for (AbstractProtonContextSender protonConsumer : senders.values())
+
+      Set<AbstractProtonContextSender> protonSendersClone = new HashSet<>();
+      protonSendersClone.addAll(senders.values());
+
+      for (AbstractProtonContextSender protonConsumer : protonSendersClone)
       {
          try
          {
