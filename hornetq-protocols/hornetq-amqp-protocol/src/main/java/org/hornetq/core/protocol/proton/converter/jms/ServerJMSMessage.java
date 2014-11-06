@@ -24,6 +24,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.reader.MessageUtil;
 
 /**
@@ -135,7 +136,14 @@ public class ServerJMSMessage implements Message
       }
       else
       {
-         return HornetQDestination.fromAddress(sdest.toString());
+         if (!sdest.toString().startsWith("jms."))
+         {
+            return new HornetQQueue(sdest.toString(), sdest.toString());
+         }
+         else
+         {
+            return HornetQDestination.fromAddress(sdest.toString());
+         }
       }
    }
 
