@@ -18,10 +18,12 @@ import javax.net.ssl.SSLEngine;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -402,6 +404,21 @@ public class NettyAcceptor implements Acceptor
 
                if (needClientAuth)
                   engine.setNeedClientAuth(true);
+
+               // Strip "SSLv3" from the current enabled protocols to address the POODLE exploit.
+               // This recommendation came from http://www.oracle.com/technetwork/java/javase/documentation/cve-2014-3566-2342133.html
+               String[] protocols = engine.getEnabledProtocols();
+               Set<String> set = new HashSet<String>();
+               for (String s : protocols)
+               {
+                  if (s.equals("SSLv3") || s.equals("SSLv2Hello"))
+                  {
+                     HornetQServerLogger.LOGGER.disallowedProtocol(s);
+                     continue;
+                  }
+                  set.add(s);
+               }
+               engine.setEnabledProtocols(set.toArray(new String[0]));
 
                SslHandler handler = new SslHandler(engine);
 
