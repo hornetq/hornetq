@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.5.0-SNAPSHOT</version>
+   <version>2.5.0.Beta1</version>
    <modules>
       <module>hornetq-protocols</module>
      <module>hornetq-dto</module>
@@ -35,13 +35,13 @@
 
    <properties>
       <netty.version>4.0.20.Final</netty.version>
-      <hornetq.version.versionName>Wild Hornet</hornetq.version.versionName>
+      <hornetq.version.versionName>2.5.0.Beta1</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>5</hornetq.version.minorVersion>
       <hornetq.version.microVersion>0</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>125,124,123,122</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>SNAPSHOT</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>Beta1</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>Beta1</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
