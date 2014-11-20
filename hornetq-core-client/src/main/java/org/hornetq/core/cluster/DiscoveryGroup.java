@@ -125,6 +125,18 @@ public final class DiscoveryGroup implements HornetQComponent
       }
    }
 
+   /**
+    * This will start the DiscoveryRunnable and run it directly.
+    * This is useful for a test process where we need this execution blocking a thread.
+    */
+   public void internalRunning() throws Exception
+   {
+      endpoint.openClient();
+      started = true;
+      DiscoveryRunnable runnable = new DiscoveryRunnable();
+      runnable.run();
+   }
+
    public void stop()
    {
       synchronized (this)
@@ -153,11 +165,14 @@ public final class DiscoveryGroup implements HornetQComponent
 
       try
       {
-         thread.interrupt();
-         thread.join(10000);
-         if (thread.isAlive())
+         if (thread != null)
          {
-            HornetQClientLogger.LOGGER.timedOutStoppingDiscovery();
+            thread.interrupt();
+            thread.join(10000);
+            if (thread.isAlive())
+            {
+               HornetQClientLogger.LOGGER.timedOutStoppingDiscovery();
+            }
          }
       }
       catch (InterruptedException e)
@@ -265,11 +280,11 @@ public final class DiscoveryGroup implements HornetQComponent
    {
       public void run()
       {
-         try
-         {
-            byte[] data = null;
+         byte[] data = null;
 
-            while (started)
+         while (started)
+         {
+            try
             {
                try
                {
@@ -365,10 +380,10 @@ public final class DiscoveryGroup implements HornetQComponent
                   waitLock.notifyAll();
                }
             }
-         }
-         catch (Exception e)
-         {
-            HornetQClientLogger.LOGGER.failedToReceiveDatagramInDiscovery(e);
+            catch (Throwable e)
+            {
+               HornetQClientLogger.LOGGER.failedToReceiveDatagramInDiscovery(e);
+            }
          }
       }
 
