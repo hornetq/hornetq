@@ -354,8 +354,8 @@ public interface HornetQClientLogger extends BasicLogger
    void failedToStopDiscovery(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
-   @Message(id = 214010, value = "Failed to receive datagram", format = Message.Format.MESSAGE_FORMAT)
-   void failedToReceiveDatagramInDiscovery(@Cause Exception e);
+   @Message(id = 214010, value = "Failed to receive datagram from Broadcaster UDP", format = Message.Format.MESSAGE_FORMAT)
+   void failedToReceiveDatagramInDiscovery(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 214011, value = "Failed to call discovery listener", format = Message.Format.MESSAGE_FORMAT)
