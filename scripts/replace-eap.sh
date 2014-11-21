@@ -6,7 +6,7 @@ export JBOSS_HOME=$1
 
 
 # fis the VERSION before running it
-export VERSION="2.3.24.Final"
+export VERSION="2.3.x.Snapshot"
 #replace jars
 #echo cp ./hornetq-core-client/target/hornetq-core-client-$VERSION.jar $JBOSS_HOME/modules/system/layers/base/org/hornetq/main/hornetq-core-client*.jar
 cp ../hornetq-core-client/target/hornetq-core-client-$VERSION.jar $JBOSS_HOME/modules/system/layers/base/org/hornetq/main/hornetq-core-client*.jar
