@@ -37,7 +37,8 @@ public enum CoreNotificationType implements NotificationType
    ACCEPTOR_STOPPED(17),
    PROPOSAL(18),
    PROPOSAL_RESPONSE(19),
-   UNPROPOSAL(20);
+   UNPROPOSAL(20),
+   CONSUMER_SLOW(21);
 
    private final int value;
 
