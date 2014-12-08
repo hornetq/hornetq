@@ -166,7 +166,7 @@
           notification which an application could receive and take action with. See
           <xref linkend="notification.types.and.headers"/> for more details on this notification.</para>
        <para><literal>slow-consumer-check-period</literal>. How often to check for slow consumers on a particular queue.
-          Measured in minutes. Default is 5. See <xref linkend="slow-consumers"/> for more information about slow
+          Measured in seconds. Default is 5. See <xref linkend="slow-consumers"/> for more information about slow
           consumer detection.</para>
     </section>
 </chapter>
