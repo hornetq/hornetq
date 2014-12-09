@@ -660,6 +660,8 @@ public class QueueImpl implements Queue
             // no-op
             scheduledRunners.decrementAndGet();
          }
+
+         checkDepage();
       }
 
    }
@@ -2184,10 +2186,27 @@ public class QueueImpl implements Queue
          }
       }
 
-      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending)
+      checkDepage();
+   }
+
+   private void checkDepage()
+   {
+      if (pageIterator != null && pageSubscription.isPaging() && !depagePending && needsDepage() && pageIterator.hasNext())
       {
          scheduleDepage(false);
       }
+   }
+
+   /**
+    * This is a common check we do before scheduling depaging.. or while depaging.
+    * Before scheduling a depage runnable we verify if it fits / needs depaging.
+    * We also check for while needsDepage While depaging.
+    * This is just to avoid a copy & paste dependency
+    * @return
+    */
+   private boolean needsDepage()
+   {
+      return queueMemorySize.get() < pageSubscription.getPagingStore().getMaxSize();
    }
 
    private SimpleString extractGroupID(MessageReference ref)
@@ -2264,7 +2283,7 @@ public class QueueImpl implements Queue
       this.directDeliver = false;
 
       int depaged = 0;
-      while (timeout > System.currentTimeMillis() && queueMemorySize.get() < maxSize && pageIterator.hasNext())
+      while (timeout > System.currentTimeMillis() && needsDepage() && pageIterator.hasNext())
       {
          depaged++;
          PagedReference reference = pageIterator.next();
