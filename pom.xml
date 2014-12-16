@@ -32,7 +32,7 @@
    <properties>
       <netty.version>3.6.9.Final</netty.version>
 
-      <hornetq.version.versionName>2.3.21</hornetq.version.versionName>
+      <hornetq.version.versionName>2.3.21.1 (Branch 2.3.eap6_3)</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>21</hornetq.version.microVersion>
