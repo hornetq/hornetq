@@ -14,6 +14,7 @@
 package org.hornetq.core.server.impl;
 
 import javax.management.MBeanServer;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.PrintWriter;
@@ -2516,6 +2517,8 @@ public class HornetQServerImpl implements HornetQServer
                   serverLocator0.close();
                }
                serverLocator0 = getFailbackLocator(config);
+               serverLocator0.setConnectionTTL(config.getConnectionTTL());
+               serverLocator0.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
             }
             //if the cluster isn't available we want to hang around until it is
             serverLocator0.setReconnectAttempts(-1);
