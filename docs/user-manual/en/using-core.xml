@@ -202,7 +202,8 @@ message.getBodyBuffer().writeString("Hello");
 
 // We need a queue attached to the address ...
 
-session.createQueue("example", "example", true);
+boolean durable = true;
+session.createQueue("example", "example", durable);
 
 // And a consumer attached to the queue ...
 
