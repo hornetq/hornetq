@@ -41,6 +41,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.hornetq.core.journal.EncodingSupport;
@@ -71,6 +72,8 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterController;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -113,10 +116,30 @@ public final class ReplicationTest extends ServiceTestBase
 
    private void setupServer(boolean backup, String... interceptors) throws Exception
    {
+      this.setupServer(false, backup, null, interceptors);
+   }
 
-      final TransportConfiguration liveConnector = TransportConfigurationUtils.getInVMConnector(true);
-      final TransportConfiguration backupConnector = TransportConfigurationUtils.getInVMConnector(false);
-      final TransportConfiguration backupAcceptor = TransportConfigurationUtils.getInVMAcceptor(false);
+   private void setupServer(boolean useNetty, boolean backup,
+                            ExtraConfigurer extraConfig,
+                            String... incomingInterceptors) throws Exception
+   {
+      TransportConfiguration liveConnector = null;
+      TransportConfiguration liveAcceptor = null;
+      TransportConfiguration backupConnector = null;
+      TransportConfiguration backupAcceptor = null;
+      if (useNetty)
+      {
+         liveConnector = TransportConfigurationUtils.getNettyConnector(true, 0);
+         liveAcceptor = TransportConfigurationUtils.getNettyAcceptor(true, 0);
+         backupConnector = TransportConfigurationUtils.getNettyConnector(false, 0);
+         backupAcceptor = TransportConfigurationUtils.getNettyAcceptor(false, 0);
+      }
+      else
+      {
+         liveConnector = TransportConfigurationUtils.getInVMConnector(true);
+         backupConnector = TransportConfigurationUtils.getInVMConnector(false);
+         backupAcceptor = TransportConfigurationUtils.getInVMAcceptor(false);
+      }
 
       final String suffix = "_backup";
       Configuration liveConfig = createDefaultConfig();
@@ -127,9 +150,14 @@ public final class ReplicationTest extends ServiceTestBase
          .setJournalDirectory(HornetQDefaultConfiguration.getDefaultJournalDir() + suffix)
          .setPagingDirectory(HornetQDefaultConfiguration.getDefaultPagingDir() + suffix)
          .setLargeMessagesDirectory(HornetQDefaultConfiguration.getDefaultLargeMessagesDir() + suffix)
-         .setIncomingInterceptorClassNames(interceptors.length > 0 ? Arrays.asList(interceptors) : new ArrayList<String>());
+         .setIncomingInterceptorClassNames(incomingInterceptors.length > 0 ? Arrays.asList(incomingInterceptors) : new ArrayList<String>());
 
-      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig, liveConnector);
+      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig, liveConnector, liveAcceptor);
+
+      if (extraConfig != null)
+      {
+         extraConfig.config(liveConfig, backupConfig);
+      }
 
       if (backup)
       {
@@ -139,7 +167,15 @@ public final class ReplicationTest extends ServiceTestBase
       }
 
       backupServer = createServer(backupConfig);
-      locator = createInVMNonHALocator();
+      if (useNetty)
+      {
+         locator = createNettyNonHALocator();
+      }
+      else
+      {
+         locator = createInVMNonHALocator();
+      }
+
       backupServer.start();
       if (backup)
       {
@@ -407,6 +443,37 @@ public final class ReplicationTest extends ServiceTestBase
 
       Assert.assertTrue(latch2.await(5, TimeUnit.SECONDS));
 
+   }
+
+   @Test
+   public void testClusterConnectionConfigs() throws Exception
+   {
+      final long ttlOverride = 123456789;
+      final long checkPeriodOverride = 987654321;
+
+      ExtraConfigurer configurer = new ExtraConfigurer() {
+
+         @Override
+         public void config(Configuration liveConfig, Configuration backupConfig)
+         {
+            List<ClusterConnectionConfiguration> ccList = backupConfig.getClusterConfigurations();
+            assertTrue(ccList.size() > 0);
+            ClusterConnectionConfiguration cc = ccList.get(0);
+            cc.setConnectionTTL(ttlOverride);
+            cc.setClientFailureCheckPeriod(checkPeriodOverride);
+         }
+      };
+      this.setupServer(true, true, configurer);
+      assertTrue(backupServer instanceof HornetQServerImpl);
+
+      ClusterController controller = backupServer.getClusterManager().getClusterController();
+
+      ServerLocator replicationLocator = controller.getReplicationLocator();
+
+      assertNotNull(replicationLocator);
+
+      assertEquals(ttlOverride, replicationLocator.getConnectionTTL());
+      assertEquals(checkPeriodOverride, replicationLocator.getClientFailureCheckPeriod());
    }
 
    /**
@@ -897,4 +964,10 @@ public final class ReplicationTest extends ServiceTestBase
          // no-op
       }
    }
+
+   private interface ExtraConfigurer
+   {
+      void config(Configuration liveConfig, Configuration backupConfig);
+   }
+
 }

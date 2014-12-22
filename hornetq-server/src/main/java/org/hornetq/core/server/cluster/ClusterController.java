@@ -33,6 +33,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -159,16 +160,12 @@ public class ClusterController implements HornetQComponent
     *
     * @param name the cluster connection name
     * @param dg the discovery group to use
+    * @param config the cluster connection config
     */
-   public void addClusterConnection(SimpleString name, DiscoveryGroupConfiguration dg)
+   public void addClusterConnection(SimpleString name, DiscoveryGroupConfiguration dg, ClusterConnectionConfiguration config)
    {
       ServerLocatorImpl serverLocator = (ServerLocatorImpl) HornetQClient.createServerLocatorWithHA(dg);
-      //if the cluster isn't available we want to hang around until it is
-      serverLocator.setReconnectAttempts(-1);
-      serverLocator.setInitialConnectAttempts(-1);
-      //this is used for replication so need to use the server packet decoder
-      serverLocator.setProtocolManagerFactory(HornetQServerSideProtocolManagerFactory.getInstance());
-      locators.put(name, serverLocator);
+      configAndAdd(name, serverLocator, config);
    }
 
    /**
@@ -177,9 +174,16 @@ public class ClusterController implements HornetQComponent
     * @param name the cluster connection name
     * @param tcConfigs the transport configurations to use
     */
-   public void addClusterConnection(SimpleString name, TransportConfiguration[] tcConfigs)
+   public void addClusterConnection(SimpleString name, TransportConfiguration[] tcConfigs, ClusterConnectionConfiguration config)
    {
       ServerLocatorImpl serverLocator = (ServerLocatorImpl) HornetQClient.createServerLocatorWithHA(tcConfigs);
+      configAndAdd(name, serverLocator, config);
+   }
+
+   private void configAndAdd(SimpleString name, ServerLocatorInternal serverLocator, ClusterConnectionConfiguration config)
+   {
+      serverLocator.setConnectionTTL(config.getConnectionTTL());
+      serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
       //if the cluster isn't available we want to hang around until it is
       serverLocator.setReconnectAttempts(-1);
       serverLocator.setInitialConnectAttempts(-1);
@@ -451,5 +455,10 @@ public class ClusterController implements HornetQComponent
             server.getScheduledPool().schedule(this, serverLocator.getRetryInterval(), TimeUnit.MILLISECONDS);
          }
       }
+   }
+
+   public ServerLocator getReplicationLocator()
+   {
+      return this.replicationLocator;
    }
 }
