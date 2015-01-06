@@ -747,7 +747,7 @@ public final class ClusterManager implements HornetQComponent
                                                        config.getClusterNotificationInterval(),
                                                        config.getClusterNotificationAttempts());
 
-         clusterController.addClusterConnection(clusterConnection.getName(), dg);
+         clusterController.addClusterConnection(clusterConnection.getName(), dg, config);
       }
       else
       {
@@ -790,7 +790,7 @@ public final class ClusterManager implements HornetQComponent
                                                        config.getClusterNotificationAttempts());
 
 
-         clusterController.addClusterConnection(clusterConnection.getName(), tcConfigs);
+         clusterController.addClusterConnection(clusterConnection.getName(), tcConfigs, config);
       }
 
 
