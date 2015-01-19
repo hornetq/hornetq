@@ -3037,6 +3037,7 @@ public class QueueImpl implements Queue
       LinkedListIterator<PagedReference> pageIter = null;
       Iterator<MessageReference> interIterator = null;
       LinkedListIterator<MessageReference> messagesIterator = null;
+      Iterator<MessageReference> scheduledMessagesIterator = null;
 
       public TotalQueueIterator()
       {
@@ -3046,12 +3047,17 @@ public class QueueImpl implements Queue
          }
          interIterator = intermediateMessageReferences.iterator();
          messagesIterator = new SynchronizedIterator(messageReferences.iterator());
+         scheduledMessagesIterator = scheduledDeliveryHandler.getScheduledReferences().iterator();
       }
 
       @Override
       public boolean hasNext()
       {
          if (messagesIterator.hasNext())
+         {
+            return true;
+         }
+         if (scheduledMessagesIterator.hasNext())
          {
             return true;
          }
@@ -3076,6 +3082,10 @@ public class QueueImpl implements Queue
          if (messagesIterator.hasNext())
          {
             return messagesIterator.next();
+         }
+         if (scheduledMessagesIterator.hasNext())
+         {
+            return scheduledMessagesIterator.next();
          }
          if (interIterator.hasNext())
          {

@@ -272,6 +272,48 @@ public class QueueImplTest extends UnitTestCase
    }
 
    @Test
+   public void testTotalIteratorWithScheduledMessages() throws Exception
+   {
+      QueueImpl queue = new QueueImpl(1,
+                                       QueueImplTest.address1,
+                                       QueueImplTest.queue1,
+                                       null,
+                                       false,
+                                       true,
+                                       scheduledExecutor,
+                                       null,
+                                       null,
+                                       null,
+                                       executor);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+         //Schedule messages from 10 second now
+         ref.setScheduledDeliveryTime(System.currentTimeMillis() + 10000);
+
+         queue.addTail(ref);
+      }
+
+      Assert.assertEquals(numMessages, queue.getMessageCount());
+      Assert.assertEquals(numMessages, queue.getScheduledCount());
+      Assert.assertEquals(0, queue.getDeliveringCount());
+
+      int iteratorSize = 0;
+      Iterator<MessageReference> iterator = queue.totalIterator();
+      //Count items in iterator iterator
+      while (iterator.hasNext())
+      {
+         iterator.next();
+         iteratorSize++;
+      }
+
+      Assert.assertEquals(numMessages, iteratorSize);
+   }
+
+   @Test
    public void testSimpleNonDirectDelivery() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
