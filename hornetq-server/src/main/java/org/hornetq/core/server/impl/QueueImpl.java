@@ -3001,7 +3001,6 @@ public class QueueImpl implements Queue
    private class TotalQueueIterator implements LinkedListIterator<MessageReference>
    {
       LinkedListIterator<PagedReference> pageIter = null;
-      Iterator<MessageReference> interIterator = null;
       LinkedListIterator<MessageReference> messagesIterator = null;
 
       public TotalQueueIterator()
@@ -3010,7 +3009,6 @@ public class QueueImpl implements Queue
          {
             pageIter = pageSubscription.iterator();
          }
-         interIterator = intermediateMessageReferences.iterator();
          messagesIterator = new SynchronizedIterator(messageReferences.iterator());
       }
 
@@ -3018,10 +3016,6 @@ public class QueueImpl implements Queue
       public boolean hasNext()
       {
          if (messagesIterator.hasNext())
-         {
-            return true;
-         }
-         if (interIterator.hasNext())
          {
             return true;
          }
@@ -3042,10 +3036,6 @@ public class QueueImpl implements Queue
          if (messagesIterator.hasNext())
          {
             return messagesIterator.next();
-         }
-         if (interIterator.hasNext())
-         {
-            return interIterator.next();
          }
          if (pageIter != null)
          {

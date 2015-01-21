@@ -15,6 +15,7 @@ package org.hornetq.jms.management.impl;
 
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.FilterConstants;
@@ -195,22 +196,73 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
          String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
          Map<String, Object>[] coreMessages = coreQueueControl.listMessages(filter);
 
-         Map<String, Object>[] jmsMessages = new Map[coreMessages.length];
-
-         int i = 0;
-
-         for (Map<String, Object> coreMessage : coreMessages)
-         {
-            Map<String, Object> jmsMessage = HornetQMessage.coreMaptoJMSMap(coreMessage);
-            jmsMessages[i++] = jmsMessage;
-         }
-         return jmsMessages;
+         return toJMSMap(coreMessages);
       }
       catch (HornetQException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
    }
+
+   private Map<String, Object>[] toJMSMap(Map<String, Object>[] coreMessages)
+   {
+      Map<String, Object>[] jmsMessages = new Map[coreMessages.length];
+
+      int i = 0;
+
+      for (Map<String, Object> coreMessage : coreMessages)
+      {
+         Map<String, Object> jmsMessage = HornetQMessage.coreMaptoJMSMap(coreMessage);
+         jmsMessages[i++] = jmsMessage;
+      }
+      return jmsMessages;
+   }
+
+   @Override
+   public Map<String, Object>[] listScheduledMessages() throws Exception
+   {
+      Map<String, Object>[] coreMessages = coreQueueControl.listScheduledMessages();
+
+      return toJMSMap(coreMessages);
+   }
+
+   @Override
+   public String listScheduledMessagesAsJSON() throws Exception
+   {
+      return coreQueueControl.listScheduledMessagesAsJSON();
+   }
+
+   @Override
+   public Map<String, Map<String, Object>[]> listDeliveringMessages() throws Exception
+   {
+      try
+      {
+         Map<String, Map<String, Object>[]> returnMap = new HashMap<String, Map<String, Object>[]>();
+
+
+         // the workingMap from the queue-control
+         Map<String, Map<String, Object>[]> workingMap = coreQueueControl.listDeliveringMessages();
+
+         for (Map.Entry<String, Map<String, Object>[]> entry : workingMap.entrySet())
+         {
+            returnMap.put(entry.getKey(), toJMSMap(entry.getValue()));
+         }
+
+         return returnMap;
+      }
+      catch (HornetQException e)
+      {
+         throw new IllegalStateException(e.getMessage());
+      }
+   }
+
+   @Override
+   public String listDeliveringMessagesAsJSON() throws Exception
+   {
+      return coreQueueControl.listDeliveringMessagesAsJSON();
+   }
+
+
 
    public String listMessagesAsJSON(final String filter) throws Exception
    {
