@@ -33,7 +33,6 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Test;
 
@@ -95,7 +94,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       spec.setDestination(MDBQUEUE);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(15);
-      MultipleEndpoints endpoint = new MultipleEndpoints(latch, false);
+      MultipleEndpoints endpoint = new MultipleEndpoints(latch, null, false);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = locator.createSessionFactory().createSession();
@@ -128,7 +127,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       spec.setDestination(MDBQUEUE);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(SIZE);
-      MultipleEndpoints endpoint = new MultipleEndpoints(latch, true);
+      CountDownLatch latchDone = new CountDownLatch(SIZE);
+      MultipleEndpoints endpoint = new MultipleEndpoints(latch, latchDone, true);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = locator.createSessionFactory().createSession();
@@ -143,6 +143,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      latchDone.await(5, TimeUnit.SECONDS);
 
       assertEquals(SIZE, endpoint.messages.intValue());
       assertEquals(0, endpoint.interrupted.intValue());
@@ -165,7 +167,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       spec.setDestination(MDBQUEUE);
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(SIZE);
-      MultipleEndpoints endpoint = new MultipleEndpoints(latch, true);
+      CountDownLatch latchDone = new CountDownLatch(SIZE);
+      MultipleEndpoints endpoint = new MultipleEndpoints(latch, latchDone, true);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = locator.createSessionFactory().createSession();
@@ -181,6 +184,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
 
+      latchDone.await(5, TimeUnit.SECONDS);
       assertEquals(SIZE, endpoint.messages.intValue());
       //half onmessage interrupted
       assertEquals(SIZE / 2, endpoint.interrupted.intValue());
@@ -858,14 +862,16 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    class MultipleEndpoints extends DummyMessageEndpoint
    {
       private final CountDownLatch latch;
+      private final CountDownLatch latchDone;
       private final boolean pause;
       AtomicInteger messages = new AtomicInteger(0);
       AtomicInteger interrupted = new AtomicInteger(0);
 
-      public MultipleEndpoints(CountDownLatch latch, boolean pause)
+      public MultipleEndpoints(CountDownLatch latch, CountDownLatch latchDone, boolean pause)
       {
          super(latch);
          this.latch = latch;
+         this.latchDone = latchDone;
          this.pause = pause;
       }
 
@@ -890,17 +896,27 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       @Override
       public void onMessage(Message message)
       {
-         latch.countDown();
-         if (pause && messages.getAndIncrement() % 2 == 0)
+         try
          {
-            try
+            latch.countDown();
+            if (pause && messages.getAndIncrement() % 2 == 0)
             {
-               IntegrationTestLogger.LOGGER.info("pausing for 2 secs");
-               Thread.sleep(2000);
+               try
+               {
+                  System.out.println("pausing for 2 secs");
+                  Thread.sleep(2000);
+               }
+               catch (InterruptedException e)
+               {
+                  interrupted.incrementAndGet();
+               }
             }
-            catch (InterruptedException e)
+         }
+         finally
+         {
+            if (latchDone != null)
             {
-               interrupted.getAndIncrement();
+               latchDone.countDown();
             }
          }
       }
