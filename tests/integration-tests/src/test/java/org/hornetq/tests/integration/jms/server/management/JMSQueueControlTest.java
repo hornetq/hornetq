@@ -47,6 +47,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.management.JMSNotificationType;
@@ -150,6 +151,56 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       data = queueControl.listMessages(null);
       Assert.assertEquals(0, data.length);
+   }
+
+   @Test
+   public void testListDeliveringMessages() throws Exception
+   {
+      JMSQueueControl queueControl = createManagementControl();
+
+      Assert.assertEquals(0, queueControl.getMessageCount());
+
+      String[] ids = JMSUtil.sendMessages(queue, 20);
+
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName()));
+
+      Connection conn = cf.createConnection();
+      conn.start();
+      Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+      MessageConsumer consumer = session.createConsumer(queue);
+
+
+      for (int i = 0; i < 20; i++)
+      {
+         Assert.assertNotNull(consumer.receive(5000));
+      }
+
+      Assert.assertEquals(20, queueControl.getMessageCount());
+
+      Map<String, Map<String, Object>[]> deliverings = queueControl.listDeliveringMessages();
+
+      // Just one consumer.. so just one queue
+      Assert.assertEquals(1, deliverings.size());
+
+
+      for (Map.Entry<String, Map<String, Object>[]> deliveryEntry : deliverings.entrySet())
+      {
+         System.out.println("Key:" + deliveryEntry.getKey());
+
+         for (int i = 0; i < 20; i++)
+         {
+            Assert.assertEquals(ids[i], deliveryEntry.getValue()[i].get("JMSMessageID").toString());
+         }
+      }
+
+
+
+      session.rollback();
+      session.close();
+
+      JMSUtil.consumeMessages(20, queue);
    }
 
    @Test
