@@ -764,7 +764,7 @@ public class HornetQSession implements QueueSession, TopicSession
             {
                // Durable sub
                if (durability != ConsumerDurability.DURABLE)
-                   throw new RuntimeException("Subscription name must be null for non-durable topic consumer");
+                  throw new RuntimeException("Subscription name must be null for non-durable topic consumer");
                if (connection.getClientID() == null)
                {
                   throw new IllegalStateException("Cannot create durable subscription - client ID has not been set");
