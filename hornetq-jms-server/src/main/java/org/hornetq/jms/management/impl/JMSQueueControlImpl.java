@@ -155,6 +155,21 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       coreQueueControl.setExpiryAddress(expiryAddress);
    }
 
+   public String getFirstMessageAsJSON() throws Exception
+   {
+      return coreQueueControl.getFirstMessageAsJSON();
+   }
+
+   public Long getFirstMessageTimestamp() throws Exception
+   {
+      return coreQueueControl.getFirstMessageTimestamp();
+   }
+
+   public Long getFirstMessageAge() throws Exception
+   {
+      return coreQueueControl.getFirstMessageAge();
+   }
+
    @Override
    public void addJNDI(String jndi) throws Exception
    {

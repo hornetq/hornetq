@@ -15,6 +15,7 @@ package org.hornetq.core.management.impl;
 import javax.management.MBeanOperationInfo;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -531,7 +532,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
-   public String getFirstMessageAsJSON() throws Exception
+   protected Map<String, Object>[] getFirstMessage() throws Exception
    {
       checkStarted();
 
@@ -550,7 +551,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
                Message message = ref.getMessage();
                messages.add(message.toMap());
             }
-            return toJSON(messages.toArray(new Map[1])).toString();
+            return messages.toArray(new Map[1]);
          }
          finally
          {
@@ -562,6 +563,37 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          blockOnIO();
       }
 
+   }
+
+   public String getFirstMessageAsJSON() throws Exception
+   {
+      return toJSON(getFirstMessage()).toString();
+   }
+
+   public Long getFirstMessageTimestamp() throws Exception
+   {
+      Map<String, Object>[] _message = getFirstMessage();
+      if (_message == null || _message.length == 0 || _message[0] == null)
+      {
+         return null;
+      }
+      Map<String, Object> message = _message[0];
+      if (!message.containsKey("timestamp"))
+      {
+         return null;
+      }
+      return (Long)message.get("timestamp");
+   }
+
+   public Long getFirstMessageAge() throws Exception
+   {
+      Long firstMessageTimestamp = getFirstMessageTimestamp();
+      if (firstMessageTimestamp == null)
+      {
+         return null;
+      }
+      long now = new Date().getTime();
+      return now - firstMessageTimestamp.longValue();
    }
 
    public long countMessages(final String filterStr) throws Exception
