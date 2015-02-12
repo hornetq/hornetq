@@ -77,8 +77,6 @@ public class RemotingConnectionImpl extends AbstractRemotingConnection implement
 
    private final Object failLock = new Object();
 
-   private volatile boolean executing;
-
    private final SimpleString nodeID;
 
    private String clientID;
@@ -377,41 +375,9 @@ public class RemotingConnectionImpl extends AbstractRemotingConnection implement
             HornetQClientLogger.LOGGER.trace("handling packet " + packet);
          }
 
-         if (packet.isAsyncExec() && executor != null)
-         {
-            executing = true;
+         dataReceived = true;
 
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  try
-                  {
-                     doBufferReceived(packet);
-                  }
-                  catch (Throwable t)
-                  {
-                     HornetQClientLogger.LOGGER.errorHandlingPacket(t, packet);
-                  }
-
-                  executing = false;
-               }
-            });
-         }
-         else
-         {
-            //To prevent out of order execution if interleaving sync and async operations on same connection
-            while (executing)
-            {
-               Thread.yield();
-            }
-
-            // Pings must always be handled out of band so we can send pings back to the client quickly
-            // otherwise they would get in the queue with everything else which might give an intolerable delay
-            doBufferReceived(packet);
-         }
-
-         super.bufferReceived(connectionID, buffer);
+         doBufferReceived(packet);
       }
       catch (Exception e)
       {

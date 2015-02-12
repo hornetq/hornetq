@@ -13,6 +13,8 @@
 
 package org.hornetq.utils;
 
+import org.hornetq.api.core.HornetQBuffer;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
@@ -36,6 +38,17 @@ public class ByteUtil
          return value.substring(0, size / 2) + " ... " + value.substring(value.length() - size / 2);
       }
    }
+
+   public static String bytesToHex(HornetQBuffer buffer, int groupSize)
+   {
+      int read = buffer.readerIndex();
+      buffer.readerIndex(0);
+      byte[] bufferRead = new byte[buffer.writerIndex()];
+      buffer.readBytes(bufferRead);
+      buffer.readerIndex(read);
+      return bytesToHex(bufferRead, groupSize);
+   }
+
    public static String bytesToHex(byte[] bytes, int groupSize)
    {
       if (bytes == null)

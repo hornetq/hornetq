@@ -42,7 +42,9 @@ public final class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
 
    public ResetLimitWrappedHornetQBuffer(final int limit, final HornetQBuffer buffer, final MessageInternal message)
    {
-      super(buffer.byteBuf());
+      // we found during profiling that sending an unreleasable buffer inside another buffer
+      // can lead to a large stack trace on writeable bytes what would affect performance
+      super(unwrap(buffer.byteBuf()));
 
       this.limit = limit;
 

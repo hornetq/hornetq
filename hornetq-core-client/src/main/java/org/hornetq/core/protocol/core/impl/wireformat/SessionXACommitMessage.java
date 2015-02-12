@@ -52,12 +52,6 @@ public class SessionXACommitMessage extends PacketImpl
    }
 
    @Override
-   public boolean isAsyncExec()
-   {
-      return true;
-   }
-
-   @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);

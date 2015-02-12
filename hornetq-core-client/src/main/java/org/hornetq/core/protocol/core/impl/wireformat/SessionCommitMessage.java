@@ -26,9 +26,4 @@ public class SessionCommitMessage extends PacketImpl
       super(SESS_COMMIT);
    }
 
-   @Override
-   public boolean isAsyncExec()
-   {
-      return true;
-   }
 }

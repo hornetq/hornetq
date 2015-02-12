@@ -56,7 +56,7 @@ public class CrashClient
          ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE);
 
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
+                                                             true,
                                                              0,
                                                              System.currentTimeMillis(),
                                                              (byte)1);

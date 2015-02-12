@@ -479,7 +479,7 @@ public class HornetQClientProtocolManager implements ClientProtocolManager
       {
          // no need to send handshake on inVM as inVM is not using the NettyProtocolHandling
          String handshake = "HORNETQ";
-         HornetQBuffer hqbuffer = connection.createBuffer(handshake.length());
+         HornetQBuffer hqbuffer = connection.createTransportBuffer(handshake.length());
          hqbuffer.writeBytes(handshake.getBytes());
          transportConnection.write(hqbuffer);
       }

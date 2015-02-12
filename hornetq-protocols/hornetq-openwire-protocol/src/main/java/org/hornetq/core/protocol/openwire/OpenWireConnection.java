@@ -436,7 +436,7 @@ public class OpenWireConnection implements RemotingConnection, CommandVisitor
    }
 
    @Override
-   public HornetQBuffer createBuffer(int size)
+   public HornetQBuffer createTransportBuffer(int size)
    {
       return HornetQBuffers.dynamicBuffer(size);
    }

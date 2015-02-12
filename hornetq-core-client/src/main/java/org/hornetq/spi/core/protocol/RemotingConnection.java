@@ -111,11 +111,12 @@ public interface RemotingConnection extends BufferHandler
 
    /**
     * creates a new HornetQBuffer of the specified size.
+    * For the purpose of transfering packets
     *
     * @param size the size of buffer required
     * @return the buffer
     */
-   HornetQBuffer createBuffer(int size);
+   HornetQBuffer createTransportBuffer(int size);
 
    /**
     * called when the underlying connection fails.
