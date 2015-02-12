@@ -187,7 +187,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    private class ScheduledDeliveryRunnable implements Runnable
    {
-      long deliveryTime;
+      final long deliveryTime;
 
       public ScheduledDeliveryRunnable(final long deliveryTime)
       {

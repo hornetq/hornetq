@@ -70,7 +70,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       final int size = 1234;
 
-      HornetQBuffer buff = conn.createBuffer(size);
+      HornetQBuffer buff = conn.createTransportBuffer(size);
       buff.writeByte((byte) 0x00); // Netty buffer does lazy initialization.
       Assert.assertEquals(size, buff.capacity());
 

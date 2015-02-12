@@ -91,8 +91,6 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    private final Executor executor;
 
-   private volatile boolean executing;
-
    private final SimpleString nodeID;
 
    private final long creationTime;
@@ -314,9 +312,10 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
       closeListeners.addAll(listeners);
    }
 
-   public HornetQBuffer createBuffer(final int size)
+   @Override
+   public HornetQBuffer createTransportBuffer(final int size)
    {
-      return transportConnection.createBuffer(size);
+      return transportConnection.createTransportBuffer(size);
    }
 
    /*
@@ -498,41 +497,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
             HornetQClientLogger.LOGGER.trace("handling packet " + packet);
          }
 
-         if (packet.isAsyncExec() && executor != null)
-         {
-            executing = true;
-
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  try
-                  {
-                     doBufferReceived(packet);
-                  }
-                  catch (Throwable t)
-                  {
-                     HornetQClientLogger.LOGGER.errorHandlingPacket(t, packet);
-                  }
-
-                  executing = false;
-               }
-            });
-         }
-         else
-         {
-            //To prevent out of order execution if interleaving sync and async operations on same connection
-            while (executing)
-            {
-               Thread.yield();
-            }
-
-            // Pings must always be handled out of band so we can send pings back to the client quickly
-            // otherwise they would get in the queue with everything else which might give an intolerable delay
-            doBufferReceived(packet);
-         }
-
          dataReceived = true;
+
+         doBufferReceived(packet);
       }
       catch (Exception e)
       {

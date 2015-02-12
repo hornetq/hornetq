@@ -211,9 +211,9 @@ public class ProtonRemotingConnection implements RemotingConnection
    }
 
    @Override
-   public HornetQBuffer createBuffer(int size)
+   public HornetQBuffer createTransportBuffer(int size)
    {
-      return connection.createBuffer(size);
+      return connection.createTransportBuffer(size);
    }
 
    @Override
@@ -384,7 +384,7 @@ public class ProtonRemotingConnection implements RemotingConnection
             if (count > 0)
             {
                final HornetQBuffer buffer;
-               buffer = connection.createBuffer(count);
+               buffer = connection.createTransportBuffer(count);
                buffer.writeBytes(data, 0, count);
                connection.write(buffer);
             }

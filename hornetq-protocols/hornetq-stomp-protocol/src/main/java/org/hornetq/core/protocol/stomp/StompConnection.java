@@ -248,7 +248,7 @@ public final class StompConnection implements RemotingConnection
    }
 
    @Override
-   public HornetQBuffer createBuffer(int size)
+   public HornetQBuffer createTransportBuffer(int size)
    {
       return HornetQBuffers.dynamicBuffer(size);
    }

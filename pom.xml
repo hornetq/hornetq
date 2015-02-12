@@ -56,6 +56,10 @@
       <skipRestTests>true</skipRestTests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+         <!-- add this for profiling:
+              -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:StartFlightRecording=delay=30s,duration=120s,filename=/tmp/myrecording.jfr
+         -->
       <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager
          -Dlogging.configuration=file:${hornetq.basedir}/tests/config/logging.properties
          -Djava.library.path=${hornetq.basedir}/hornetq-native/bin/ -Djgroups.bind_addr=localhost

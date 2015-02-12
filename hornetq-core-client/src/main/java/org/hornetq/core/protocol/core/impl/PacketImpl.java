@@ -242,7 +242,7 @@ public class PacketImpl implements Packet
 
    public HornetQBuffer encode(final RemotingConnection connection)
    {
-      HornetQBuffer buffer = connection.createBuffer(PacketImpl.INITIAL_PACKET_SIZE);
+      HornetQBuffer buffer = connection.createTransportBuffer(PacketImpl.INITIAL_PACKET_SIZE);
 
       // The standard header fields
 
@@ -297,11 +297,6 @@ public class PacketImpl implements Packet
    public boolean isRequiresConfirmations()
    {
       return true;
-   }
-
-   public boolean isAsyncExec()
-   {
-      return false;
    }
 
    @Override
