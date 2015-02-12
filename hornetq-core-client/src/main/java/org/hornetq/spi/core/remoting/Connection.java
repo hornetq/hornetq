@@ -32,7 +32,7 @@ public interface Connection
     * @param size the size of buffer to create
     * @return the new buffer.
     */
-   HornetQBuffer createBuffer(int size);
+   HornetQBuffer createTransportBuffer(int size);
 
 
    RemotingConnection getProtocolConnection();

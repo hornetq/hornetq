@@ -179,9 +179,9 @@ public abstract class AbstractRemotingConnection implements RemotingConnection
       closeListeners.addAll(listeners);
    }
 
-   public HornetQBuffer createBuffer(final int size)
+   public HornetQBuffer createTransportBuffer(final int size)
    {
-      return transportConnection.createBuffer(size);
+      return transportConnection.createTransportBuffer(size);
    }
 
    public Connection getTransportConnection()

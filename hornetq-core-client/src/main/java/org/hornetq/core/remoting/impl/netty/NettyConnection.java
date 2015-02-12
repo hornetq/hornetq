@@ -168,9 +168,9 @@ public class NettyConnection implements Connection
       listener.connectionDestroyed(getID());
    }
 
-   public HornetQBuffer createBuffer(final int size)
+   public HornetQBuffer createTransportBuffer(final int size)
    {
-      return new ChannelBufferWrapper(channel.alloc().buffer(size));
+      return new ChannelBufferWrapper(PartialPooledByteBufAllocator.INSTANCE.directBuffer(size), true);
    }
 
    public Object getID()
@@ -195,7 +195,7 @@ public class NettyConnection implements Connection
             {
                channel.writeAndFlush(batchBuffer.byteBuf());
 
-               batchBuffer = createBuffer(BATCHING_BUFFER_SIZE);
+               batchBuffer = createTransportBuffer(BATCHING_BUFFER_SIZE);
             }
          }
          finally
