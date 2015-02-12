@@ -50,7 +50,7 @@ public class ProtonProducer implements ProtonDeliveryHandler
       this.protonProtocolManager = protonProtocolManager;
       this.receiver = receiver;
       this.address = ((Target) receiver.getRemoteTarget()).getAddress();
-      buffer = connection.createBuffer(1024);
+      buffer = connection.createTransportBuffer(1024);
    }
 
    /*

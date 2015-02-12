@@ -30,7 +30,6 @@ public class TransactionHandler implements ProtonDeliveryHandler
    private final Coordinator coordinator;
    private final ProtonProtocolManager protonProtocolManager;
    private final ProtonSession protonSession;
-   private final HornetQBuffer buffer;
 
    public TransactionHandler(ProtonRemotingConnection connection, Coordinator coordinator, ProtonProtocolManager protonProtocolManager, ProtonSession protonSession)
    {
@@ -38,7 +37,6 @@ public class TransactionHandler implements ProtonDeliveryHandler
       this.coordinator = coordinator;
       this.protonProtocolManager = protonProtocolManager;
       this.protonSession = protonSession;
-      buffer = connection.createBuffer(1024);
    }
 
    @Override
@@ -54,8 +52,9 @@ public class TransactionHandler implements ProtonDeliveryHandler
             return;
          }
 
+         HornetQBuffer buffer = connection.createTransportBuffer(1024);
          protonProtocolManager.handleTransaction(receiver, buffer, delivery, protonSession);
-
+         buffer.byteBuf().release();
       }
       catch (Exception e)
       {

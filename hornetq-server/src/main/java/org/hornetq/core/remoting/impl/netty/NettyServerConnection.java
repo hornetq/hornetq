@@ -30,7 +30,7 @@ public class NettyServerConnection extends NettyConnection
    }
 
    @Override
-   public HornetQBuffer createBuffer(int size)
+   public HornetQBuffer createTransportBuffer(int size)
    {
       return new ChannelBufferWrapper(channel.alloc().directBuffer(size), true);
    }

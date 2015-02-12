@@ -122,7 +122,8 @@ public class InVMConnection implements Connection
       }
    }
 
-   public HornetQBuffer createBuffer(final int size)
+   @Override
+   public HornetQBuffer createTransportBuffer(final int size)
    {
       return HornetQBuffers.dynamicBuffer(size);
    }
