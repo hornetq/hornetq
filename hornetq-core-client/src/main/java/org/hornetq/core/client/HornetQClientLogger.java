@@ -296,6 +296,11 @@ public interface HornetQClientLogger extends BasicLogger
             format = Message.Format.MESSAGE_FORMAT)
    void compressedLargeMessageError(int length, int nReadBytes);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 212051, value = "Waited {0} milliseconds for packet to complete. Now forcibly terminating thread.",
+            format = Message.Format.MESSAGE_FORMAT)
+   void packetTimeout(long timeout);
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 214000, value = "Failed to call onMessage", format = Message.Format.MESSAGE_FORMAT)
    void onMessageError(@Cause Throwable e);
