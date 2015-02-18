@@ -96,6 +96,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.SessionContext;
 import org.hornetq.utils.TokenBucketLimiterImpl;
+import org.hornetq.utils.VersionLoader;
 
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT_CONSUMER;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
@@ -627,7 +628,7 @@ public class HornetQSessionContext extends SessionContext
    {
       Packet createRequest = new CreateSessionMessage(name,
                                                       sessionChannel.getID(),
-                                                      getServerVersion(),
+                                                      VersionLoader.getVersion().getIncrementingVersion(),
                                                       username,
                                                       password,
                                                       minLargeMessageSize,
