@@ -21,12 +21,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
@@ -74,6 +78,9 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    private final List<Interceptor> outgoingInterceptors;
 
+
+   // The current logic expect that this will only bet set to true once
+   // once destroyed this object (connection) needs to be replaced by a new one
    private volatile boolean destroyed;
 
    private final boolean client;
@@ -99,6 +106,11 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
    private final long creationTime;
 
    private String clientID;
+
+   /**
+    * a readLock will be issued around every call here
+    */
+   private final ReadWriteLock callingLock = new ReentrantReadWriteLock();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -337,6 +349,35 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
       HornetQClientLogger.LOGGER.connectionFailureDetected(me.getMessage(), me.getType());
 
+      /* Wait for any current packets to finish processing.  This is to avoid interrupting threads which are doing
+       * journal work as such an interrupt could trigger a critical IO error.  See https://bugzilla.redhat.com/show_bug.cgi?id=1193085
+       * for more information.
+       */
+      boolean acquiredLock = false;
+
+      try
+      {
+         long timeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
+
+         acquiredLock = callingLock.writeLock().tryLock(timeout, TimeUnit.MILLISECONDS);
+
+         if (!acquiredLock)
+         {
+            HornetQClientLogger.LOGGER.packetTimeout(timeout);
+         }
+      }
+      catch (InterruptedException e)
+      {
+         HornetQClientLogger.LOGGER.debug(e.getMessage(), e);
+      }
+      finally
+      {
+         if (acquiredLock)
+         {
+            callingLock.writeLock().unlock();
+         }
+      }
+
 
       try
       {
@@ -543,19 +584,41 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
 
    private void doBufferReceived(final Packet packet)
    {
-      if (ChannelImpl.invokeInterceptors(packet, incomingInterceptors, this) != null)
+      if (destroyed)
       {
+         // ooptimization: check once without a lock
+         HornetQClientLogger.LOGGER.debug("Ignoring a packet " + packet + " that has arrived after connection destroyed: " + this);
          return;
       }
 
-      synchronized (transferLock)
+      callingLock.readLock().lock();
+      try
       {
-         final Channel channel = channels.get(packet.getChannelID());
-
-         if (channel != null)
+         if (destroyed)
          {
-            channel.handlePacket(packet);
+            // check once again withing a lock
+            HornetQClientLogger.LOGGER.debug("Ignoring a packet " + packet + " that has arrived after connection destroyed: " + this);
+            return;
          }
+
+         if (ChannelImpl.invokeInterceptors(packet, incomingInterceptors, this) != null)
+         {
+            return;
+         }
+
+         synchronized (transferLock)
+         {
+            final Channel channel = channels.get(packet.getChannelID());
+
+            if (channel != null)
+            {
+               channel.handlePacket(packet);
+            }
+         }
+      }
+      finally
+      {
+         callingLock.readLock().unlock();
       }
    }
 
