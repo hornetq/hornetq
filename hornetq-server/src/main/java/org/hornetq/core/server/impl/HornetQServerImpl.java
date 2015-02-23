@@ -460,7 +460,6 @@ public class HornetQServerImpl implements HornetQServer
          }
          else
          {
-            state = SERVER_STATE.STARTED;
             HornetQServerLogger.LOGGER.serverStarted(getVersion().getFullVersion(), nodeManager.getNodeId(),
                                                      identity != null ? identity : "");
          }
@@ -1663,7 +1662,6 @@ public class HornetQServerImpl implements HornetQServer
       {
          throw HornetQMessageBundle.BUNDLE.nodeIdNull();
       }
-      activationLatch.countDown();
 
       // We can only do this after everything is started otherwise we may get nasty races with expired messages
       postOffice.startExpiryScanner();
@@ -2314,6 +2312,10 @@ public class HornetQServerImpl implements HornetQServer
 
             initialisePart2();
 
+            state = SERVER_STATE.STARTED;
+            remotingService.startAcceptors();
+            activationLatch.countDown();
+
             HornetQServerLogger.LOGGER.serverIsLive();
          }
          catch (Exception e)
@@ -2370,6 +2372,10 @@ public class HornetQServerImpl implements HornetQServer
             initialisePart2();
 
             clusterManager.activate();
+
+            remotingService.startAcceptors();
+
+            activationLatch.countDown();
 
             HornetQServerLogger.LOGGER.backupServerIsLive();
 
@@ -2687,6 +2693,8 @@ public class HornetQServerImpl implements HornetQServer
                storageManager.start();
                initialisePart2();
                clusterManager.activate();
+               remotingService.startAcceptors();
+               activationLatch.countDown();
             }
          }
          catch (Exception e)
@@ -2832,6 +2840,10 @@ public class HornetQServerImpl implements HornetQServer
             initialisePart1();
 
             initialisePart2();
+
+            state = SERVER_STATE.STARTED;
+            remotingService.startAcceptors();
+            activationLatch.countDown();
 
             if (identity != null)
             {
