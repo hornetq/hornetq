@@ -378,6 +378,7 @@ class CoreProtocolManager implements ProtocolManager
                }
                catch (HornetQException e)
                {
+                  HornetQServerLogger.LOGGER.debug("Failed to process backup registration packet", e);
                   channel0.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
                }
             }

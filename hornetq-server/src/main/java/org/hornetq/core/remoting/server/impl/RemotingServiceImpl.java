@@ -322,10 +322,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
 
-      for (Acceptor a : acceptors.values())
-      {
-         a.start();
-      }
+      /**
+       * Don't start the acceptors here.  Only start the acceptors at the every end of the start-up process to avoid
+       * race conditions. See {@link #startAcceptors()}.
+       */
 
       // This thread checks connections that need to be closed, and also flushes confirmations
       failureCheckAndFlushThread = new FailureCheckAndFlushThread(RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL);
@@ -333,6 +333,17 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failureCheckAndFlushThread.start();
 
       started = true;
+   }
+
+   public synchronized void startAcceptors() throws Exception
+   {
+      if (isStarted())
+      {
+         for (Acceptor a : acceptors.values())
+         {
+            a.start();
+         }
+      }
    }
 
    public synchronized void allowInvmSecurityOverride(HornetQPrincipal principal)
