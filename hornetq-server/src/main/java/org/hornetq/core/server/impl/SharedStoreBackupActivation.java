@@ -83,6 +83,8 @@ public final class SharedStoreBackupActivation extends Activation
 
          hornetQServer.initialisePart2(scalingDown);
 
+         hornetQServer.completeActivation();
+
          if (scalingDown)
          {
             HornetQServerLogger.LOGGER.backupServerScaledDown();

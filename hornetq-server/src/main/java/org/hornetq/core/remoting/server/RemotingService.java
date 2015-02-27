@@ -51,6 +51,8 @@ public interface RemotingService
 
    void start() throws Exception;
 
+   void startAcceptors() throws Exception;
+
    boolean isStarted();
 
    /**
