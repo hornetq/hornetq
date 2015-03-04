@@ -72,6 +72,8 @@ public final class SharedStoreLiveActivation extends LiveActivation
 
          hornetQServer.initialisePart2(false);
 
+         hornetQServer.completeActivation();
+
          HornetQServerLogger.LOGGER.serverIsLive();
       }
       catch (Exception e)

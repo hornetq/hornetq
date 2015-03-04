@@ -539,7 +539,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          spec.setPassword("password");
 
-         spec.setDestinationType("Queue");
+         spec.setDestinationType("javax.jms.Queue");
          spec.setDestination("test");
 
          spec.setMinSession(1);
@@ -628,7 +628,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          spec.setUser("user");
          spec.setPassword("password");
 
-         spec.setDestinationType("Queue");
+         spec.setDestinationType("javax.jms.Queue");
          spec.setDestination("test");
 
          spec.setMinSession(1);

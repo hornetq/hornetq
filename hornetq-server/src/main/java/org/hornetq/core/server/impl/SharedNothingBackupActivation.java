@@ -285,6 +285,8 @@ public final class SharedNothingBackupActivation extends Activation
                }
 
             }
+
+            hornetQServer.completeActivation();
          }
       }
       catch (Exception e)

@@ -58,6 +58,8 @@ public class LiveOnlyActivation extends Activation
 
          hornetQServer.initialisePart2(false);
 
+         hornetQServer.completeActivation();
+
          if (hornetQServer.getIdentity() != null)
          {
             HornetQServerLogger.LOGGER.serverIsLive(hornetQServer.getIdentity());

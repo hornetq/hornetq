@@ -99,6 +99,8 @@ public class SharedNothingLiveActivation extends LiveActivation
 
          hornetQServer.initialisePart2(false);
 
+         hornetQServer.completeActivation();
+
          if (hornetQServer.getIdentity() != null)
          {
             HornetQServerLogger.LOGGER.serverIsLive(hornetQServer.getIdentity());
@@ -137,6 +139,7 @@ public class SharedNothingLiveActivation extends LiveActivation
                }
                catch (HornetQException e)
                {
+                  HornetQServerLogger.LOGGER.debug("Failed to process backup registration packet", e);
                   channel.send(new BackupReplicationStartFailedMessage(BackupReplicationStartFailedMessage.BackupRegistrationProblem.EXCEPTION));
                }
             }
