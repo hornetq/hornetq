@@ -76,6 +76,8 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
    private final Set<String> destinations = new ConcurrentHashSet<String>();
 
+   private final List<Interceptor> interceptors;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -91,6 +93,7 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
          destinations.add(service.getManagementAddress().toString());
          service.addNotificationListener(this);
       }
+      this.interceptors = interceptors;
    }
 
    @Override
@@ -163,6 +166,27 @@ class StompProtocolManager implements ProtocolManager, NotificationListener
 
          try
          {
+            if (this.interceptors != null && !this.interceptors.isEmpty())
+            {
+               for (Interceptor interceptor : this.interceptors)
+               {
+                  if (interceptor instanceof StompFrameInterceptor)
+                  {
+                     try
+                     {
+                        if (!((StompFrameInterceptor)interceptor).intercept(request, conn))
+                        {
+                           break;
+                        }
+                     }
+                     catch (Exception e)
+                     {
+                        HornetQServerLogger.LOGGER.error(e);
+                     }
+                  }
+               }
+            }
+
             conn.handleFrame(request);
          }
          finally
