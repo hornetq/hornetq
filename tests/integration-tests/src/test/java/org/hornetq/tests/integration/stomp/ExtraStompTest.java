@@ -16,14 +16,18 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.QueueBrowser;
 import javax.jms.TextMessage;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.stomp.Stomp;
+import org.hornetq.core.protocol.stomp.StompFrame;
+import org.hornetq.core.protocol.stomp.StompFrameInterceptor;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
@@ -36,6 +40,7 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase.TestLargeMessageInputStream;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
@@ -805,6 +810,102 @@ public class ExtraStompTest extends StompTestBase
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl()
                                                 .setName(getTopicName())
                                                 .setBindings(getTopicName()));
+      server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
+      server.setContext(new InVMNamingContext());
+      return server;
+   }
+
+   static List<StompFrame> interceptedFrames = new ArrayList<StompFrame>();
+
+   public static class MyStompFrameInterceptor extends StompFrameInterceptor
+   {
+
+      @Override
+      public boolean intercept(StompFrame stompFrame, RemotingConnection connection)
+      {
+         interceptedFrames.add(stompFrame);
+         stompFrame.addHeader("interceptedProp", "interceptedVal");
+         return true;
+      }
+   }
+
+   @Test
+   public void stompFrameInterceptor() throws Exception
+   {
+      try
+      {
+         List<String> interceptorList = new ArrayList<String>();
+         interceptorList.add("org.hornetq.tests.integration.stomp.ExtraStompTest$MyStompFrameInterceptor");
+         server = createServerWithStompInterceptor(interceptorList);
+         server.start();
+
+         setUpAfterServer();
+
+         String connect_frame = "CONNECT\n" + "login: brianm\n"
+                  + "passcode: wombats\n" + "request-id: 1\n" + "\n" + Stomp.NULL;
+         sendFrame(connect_frame);
+
+         String frame = "SEND\n" + "destination:" + getQueuePrefix()
+                  + getQueueName() + "\n\n" + "Hello World 1" + Stomp.NULL;
+         sendFrame(frame);
+
+         frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName()
+                 + "\n\n" + "Hello World 2" + Stomp.NULL;
+         sendFrame(frame);
+
+         MessageConsumer consumer = session.createConsumer(queue);
+
+         TextMessage message = (TextMessage) consumer.receive(1000);
+         Assert.assertNotNull(message);
+         Assert.assertEquals("interceptedVal", message.getStringProperty("interceptedProp"));
+
+         message = (TextMessage) consumer.receive(1000);
+         Assert.assertNotNull(message);
+         Assert.assertEquals("interceptedVal", message.getStringProperty("interceptedProp"));
+
+         List<String> commandsSent = new ArrayList<String>(3);
+         commandsSent.add("CONNECT");
+         commandsSent.add("SEND");
+         commandsSent.add("SEND");
+
+         for (int i = 0; i < 3; i++)
+         {
+            Assert.assertEquals(commandsSent.get(i), interceptedFrames.get(i).getCommand());
+         }
+
+      }
+      finally
+      {
+         cleanUp();
+         server.stop();
+      }
+   }
+
+   protected JMSServerManager createServerWithStompInterceptor(List<String> stompInterceptor) throws Exception
+   {
+
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.PROTOCOLS_PROP_NAME, StompProtocolManagerFactory.STOMP_PROTOCOL_NAME);
+      params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
+      params.put(TransportConstants.STOMP_CONSUMERS_CREDIT, "-1");
+      TransportConfiguration stompTransport = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
+
+      Configuration config = createBasicConfig()
+              .setPersistenceEnabled(false)
+              .addAcceptorConfiguration(stompTransport)
+              .addAcceptorConfiguration(new TransportConfiguration(INVM_ACCEPTOR_FACTORY))
+              .setIncomingInterceptorClassNames(stompInterceptor);
+
+      HornetQServer hornetQServer = addServer(HornetQServers.newHornetQServer(config, defUser, defPass));
+
+      JMSConfiguration jmsConfig = new JMSConfigurationImpl();
+      jmsConfig.getQueueConfigurations().add(new JMSQueueConfigurationImpl()
+              .setName(getQueueName())
+              .setDurable(false)
+              .setBindings(getQueueName()));
+      jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl()
+              .setName(getTopicName())
+              .setBindings(getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
       server.setContext(new InVMNamingContext());
       return server;
