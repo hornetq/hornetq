@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -390,6 +391,8 @@ public class NettyAcceptor implements Acceptor
          context = null; // Unused
       }
 
+      final AtomicBoolean warningPrinted = new AtomicBoolean(false);
+
       ChannelPipelineFactory factory = new ChannelPipelineFactory()
       {
          public ChannelPipeline getPipeline() throws Exception
@@ -413,11 +416,15 @@ public class NettyAcceptor implements Acceptor
                {
                   if (s.equals("SSLv3") || s.equals("SSLv2Hello"))
                   {
-                     HornetQServerLogger.LOGGER.disallowedProtocol(s);
+                     if (!warningPrinted.get())
+                     {
+                        HornetQServerLogger.LOGGER.disallowedProtocol(s);
+                     }
                      continue;
                   }
                   set.add(s);
                }
+               warningPrinted.set(true);
                engine.setEnabledProtocols(set.toArray(new String[0]));
 
                SslHandler handler = new SslHandler(engine);
