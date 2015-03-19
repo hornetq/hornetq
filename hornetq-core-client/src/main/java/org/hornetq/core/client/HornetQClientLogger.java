@@ -21,6 +21,7 @@
 */
 package org.hornetq.core.client;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.core.protocol.core.Packet;
@@ -403,4 +404,21 @@ public interface HornetQClientLogger extends BasicLogger
             format = Message.Format.MESSAGE_FORMAT)
    void outOfCreditOnFlowControl(String address);
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 214025,
+      value = "Failure captured on connectionID={0}, performing failover or reconnection now",
+      format = Message.Format.MESSAGE_FORMAT)
+   void failoverOrReconnect(Object connectionID, @Cause HornetQException me);
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 214026,
+               value = "Replaying commands for channelID={0} with lastCommandID from the server={1}",
+               format = Message.Format.MESSAGE_FORMAT)
+   void replayingCommands(long id, int lastConfirmedCommandID);
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 214027,
+               value = "Couldn't reattach session {0}, performing as a failover operation now and recreating objects",
+               format = Message.Format.MESSAGE_FORMAT)
+   void creatingNewSession(long id);
 }
