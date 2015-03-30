@@ -144,7 +144,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
 
       mBeanServer2 = MBeanServerFactory.createMBeanServer();
-      server2 = HornetQServers.newHornetQServer(conf2, mBeanServer2, false);
+      server2 = HornetQServers.newHornetQServer(conf2, mBeanServer2, isPersistent());
       jmsServer2 = new JMSServerManagerImpl(server2, jmsconfig);
       context2 = new InVMContext();
       jmsServer2.setContext(context2);
@@ -192,10 +192,15 @@ public class JMSClusteredTestBase extends ServiceTestBase
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
 
       mBeanServer1 = MBeanServerFactory.createMBeanServer();
-      server1 = HornetQServers.newHornetQServer(conf1, mBeanServer1, false);
+      server1 = HornetQServers.newHornetQServer(conf1, mBeanServer1, isPersistent());
       jmsServer1 = new JMSServerManagerImpl(server1, jmsconfig);
       context1 = new InVMContext();
       jmsServer1.setContext(context1);
+   }
+
+   protected boolean isPersistent()
+   {
+      return false;
    }
 
    /**

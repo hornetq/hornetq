@@ -16,6 +16,7 @@ package org.hornetq.core.persistence.impl.nullpm;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
@@ -28,6 +29,11 @@ class NullStorageLargeServerMessage extends ServerMessageImpl implements LargeSe
    public NullStorageLargeServerMessage()
    {
       super();
+   }
+
+   public NullStorageLargeServerMessage(ServerMessageImpl other)
+   {
+      super(other);
    }
 
    @Override
@@ -80,7 +86,13 @@ class NullStorageLargeServerMessage extends ServerMessageImpl implements LargeSe
    @Override
    public String toString()
    {
-      return "LargeServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+      return "NullStorageLargeServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+   }
+
+   public ServerMessage copy()
+   {
+      // This is a simple copy, used only to avoid changing original properties
+      return new NullStorageLargeServerMessage(this);
    }
 
    @Override
