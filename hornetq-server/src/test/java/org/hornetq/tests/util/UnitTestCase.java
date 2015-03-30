@@ -245,7 +245,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
     * @return
     * @throws Exception
     */
-   protected final ConfigurationImpl createBasicConfig(final int serverID)
+   protected ConfigurationImpl createBasicConfig(final int serverID)
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
