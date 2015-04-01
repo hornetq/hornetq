@@ -268,6 +268,28 @@ public class QueueControlTest extends ManagementTestBase
    }
 
    @Test
+   public void testGetFirstMessage() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      Assert.assertEquals(0, queueControl.getMessageCount());
+
+      // It's empty, so it's supposed to be like this
+      assertEquals("[{}]", queueControl.getFirstMessageAsJSON());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createMessage(false).putStringProperty("x", "valueX").putStringProperty("y", "valueY"));
+
+      System.out.println("first:" + queueControl.getFirstMessageAsJSON());
+
+      session.deleteQueue(queue);
+   }
+
+   @Test
    public void testGetMessagesAdded() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
