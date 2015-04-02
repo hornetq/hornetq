@@ -809,7 +809,10 @@ public class HornetQConnectionFactory implements Serializable, Referenceable, Co
    {
       try
       {
-         serverLocator.close();
+         if (serverLocator != null)
+         {
+            serverLocator.close();
+         }
       }
       catch (Exception e)
       {
