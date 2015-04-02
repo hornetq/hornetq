@@ -59,6 +59,7 @@ import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
+import org.hornetq.core.server.management.Notification;
 import org.hornetq.utils.FutureLatch;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -275,6 +276,10 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221045, value = "libaio is not available, switching the configuration into NIO", format = Message.Format.MESSAGE_FORMAT)
    void switchingNIO();
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 221048, value = "Consumer {0}:{1} attached to queue ''{2}'' from {3} identified as ''slow.'' Expected consumption rate: {4} msgs/second; actual consumption rate: {5} msgs/second.", format = Message.Format.MESSAGE_FORMAT)
+   void slowConsumerDetected(String sessionID, long consumerID, String queueName, String remoteAddress, float slowConsumerThreshold, float consumerRate);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 222000, value = "HornetQServer is being finalized and has not been stopped. Please remember to stop the server before letting it go out of scope",
@@ -1307,4 +1312,12 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224063, value = "Failed to close consumer connections for address {0}", format = Message.Format.MESSAGE_FORMAT)
    void failedToCloseConsumerConnectionsForAddress(String address, @Cause Exception e);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 224062, value = "Failed to send SLOW_CONSUMER notification: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void failedToSendSlowConsumerNotification(Notification notification, @Cause Exception e);
+
+   @LogMessage(level = Logger.Level.ERROR)
+   @Message(id = 224061, value = "Setting both <{0}> and <ha-policy> is invalid. Please use <ha-policy> exclusively as <{0}> is deprecated. Ignoring <{0}> value.", format = Message.Format.MESSAGE_FORMAT)
+   void incompatibleWithHAPolicy(String parameter);
 }

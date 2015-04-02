@@ -558,7 +558,10 @@ public interface HornetQServerControl
                            @Parameter(desc = "the maximum redelivery delay", name = "maxRedeliveryDelay") long maxRedeliveryDelay,
                            @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay,
                            @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
-                           @Parameter(desc = "the ploicy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception;
+                           @Parameter(desc = "the policy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy,
+                           @Parameter(desc = "when a consumer falls below this threshold in terms of messages consumed per second it will be considered 'slow'", name = "slowConsumerThreshold") long slowConsumerThreshold,
+                           @Parameter(desc = "how often (in seconds) to check for slow consumers", name = "slowConsumerCheckPeriod") long slowConsumerCheckPeriod,
+                           @Parameter(desc = "the policy to use when a slow consumer is detected", name = "slowConsumerPolicy") String slowConsumerPolicy) throws Exception;
 
    void removeAddressSettings(String addressMatch) throws Exception;
 

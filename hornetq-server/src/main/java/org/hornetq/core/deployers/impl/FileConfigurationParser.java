@@ -49,6 +49,7 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;
@@ -132,6 +133,12 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
    private static final String REDISTRIBUTION_DELAY_NODE_NAME = "redistribution-delay";
 
    private static final String SEND_TO_DLA_ON_NO_ROUTE = "send-to-dla-on-no-route";
+
+   private static final String SLOW_CONSUMER_THRESHOLD_NODE_NAME = "slow-consumer-threshold";
+
+   private static final String SLOW_CONSUMER_CHECK_PERIOD_NODE_NAME = "slow-consumer-check-period";
+
+   private static final String SLOW_CONSUMER_POLICY_NODE_NAME = "slow-consumer-policy";
 
    // Attributes ----------------------------------------------------
 
@@ -928,6 +935,28 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          else if (SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(name))
          {
             addressSettings.setSendToDLAOnNoRoute(XMLUtil.parseBoolean(child));
+         }
+         else if (SLOW_CONSUMER_THRESHOLD_NODE_NAME.equalsIgnoreCase(name))
+         {
+            long slowConsumerThreshold = XMLUtil.parseLong(child);
+            Validators.MINUS_ONE_OR_GT_ZERO.validate(SLOW_CONSUMER_THRESHOLD_NODE_NAME, slowConsumerThreshold);
+
+            addressSettings.setSlowConsumerThreshold(slowConsumerThreshold);
+         }
+         else if (SLOW_CONSUMER_CHECK_PERIOD_NODE_NAME.equalsIgnoreCase(name))
+         {
+            long slowConsumerCheckPeriod = XMLUtil.parseLong(child);
+            Validators.GT_ZERO.validate(SLOW_CONSUMER_CHECK_PERIOD_NODE_NAME, slowConsumerCheckPeriod);
+
+            addressSettings.setSlowConsumerCheckPeriod(slowConsumerCheckPeriod);
+         }
+         else if (SLOW_CONSUMER_POLICY_NODE_NAME.equalsIgnoreCase(name))
+         {
+            String value = getTrimmedTextContent(child);
+            Validators.SLOW_CONSUMER_POLICY_TYPE.validate(SLOW_CONSUMER_POLICY_NODE_NAME,
+                                                                 value);
+            SlowConsumerPolicy policy = Enum.valueOf(SlowConsumerPolicy.class, value);
+            addressSettings.setSlowConsumerPolicy(policy);
          }
       }
       return setting;

@@ -272,6 +272,37 @@ public class QueueImplTest extends UnitTestCase
    }
 
    @Test
+   public void testRate() throws InterruptedException
+   {
+      QueueImpl queue = new QueueImpl(1,
+                                      QueueImplTest.address1,
+                                      QueueImplTest.queue1,
+                                      null,
+                                      false,
+                                      true,
+                                      scheduledExecutor,
+                                      null,
+                                      null,
+                                      null,
+                                      executor);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+
+         queue.addTail(ref);
+      }
+
+      Thread.sleep(1000);
+
+      float rate = queue.getRate();
+      Assert.assertTrue(rate <= 10.0f);
+      System.out.println("Rate: " + rate);
+   }
+
+   @Test
    public void testSimpleNonDirectDelivery() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,

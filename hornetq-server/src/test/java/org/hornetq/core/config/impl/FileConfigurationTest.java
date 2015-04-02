@@ -25,6 +25,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -282,6 +283,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(81738173872337L, conf.getAddressesSettings().get("a1").getPageSizeBytes());
       assertEquals(10, conf.getAddressesSettings().get("a1").getPageCacheMaxSize());
       assertEquals(4, conf.getAddressesSettings().get("a1").getMessageCounterHistoryDayLimit());
+      assertEquals(10, conf.getAddressesSettings().get("a1").getSlowConsumerThreshold());
+      assertEquals(5, conf.getAddressesSettings().get("a1").getSlowConsumerCheckPeriod());
+      assertEquals(SlowConsumerPolicy.NOTIFY, conf.getAddressesSettings().get("a1").getSlowConsumerPolicy());
 
       assertEquals("a2.1", conf.getAddressesSettings().get("a2").getDeadLetterAddress().toString());
       assertEquals("a2.2", conf.getAddressesSettings().get("a2").getExpiryAddress().toString());
@@ -290,6 +294,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(7126716262626L, conf.getAddressesSettings().get("a2").getPageSizeBytes());
       assertEquals(20, conf.getAddressesSettings().get("a2").getPageCacheMaxSize());
       assertEquals(8, conf.getAddressesSettings().get("a2").getMessageCounterHistoryDayLimit());
+      assertEquals(20, conf.getAddressesSettings().get("a2").getSlowConsumerThreshold());
+      assertEquals(15, conf.getAddressesSettings().get("a2").getSlowConsumerCheckPeriod());
+      assertEquals(SlowConsumerPolicy.KILL, conf.getAddressesSettings().get("a2").getSlowConsumerPolicy());
 
 
       assertEquals(2, conf.getQueueConfigurations().size());
