@@ -34,6 +34,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.utils.FutureLatch;
 
 /**
  * The message handler
@@ -129,7 +130,7 @@ public class HornetQMessageHandler implements MessageHandler
          }
          else
          {
-            
+
             // The check for already exists should be done only at the first session
             // As a deployed MDB could set up multiple instances in order to process messages in parallel.
             if (sessionNr == 0 && subResponse.getConsumerCount() > 0)
@@ -212,19 +213,20 @@ public class HornetQMessageHandler implements MessageHandler
       return useXA ? session : null;
    }
 
-   public void interruptConsumer()
+   public Thread interruptConsumer(FutureLatch future)
    {
       try
       {
          if (consumer != null)
          {
-            consumer.interruptHandlers();
+            return consumer.prepareForClose(future);
          }
       }
       catch (Throwable e)
       {
          log.warn("Error interrupting handler on endpoint " + endpoint + " handler=" + consumer);
       }
+      return null;
    }
 
    /**

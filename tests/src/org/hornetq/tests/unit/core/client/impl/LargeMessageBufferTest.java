@@ -44,6 +44,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.HornetQBufferInputStream;
 
 /**
@@ -937,8 +938,9 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#interruptHandlers()
        */
-      public void interruptHandlers() throws HornetQException
+      public Thread prepareForClose(FutureLatch future) throws HornetQException
       {
+         return null;
       }
 
       /* (non-Javadoc)

@@ -42,6 +42,7 @@ import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SensitiveDataCodec;
 
 /**
@@ -369,16 +370,52 @@ public class HornetQActivation
          ra.getRecoveryManager().unRegister(resourceRecovery);
       }
 
-      for (HornetQMessageHandler handler : handlers)
+      final HornetQMessageHandler[] handlersCopy = new HornetQMessageHandler[handlers.size()];
+
+      // We need to do from last to first as any temporary queue will have been created on the first handler
+      // So we invert the handlers here
+      for (int i = 0; i < handlers.size(); i++)
       {
-         handler.interruptConsumer();
+         // The index here is the complimentary so it's inverting the array
+         handlersCopy[i] = handlers.get(handlers.size() - i - 1);
+      }
+
+      handlers.clear();
+
+      FutureLatch future = new FutureLatch(handlersCopy.length);
+      List<Thread> interruptThreads = new ArrayList<Thread>();
+      for (HornetQMessageHandler handler : handlersCopy)
+      {
+         Thread thread = handler.interruptConsumer(future);
+         if (thread != null)
+         {
+            interruptThreads.add(thread);
+         }
+      }
+
+      //wait for all the consumers to complete any onmessage calls
+      boolean stuckThreads = !future.await(factory.getCallTimeout());
+      //if any are stuck then we need to interrupt them
+      if (stuckThreads)
+      {
+         for (Thread interruptThread : interruptThreads)
+         {
+            try
+            {
+               interruptThread.interrupt();
+            }
+            catch (Exception e)
+            {
+               //ok
+            }
+         }
       }
 
       Thread threadTearDown = new Thread("TearDown/HornetQActivation")
       {
          public void run()
          {
-            for (HornetQMessageHandler handler : handlers)
+            for (HornetQMessageHandler handler : handlersCopy)
             {
                handler.teardown();
             }
