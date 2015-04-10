@@ -40,6 +40,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuation
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.utils.Future;
+import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
 import org.hornetq.utils.ReusableLatch;
@@ -464,29 +465,29 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    }
 
    /**
-    * To be used by MDBs
-    * @param interruptConsumer it will send an interrupt to the thread
+    * To be used by MDBs to stop any more handling of messages.
+    *
     * @throws HornetQException
+    * @param future the future to run once the onMessage Thread has completed
     */
-   public void interruptHandlers() throws HornetQException
+   public Thread prepareForClose(final FutureLatch future) throws HornetQException
    {
       closing = true;
 
       resetLargeMessageController();
 
-      Thread onThread = onMessageThread;
-      if (onThread != null)
+      //execute the future after the last onMessage call
+      sessionExecutor.execute(new Runnable()
       {
-         try
+         @Override
+         public void run()
          {
-            // just trying to interrupt any ongoing messages
-            onThread.interrupt();
+            future.run();
          }
-         catch (Throwable ignored)
-         {
-            // security exception probably.. we just ignore it, not big deal!
-         }
-      }
+
+      });
+
+      return onMessageThread;
    }
 
    public void cleanUp()

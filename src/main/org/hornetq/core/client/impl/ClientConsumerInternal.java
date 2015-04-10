@@ -21,6 +21,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.utils.FutureLatch;
 
 /**
  *
@@ -51,10 +52,11 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    /**
     * To be called by things like MDBs during shutdown of the server
-    * @param interrupt
+    *
     * @throws HornetQException
+    * @param future
     */
-   void interruptHandlers() throws HornetQException;
+   Thread prepareForClose(FutureLatch future) throws HornetQException;
 
    void clearAtFailover();
 
