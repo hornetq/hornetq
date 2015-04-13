@@ -3,7 +3,7 @@
    <parent>
       <artifactId>hornetq-protocols</artifactId>
       <groupId>org.hornetq</groupId>
-      <version>2.4.x-SNAPSHOT</version>
+      <version>2.4.7.Final</version>
    </parent>
    <modelVersion>4.0.0</modelVersion>
 
