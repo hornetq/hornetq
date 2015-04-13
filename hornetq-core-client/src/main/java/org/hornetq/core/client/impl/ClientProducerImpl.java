@@ -23,6 +23,7 @@ import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
@@ -45,6 +46,8 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class ClientProducerImpl implements ClientProducerInternal
 {
+   private static final long MAX_RESENDCACHE_WAITING_TIME = 10000L;//10 sec
+
    private final SimpleString address;
 
    private final ClientSessionInternal session;
@@ -427,11 +430,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       try
       {
 
-         for (int pos = 0; pos < bodySize; )
+         for (long pos = 0; pos < bodySize; )
          {
             final boolean lastChunk;
 
-            final int chunkLength = Math.min((int) (bodySize - pos), minLargeMessageSize);
+            final int chunkLength = (int)Math.min((bodySize - pos), (long)minLargeMessageSize);
 
             final HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(chunkLength);
 
@@ -454,6 +457,13 @@ public class ClientProducerImpl implements ClientProducerInternal
             else
             {
                channel.send(chunk);
+               if (!channel.largeServerCheck(MAX_RESENDCACHE_WAITING_TIME))
+               {
+                  HornetQClientLogger.LOGGER.warn("Bridge detected that the target server is slow to " +
+                          " send back chunk confirmations. It 's possible the bridge may take more memory" +
+                          " during sending of a large message. It may be a temporary situation if this warning" +
+                          " occasionally shows up.");
+               }
             }
 
             try
