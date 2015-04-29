@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.util;
 
+import javax.naming.Context;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -44,10 +47,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.naming.Context;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 import junit.framework.TestSuite;
@@ -477,7 +476,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       System.out.println(this.getClass().getName() + "::" + message);
    }
 
-   protected static TestSuite createAIOTestSuite(final Class<?> clazz)
+   protected static TestSuite createAIOTestSuite(final Class clazz)
    {
       TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
 

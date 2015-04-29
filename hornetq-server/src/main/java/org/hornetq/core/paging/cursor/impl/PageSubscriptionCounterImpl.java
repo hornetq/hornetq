@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -21,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
-import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.impl.Page;
@@ -104,7 +104,6 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     * This is used only on non transactional paging
     * @param page
     * @param increment
-    * @param context
     * @throws Exception
     */
    @Override

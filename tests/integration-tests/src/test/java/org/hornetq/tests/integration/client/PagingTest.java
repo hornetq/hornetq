@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.client;
 
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,9 +29,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
@@ -231,10 +230,6 @@ public class PagingTest extends ServiceTestBase
       }
    }
 
-
-
-
-   @Test
    public void testPageCleanup() throws Exception
    {
       clearData();
@@ -5786,13 +5781,11 @@ public class PagingTest extends ServiceTestBase
 
    }
 
-   @Test
    public void testMultiFiltersBrowsing() throws Throwable
    {
       internalTestMultiFilters(true);
    }
 
-   @Test
    public void testMultiFiltersRegularConsumer() throws Throwable
    {
       internalTestMultiFilters(false);
@@ -5800,7 +5793,7 @@ public class PagingTest extends ServiceTestBase
 
    public void internalTestMultiFilters(boolean browsing) throws Throwable
    {
-      clearDataRecreateServerDirs();
+      clearData();
 
       Configuration config = createDefaultConfig();
       config.setJournalSyncNonTransactional(false);
