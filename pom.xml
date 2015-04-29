@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.5.1.Final</version>
+   <version>2.3.5.x.Final</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
@@ -32,7 +32,7 @@
    <properties>
       <netty.version>3.6.6.Final</netty.version>
 
-      <hornetq.version.versionName>2.3.5.1.Final</hornetq.version.versionName>
+      <hornetq.version.versionName>2.3.5.x.Final</hornetq.version.versionName>
       <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>5</hornetq.version.microVersion>
