@@ -161,7 +161,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          else if (connection.getClientVersion() != request.getVersion())
          {
-            log.warn("Client is not being consistent on the request versioning. " +
+            log.debug("Client is not being consistent on the request versioning. " +
                      "It just sent a version id=" + request.getVersion() +
                      " while it informed " + connection.getClientVersion() + " previously");
          }
