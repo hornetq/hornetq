@@ -908,7 +908,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    public String toManagementString()
    {
-      return "ServerConsumer [id=" + id + ", filter=" + filter + ", binding=" + binding.toManagementString() + "]";
+      return "ServerConsumer [id=" + getConnectionID() + ":" + getSessionID() + ":" + id + ", filter=" + filter + ", binding=" + binding.toManagementString() + "]";
    }
 
    @Override
