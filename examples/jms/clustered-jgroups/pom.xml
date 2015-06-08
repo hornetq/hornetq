@@ -5,7 +5,7 @@
    <parent>
       <groupId>org.hornetq.examples.jms</groupId>
       <artifactId>jms-examples</artifactId>
-     <version>2.3.25.Final</version>
+     <version>2.3.25.x.Final</version>
    </parent>
 
    <artifactId>clustered-jgroups</artifactId>
@@ -38,7 +38,7 @@
                   <configuration>
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server0</hornetqConfigurationDir>
                      <systemProperties>
-                         <!-- this is to make sure the example will run fine on any box. 
+                         <!-- this is to make sure the example will run fine on any box.
                               you may tweak this to any property you like. More information on the JGroups docs  -->
                         <property>
                            <name>jgroups.bind_addr</name>
@@ -58,7 +58,7 @@
                      <hornetqConfigurationDir>${basedir}/target/classes/hornetq/server1</hornetqConfigurationDir>
                      <fork>true</fork>
                      <systemProperties>
-                        <!-- this is to make sure the example will run fine on any box. 
+                        <!-- this is to make sure the example will run fine on any box.
                              you may tweak this to any property you like. More information on the JGroups docs  -->
                         <property>
                            <name>jgroups.bind_addr</name>
