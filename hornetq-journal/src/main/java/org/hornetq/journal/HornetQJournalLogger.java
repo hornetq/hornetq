@@ -281,4 +281,8 @@ public interface HornetQJournalLogger extends BasicLogger
    @Message(id = 144006, value = "IOError code {0}, {1}", format = Message.Format.MESSAGE_FORMAT)
    void ioError(final int errorCode, final String errorMessage);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 144007, value = "Deleting journal file {0}: file is shorter then minimum header size.", format = Message.Format.MESSAGE_FORMAT)
+   void deletingTooShortFile(String fileName);
+
 }
