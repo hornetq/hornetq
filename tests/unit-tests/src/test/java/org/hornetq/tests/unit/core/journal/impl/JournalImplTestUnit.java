@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.journal.impl;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -3223,6 +3224,26 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
+   }
+
+   @Test
+   public void testLoadTruncatedFile() throws Exception
+   {
+      setup(2, 2 * 1024, true);
+      createJournal();
+      startJournal();
+
+      String testDir = getTestDir();
+      new File(testDir + File.separator + filePrefix + "-1." + fileExtension).createNewFile();
+
+      try
+      {
+         load();
+      }
+      catch (Exception e)
+      {
+         Assert.fail("Unexpected exception: " + e.toString());
+      }
    }
 
    protected abstract int getAlignment();
