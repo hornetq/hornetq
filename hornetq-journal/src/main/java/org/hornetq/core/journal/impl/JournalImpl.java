@@ -392,7 +392,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          }
          else
          {
-            HornetQJournalLogger.LOGGER.ignoringShortFile(fileName);
+            HornetQJournalLogger.LOGGER.deletingTooShortFile(fileName);
+            file.delete();
          }
       }
 
