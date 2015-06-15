@@ -166,7 +166,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -174,7 +174,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -182,7 +182,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -190,7 +190,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -198,7 +198,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -206,7 +206,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {

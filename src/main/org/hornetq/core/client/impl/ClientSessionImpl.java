@@ -1395,7 +1395,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          ClientSessionImpl.log.error("Caught Exception ", e);
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1414,7 +1414,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       catch (HornetQException e)
       {
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1431,7 +1431,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       catch (HornetQException e)
       {
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1518,7 +1518,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             }
             catch (HornetQException e2)
             {
-               throw new XAException(XAException.XAER_RMERR);
+               throw new XAException(XAException.XAER_RMFAIL);
             }
 
             ClientSessionImpl.log.warn(e.getMessage(), e);
@@ -1529,7 +1529,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          ClientSessionImpl.log.warn(e.getMessage(), e);
 
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1552,7 +1552,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          catch (HornetQException e)
          {
             // This should never occur
-            throw new XAException(XAException.XAER_RMERR);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
       }
       else
@@ -1612,9 +1612,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(XAException.XA_RETRY);
          }
 
-         log.warn("Sending XAER_RMERR " + convert(xid));
+         log.warn("Sending XAER_RMFAIL " + convert(xid));
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1631,7 +1631,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       catch (HornetQException e)
       {
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1696,13 +1696,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             catch (HornetQException e1)
             {
                // This should never occur
-               throw new XAException(XAException.XAER_RMERR);
+               throw new XAException(XAException.XAER_RMFAIL);
             }
          }
          
          log.error(e.getMessage(), e);
          // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 
@@ -1906,7 +1906,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (!xa)
       {
          ClientSessionImpl.log.error("Session is not XA");
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 

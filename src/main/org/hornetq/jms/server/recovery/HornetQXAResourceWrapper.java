@@ -315,7 +315,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
          else
          {
             XAException xae = new XAException("Error trying to connect to any providers for xa recovery");
-            xae.errorCode = XAException.XAER_RMERR;
+            xae.errorCode = XAException.XAER_RMFAIL;
             if (error != null)
             {
                xae.initCause(error);
