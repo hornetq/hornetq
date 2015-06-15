@@ -889,7 +889,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             e.printStackTrace();
 
-            throw new HornetQXAException(XAException.XAER_RMERR);
+            throw new HornetQXAException(XAException.XAER_RMFAIL);
          }
       }
       else
