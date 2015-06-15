@@ -13,8 +13,11 @@
 package org.hornetq.byteman.tests;
 
 import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
+import com.arjuna.ats.arjuna.coordinator.TwoPhaseOutcome;
 import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
@@ -47,8 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         Created May 20, 2010
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a> Created May 20, 2010
  */
 @RunWith(BMUnitRunner.class)
 public class HornetQMessageHandlerTest extends HornetQRATestBase
@@ -59,7 +61,6 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       return true;
    }
 
-
    @Override
    public boolean useSecurity()
    {
@@ -67,20 +68,9 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    }
 
    @Test
-   @BMRules
-   (
-      rules =
-            {
-               @BMRule
-                     (
-                           name = "interrupt",
-                           targetClass = "org.hornetq.core.protocol.core.impl.HornetQSessionContext",
-                           targetMethod = "xaEnd",
-                           targetLocation = "ENTRY",
-                           action = "org.hornetq.byteman.tests.HornetQMessageHandlerTest.interrupt();"
-                     )
-            }
-   )
+   @BMRules(rules = { @BMRule(name = "interrupt",
+            targetClass = "org.hornetq.core.protocol.core.impl.HornetQSessionContext", targetMethod = "xaEnd",
+            targetLocation = "ENTRY", action = "org.hornetq.byteman.tests.HornetQMessageHandlerTest.interrupt();") })
    public void testSimpleMessageReceivedOnQueue() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -132,7 +122,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
 
       Binding binding = server.getPostOffice().getBinding(SimpleString.toSimpleString(MDBQUEUEPREFIXED));
-      assertEquals(1, getMessageCount(((Queue) binding.getBindable())));
+      assertEquals(1, getMessageCount(((Queue)binding.getBindable())));
 
       server.stop();
       server.start();
@@ -147,20 +137,9 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    }
 
    @Test
-   @BMRules
-         (
-               rules =
-                     {
-                           @BMRule
-                                 (
-                                       name = "interrupt",
-                                       targetClass = "org.hornetq.core.protocol.core.impl.HornetQSessionContext",
-                                       targetMethod = "xaEnd",
-                                       targetLocation = "ENTRY",
-                                       action = "org.hornetq.byteman.tests.HornetQMessageHandlerTest.interrupt();"
-                                 )
-                     }
-         )
+   @BMRules(rules = { @BMRule(name = "interrupt",
+            targetClass = "org.hornetq.core.protocol.core.impl.HornetQSessionContext", targetMethod = "xaEnd",
+            targetLocation = "ENTRY", action = "org.hornetq.byteman.tests.HornetQMessageHandlerTest.interrupt();") })
    public void testSimpleMessageReceivedOnQueueTwoPhase() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
@@ -212,8 +191,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.stop();
 
       Binding binding = server.getPostOffice().getBinding(SimpleString.toSimpleString(MDBQUEUEPREFIXED));
-      assertEquals(1, getMessageCount(((Queue) binding.getBindable())));
-
+      assertEquals(1, getMessageCount(((Queue)binding.getBindable())));
 
       server.stop();
       server.start();
@@ -227,18 +205,106 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       session.close();
    }
 
+   @Test
+   @BMRules(
+            rules = { @BMRule(
+                              name = "throw HornetQException(CONNETION_TIMEOUT) during rollback",
+                              targetClass = "org.hornetq.core.protocol.core.impl.HornetQSessionContext",
+                              targetMethod = "xaRollback",
+                              targetLocation = "ENTRY",
+                              action = "org.hornetq.byteman.tests.HornetQMessageHandlerTest.throwHornetQExceptionConnectionTimeout();"),
+                     @BMRule(
+                              name = "check that outcome of XA transaction is TwoPhaseOutcome.FINISH_ERROR=8",
+                              targetClass = "com.arjuna.ats.internal.jta.resources.arjunacore.XAResourceRecord",
+                              targetMethod = "topLevelAbort",
+                              targetLocation = "AT EXIT",
+                              action = "org.hornetq.byteman.tests.HornetQMessageHandlerTest.assertTxOutComeIsOfStatusFinishedError($!);") })
+   public void testSimpleMessageReceivedOnQueueTwoPhaseFailPrepareByConnectionTimout() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      resourceAdapter = qResourceAdapter;
+
+      qResourceAdapter.setTransactionManagerLocatorClass(DummyTMLocator.class.getName());
+      qResourceAdapter.setTransactionManagerLocatorMethod("getTM");
+
+      MyBootstrapContext ctx = new MyBootstrapContext();
+
+      qResourceAdapter.setConnectorClassName(NETTY_CONNECTOR_FACTORY);
+      qResourceAdapter.start(ctx);
+
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setMaxSession(1);
+      spec.setCallTimeout(1000L);
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      CountDownLatch latch = new CountDownLatch(1);
+
+      XADummyEndpointWithDummyXAResourceFailEnd endpoint = new XADummyEndpointWithDummyXAResourceFailEnd(latch, true);
+
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
+
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+
+      ClientSession session = locator.createSessionFactory().createSession();
+
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+
+      ClientMessage message = session.createMessage(true);
+
+      message.getBodyBuffer().writeString("teststring");
+
+      clientProducer.send(message);
+
+      session.close();
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      qResourceAdapter.stop();
+
+      server.stop();
+
+      assertEquals("Two phase outcome must be of TwoPhaseOutcome.FINISH_ERROR.", TwoPhaseOutcome.FINISH_ERROR,
+                   txTwoPhaseOutCome.intValue());
+
+   }
+
    static volatile HornetQResourceAdapter resourceAdapter;
    static boolean resourceAdapterStopped = false;
+
    public static void interrupt() throws InterruptedException
    {
-      //Thread.currentThread().interrupt();
+      // Thread.currentThread().interrupt();
       if (!resourceAdapterStopped)
       {
          resourceAdapter.stop();
          resourceAdapterStopped = true;
          throw new InterruptedException("foo");
       }
-      //Thread.currentThread().interrupt();
+      // Thread.currentThread().interrupt();
+   }
+
+   public static void throwHornetQExceptionConnectionTimeout() throws HornetQException, XAException
+   {
+      throw new HornetQException(HornetQExceptionType.CONNECTION_TIMEDOUT);
+   }
+
+   static Integer txTwoPhaseOutCome = null;
+
+   public static void assertTxOutComeIsOfStatusFinishedError(int txOutCome)
+   {
+      // check only first trigger of byteman rule
+      if (txTwoPhaseOutCome == null)
+      {
+         txTwoPhaseOutCome = Integer.valueOf(txOutCome);
+      }
    }
 
    Transaction currentTX;
@@ -297,10 +363,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 //            e.printStackTrace();
 //         }
 
-
       }
-
-
 
       @Override
       public void afterDelivery() throws ResourceException
@@ -312,7 +375,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
          }
          catch (Throwable e)
          {
-            //its unsure as to whether the EJB/JCA layer will handle this or throw it to us,
+            // its unsure as to whether the EJB/JCA layer will handle this or throw it to us,
             // either way we don't do anything else so its fine just to throw.
             // NB this will only happen with 2 phase commit
             throw new RuntimeException(e);
@@ -330,7 +393,6 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       DummyTMLocator.startTM();
    }
 
-
    @After
    public void tearDown() throws Exception
    {
@@ -341,6 +403,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
    public static class DummyTMLocator
    {
       public static TransactionManagerImple tm;
+
       public static void stopTM()
       {
          try
@@ -354,11 +417,13 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
          }
          tm = null;
       }
+
       public static void startTM()
       {
          tm = new TransactionManagerImple();
          TxControl.enable();
       }
+
       public TransactionManager getTM()
       {
          return tm;
@@ -425,6 +490,45 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       public void start(Xid xid, int i) throws XAException
       {
 
+      }
+   }
+
+   public class XADummyEndpointWithDummyXAResourceFailEnd extends XADummyEndpoint
+   {
+      ClientSession session;
+
+      public XADummyEndpointWithDummyXAResourceFailEnd(CountDownLatch latch, boolean twoPhase) throws SystemException
+      {
+         super(latch, twoPhase);
+      }
+
+      @Override
+      public void beforeDelivery(Method method) throws NoSuchMethodException, ResourceException
+      {
+         try
+         {
+            DummyTMLocator.tm.begin();
+            currentTX = DummyTMLocator.tm.getTransaction();
+            currentTX.enlistResource(xaResource);
+            if (twoPhase)
+            {
+               currentTX.enlistResource(new DummyXAResourceFailEnd());
+            }
+         }
+         catch (Throwable e)
+         {
+            throw new RuntimeException(e.getMessage(), e);
+         }
+      }
+
+   }
+
+   static class DummyXAResourceFailEnd extends DummyXAResource
+   {
+      @Override
+      public void end(Xid xid, int i) throws XAException
+      {
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 }
