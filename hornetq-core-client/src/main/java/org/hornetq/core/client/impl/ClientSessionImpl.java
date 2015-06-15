@@ -1446,7 +1446,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             {
                HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
             }
-            throw new XAException(XAException.XA_RBOTHER);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
 
          try
@@ -1496,7 +1496,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          {
             HornetQClientLogger.LOGGER.errorCallingEnd(t);
             // This could occur if the TM interrupts the thread
-            XAException xaException = new XAException(XAException.XAER_RMERR);
+            XAException xaException = new XAException(XAException.XAER_RMFAIL);
             xaException.initCause(t);
             throw xaException;
          }
@@ -1527,7 +1527,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       catch (Throwable t)
       {
          // This could occur if the TM interrupts the thread
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
          throw xaException;
       }
@@ -1550,7 +1550,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       catch (Throwable t)
       {
          // This could occur if the TM interrupts the thread
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
          throw xaException;
       }
@@ -1586,7 +1586,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       if (rollbackOnly)
       {
-         throw new XAException(XAException.XA_RBOTHER);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
 
       // Note - don't need to flush acks since the previous end would have
@@ -1643,20 +1643,20 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             catch (Throwable t)
             {
                // This could occur if the TM interrupts the thread
-               XAException xaException = new XAException(XAException.XAER_RMERR);
+               XAException xaException = new XAException(XAException.XAER_RMFAIL);
                xaException.initCause(t);
                throw xaException;
             }
 
             HornetQClientLogger.LOGGER.errorDuringPrepare(e);
 
-            throw new XAException(XAException.XA_RBOTHER);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
 
          HornetQClientLogger.LOGGER.errorDuringPrepare(e);
 
          // This should never occur
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(e);
          throw xaException;
       }
@@ -1665,7 +1665,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          HornetQClientLogger.LOGGER.errorDuringPrepare(t);
 
          // This could occur if the TM interrupts the thread
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
          throw xaException;
       }
@@ -1694,7 +1694,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          catch (Throwable t)
          {
             // This could occur if the TM interrupts the thread
-            XAException xaException = new XAException(XAException.XAER_RMERR);
+            XAException xaException = new XAException(XAException.XAER_RMFAIL);
             xaException.initCause(t);
             throw xaException;
          }
@@ -1766,14 +1766,14 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          }
 
          // This should never occur
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(e);
          throw xaException;
       }
       catch (Throwable t)
       {
          // This could occur if the TM interrupts the thread
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
          throw xaException;
       }
@@ -1792,7 +1792,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       catch (Throwable t)
       {
          // This could occur if the TM interrupts the thread
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
          throw xaException;
       }
@@ -1865,21 +1865,21 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             catch (Throwable t)
             {
                // This could occur if the TM interrupts the thread
-               XAException xaException = new XAException(XAException.XAER_RMERR);
+               XAException xaException = new XAException(XAException.XAER_RMFAIL);
                xaException.initCause(t);
                throw xaException;
             }
          }
 
          // This should never occur
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(e);
          throw xaException;
       }
       catch (Throwable t)
       {
          // This could occur if the TM interrupts the thread
-         XAException xaException = new XAException(XAException.XAER_RMERR);
+         XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
          throw xaException;
       }
@@ -2081,7 +2081,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       if (!xa)
       {
          HornetQClientLogger.LOGGER.sessionNotXA();
-         throw new XAException(XAException.XAER_RMERR);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
    }
 

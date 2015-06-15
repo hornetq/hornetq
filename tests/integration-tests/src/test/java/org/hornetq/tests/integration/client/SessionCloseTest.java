@@ -12,15 +12,8 @@
  */
 
 package org.hornetq.tests.integration.client;
-import org.junit.Before;
-import org.junit.After;
-
-import org.junit.Test;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
-
-import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -38,6 +31,10 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * A SessionCloseTest
@@ -176,7 +173,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -184,7 +181,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -192,7 +189,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -200,7 +197,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -208,7 +205,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {
@@ -216,7 +213,7 @@ public class SessionCloseTest extends UnitTestCase
          }
       });
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XAER_RMFAIL, new HornetQAction()
       {
          public void run() throws XAException
          {

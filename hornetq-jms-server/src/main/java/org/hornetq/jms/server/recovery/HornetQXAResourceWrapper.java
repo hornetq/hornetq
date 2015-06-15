@@ -13,11 +13,10 @@
 
 package org.hornetq.jms.server.recovery;
 
-import java.util.Arrays;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.Arrays;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -312,7 +311,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
          else
          {
             XAException xae = new XAException("Error trying to connect to any providers for xa recovery");
-            xae.errorCode = XAException.XAER_RMERR;
+            xae.errorCode = XAException.XAER_RMFAIL;
             if (error != null)
             {
                xae.initCause(error);
