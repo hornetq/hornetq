@@ -1358,7 +1358,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (rollbackOnly)
       {
-         throw new XAException(XAException.XA_RBOTHER);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
 
       try
@@ -1465,7 +1465,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (rollbackOnly)
       {
-         throw new XAException(XAException.XA_RBOTHER);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
 
       // Note - don't need to flush acks since the previous end would have
@@ -1523,7 +1523,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
             ClientSessionImpl.log.warn(e.getMessage(), e);
 
-            throw new XAException(XAException.XA_RBOTHER);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
 
          ClientSessionImpl.log.warn(e.getMessage(), e);
