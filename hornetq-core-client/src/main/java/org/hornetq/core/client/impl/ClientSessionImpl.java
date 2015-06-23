@@ -1446,7 +1446,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             {
                HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
             }
-            throw new XAException(XAException.XA_RBOTHER);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
 
          try
@@ -1586,7 +1586,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       if (rollbackOnly)
       {
-         throw new XAException(XAException.XA_RBOTHER);
+         throw new XAException(XAException.XAER_RMFAIL);
       }
 
       // Note - don't need to flush acks since the previous end would have
@@ -1650,7 +1650,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
             HornetQClientLogger.LOGGER.errorDuringPrepare(e);
 
-            throw new XAException(XAException.XA_RBOTHER);
+            throw new XAException(XAException.XAER_RMFAIL);
          }
 
          HornetQClientLogger.LOGGER.errorDuringPrepare(e);
