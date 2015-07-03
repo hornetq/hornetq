@@ -72,12 +72,6 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void bridgeConnected();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 121003, value = "JMS Server Manager Running cached command for {0}." +
-         "(In the event of failover after failback has occurred, this message may be output multiple times.)",
-         format = Message.Format.MESSAGE_FORMAT)
-   void serverRunningCachedCommand(Runnable run);
-
-   @LogMessage(level = Logger.Level.INFO)
    @Message(id = 121004, value = "JMS Server Manager Caching command for {0} since the JMS Server is not active yet" ,
          format = Message.Format.MESSAGE_FORMAT)
    void serverCachingCommand(Object runnable);
@@ -167,6 +161,12 @@ public interface HornetQJMSServerLogger extends BasicLogger
    @Message(id = 122018, value = "Could not start recovery discovery on {0}, we will retry every recovery scan until the server is available",
            format = Message.Format.MESSAGE_FORMAT)
    void xaRecoveryStartError(XARecoveryConfig e);
+
+   @LogMessage(level = Logger.Level.DEBUG)
+   @Message(id = 123000, value = "JMS Server Manager Running cached command for {0}." +
+           "(In the event of failover after failback has occurred, this message may be output multiple times.)",
+           format = Message.Format.MESSAGE_FORMAT)
+   void serverRunningCachedCommand(Runnable run);
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 124000, value = "key attribute missing for JMS configuration {0}" , format = Message.Format.MESSAGE_FORMAT)
