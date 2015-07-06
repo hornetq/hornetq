@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.25.SP2</version>
+   <version>2.3.25.x.Final</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
@@ -37,8 +37,8 @@
       <hornetq.version.minorVersion>3</hornetq.version.minorVersion>
       <hornetq.version.microVersion>25</hornetq.version.microVersion>
       <hornetq.version.incrementingVersion>123,122</hornetq.version.incrementingVersion>
-      <hornetq.version.versionSuffix>SP2</hornetq.version.versionSuffix>
-      <hornetq.version.versionTag>HornetQ_2_3_25_SP2</hornetq.version.versionTag>
+      <hornetq.version.versionSuffix>SP3</hornetq.version.versionSuffix>
+      <hornetq.version.versionTag>HornetQ_2_3_25_SP3</hornetq.version.versionTag>
       <HornetQ-Version>
          ${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}
          (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})
