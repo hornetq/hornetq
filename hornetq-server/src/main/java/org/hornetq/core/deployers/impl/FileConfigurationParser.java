@@ -1153,6 +1153,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
+      // Warn if connection-ttl-override/connection-ttl == check-period
+      compareTTLWithCheckPeriod(mainConfig, connectionTTL, clientFailureCheckPeriod);
+
       ClusterConnectionConfiguration config;
 
       if (discoveryGroupName == null)
@@ -1314,6 +1317,9 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
          }
       }
 
+      // Warn if connection-ttl-override/connection-ttl == check-period
+      compareTTLWithCheckPeriod(mainConfig, connectionTTL, clientFailureCheckPeriod);
+
       BridgeConfiguration config;
 
       if (!staticConnectorNames.isEmpty())
@@ -1445,5 +1451,14 @@ public final class FileConfigurationParser extends XMLConfigurationUtil
       }
 
       return new ConnectorServiceConfiguration(clazz, params, name);
+   }
+
+   private void compareTTLWithCheckPeriod(final Configuration config, final long connectionTTL, final long checkPeriod)
+   {
+      if (config.getConnectionTTLOverride() == checkPeriod)
+          HornetQServerLogger.LOGGER.connectionTTLEqualsCheckPeriod("connection-ttl-override", "check-period");
+
+      if (connectionTTL == checkPeriod)
+          HornetQServerLogger.LOGGER.connectionTTLEqualsCheckPeriod("connection-ttl", "check-period");
    }
 }
