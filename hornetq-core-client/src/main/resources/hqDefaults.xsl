@@ -50,7 +50,7 @@
       XSLT Vendor = <xsl:copy-of select="system-property('xsl:vendor')"/>
       XSLT Vendor URL = <xsl:copy-of select="system-property('xsl:vendor-url')"/>
 */
-    <xsl:value-of select="unparsed-text('./HornetQDefaultConfiguration.txt', 'iso-8859-1')" disable-output-escaping="yes"/>
+<xsl:value-of select="unparsed-text('./HornetQDefaultConfiguration.txt', 'iso-8859-1')" disable-output-escaping="yes"/>
 
 <xsl:text>&#xa;    // -------------------------------------------------------------------
     // Following fields are generated from the hornetq-schema.xsd annotations
@@ -76,7 +76,7 @@
                  )
                  "/>
 </xsl:for-each>()
-   <xsl:text>&#123;&#xa;     return </xsl:text>
+   <xsl:text>&#123;&#xa;      return </xsl:text>
   <xsl:value-of select="xsd:annotation/@hq:field_name" />
     <xsl:text>;
    &#125;&#xa;</xsl:text>

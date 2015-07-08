@@ -76,7 +76,7 @@ public final class HornetQDefaultConfiguration
     */
    public static String getDefaultHapolicyType()
    {
-     return DEFAULT_HAPOLICY_TYPE;
+      return DEFAULT_HAPOLICY_TYPE;
    }
 
    /**
@@ -84,7 +84,7 @@ public final class HornetQDefaultConfiguration
     */
    public static String getDefaultHapolicyBackupStrategy()
    {
-     return DEFAULT_HAPOLICY_BACKUP_STRATEGY;
+      return DEFAULT_HAPOLICY_BACKUP_STRATEGY;
    }
 
    //shared by client and core/server
