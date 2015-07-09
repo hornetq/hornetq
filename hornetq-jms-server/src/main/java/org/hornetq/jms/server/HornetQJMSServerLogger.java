@@ -64,7 +64,9 @@ public interface HornetQJMSServerLogger extends BasicLogger
    void bridgeConnected();
 
    @LogMessage(level = Logger.Level.INFO)
-   @Message(id = 121003, value = "JMS Server Manager Running cached command for {0}" , format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 121003, value = "JMS Server Manager Running cached command for {0}." +
+         "(In the event of failover after failback has occurred, this message may be output multiple times.)",
+         format = Message.Format.MESSAGE_FORMAT)
    void serverRunningCachedCommand(Runnable run);
 
    @LogMessage(level = Logger.Level.INFO)
