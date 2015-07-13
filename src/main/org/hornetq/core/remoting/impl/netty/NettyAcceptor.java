@@ -15,9 +15,7 @@ package org.hornetq.core.remoting.impl.netty;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -378,6 +376,20 @@ public class NettyAcceptor implements Acceptor
 
                if (needClientAuth)
                   engine.setNeedClientAuth(true);
+
+               String[] protocols = engine.getEnabledProtocols();
+               Set<String> set = new HashSet<String>();
+               for (String s : protocols)
+               {
+                   if (s.equals("SSLv3") || s.equals("SSLv2Hello"))
+                   {
+                       NettyAcceptor.log.warn("Disallowing use of vulnerable protocol: See http://www.oracle.com/technetwork/topics/security/poodlecve-2014-3566-2339408.html for more details.");
+                       continue;
+                   }
+                   set.add(s);
+                }
+
+               engine.setEnabledProtocols(set.toArray(new String[0]));
 
                SslHandler handler = new SslHandler(engine);
 
