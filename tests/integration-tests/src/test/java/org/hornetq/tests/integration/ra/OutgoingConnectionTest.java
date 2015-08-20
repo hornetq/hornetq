@@ -11,8 +11,6 @@
  *  permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.ra;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
@@ -29,14 +27,18 @@ import javax.jms.XASession;
 import javax.resource.spi.ManagedConnection;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQRAConnectionFactory;
 import org.hornetq.ra.HornetQRAConnectionFactoryImpl;
 import org.hornetq.ra.HornetQRAConnectionManager;
+import org.hornetq.ra.HornetQRAManagedConnection;
 import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQRASession;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -313,5 +315,64 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
       queueConnection.close();
       mc.destroy();
+   }
+
+   @Test
+   public void testSharedHornetQConnectionFactory() throws Exception
+   {
+      Session s = null;
+      Session s2 = null;
+      HornetQRAManagedConnection mc = null;
+      HornetQRAManagedConnection mc2 = null;
+
+      try
+      {
+         resourceAdapter = new HornetQResourceAdapter();
+         resourceAdapter.setTransactionManagerLocatorClass("");
+         resourceAdapter.setTransactionManagerLocatorMethod("");
+
+         resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+         MyBootstrapContext ctx = new MyBootstrapContext();
+         resourceAdapter.start(ctx);
+         HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+         HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+         mcf.setResourceAdapter(resourceAdapter);
+         HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+         QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
+         s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         mc = (HornetQRAManagedConnection) ((HornetQRASession) s).getManagedConnection();
+         HornetQConnectionFactory cf1 = mc.getConnectionFactory();
+
+         QueueConnection queueConnection2 = qraConnectionFactory.createQueueConnection();
+         s2 = queueConnection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         mc2 = (HornetQRAManagedConnection) ((HornetQRASession) s2).getManagedConnection();
+         HornetQConnectionFactory cf2 = mc2.getConnectionFactory();
+
+         // we're not testing equality so don't use equals(); we're testing if they are actually the *same* object
+         assertTrue(cf1 == cf2);
+      }
+      finally
+      {
+         if (s != null)
+         {
+            s.close();
+         }
+
+         if (mc != null)
+         {
+            mc.destroy();
+         }
+
+         if (s2 != null)
+         {
+            s2.close();
+         }
+
+         if (mc2 != null)
+         {
+            mc2.destroy();
+         }
+      }
    }
 }
