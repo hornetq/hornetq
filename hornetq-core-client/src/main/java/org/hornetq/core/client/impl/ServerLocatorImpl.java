@@ -600,6 +600,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       // if the topologyArray is null, we will use the initialConnectors
       if (usedTopology != null)
       {
+         if (HornetQClientLogger.LOGGER.isTraceEnabled())
+         {
+            HornetQClientLogger.LOGGER.trace("Selecting connector from toplogy.");
+         }
          int pos = loadBalancingPolicy.select(usedTopology.length);
          Pair<TransportConfiguration, TransportConfiguration> pair = usedTopology[pos];
 
@@ -607,6 +611,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
       else
       {
+         if (HornetQClientLogger.LOGGER.isTraceEnabled())
+         {
+            HornetQClientLogger.LOGGER.trace("Selecting connector from initial connectors.");
+         }
          // Get from initialconnectors
 
          int pos = loadBalancingPolicy.select(initialConnectors.length);
