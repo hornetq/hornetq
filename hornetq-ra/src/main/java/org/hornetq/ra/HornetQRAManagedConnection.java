@@ -893,4 +893,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       this.inManagedTx = inManagedTx;
    }
 
+   public HornetQConnectionFactory getConnectionFactory()
+   {
+      return connectionFactory;
+   }
 }
