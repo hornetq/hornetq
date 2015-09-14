@@ -292,6 +292,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       managedConnectionFactories.clear();
 
+      for (HornetQConnectionFactory knownConnectionFactory : knownConnectionFactories.values())
+      {
+         knownConnectionFactory.close();
+      }
+
       knownConnectionFactories.clear();
 
       if (defaultHornetQConnectionFactory != null)
