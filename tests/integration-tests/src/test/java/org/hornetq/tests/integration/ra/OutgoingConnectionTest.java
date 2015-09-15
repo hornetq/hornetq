@@ -375,4 +375,62 @@ public class OutgoingConnectionTest extends HornetQRATestBase
          }
       }
    }
+
+   @Test
+   public void testSharedActiveMQConnectionFactoryWithClose() throws Exception
+   {
+      Session s = null;
+      Session s2 = null;
+      HornetQRAManagedConnection mc = null;
+      HornetQRAManagedConnection mc2 = null;
+
+      try
+      {
+         server.getConfiguration().setSecurityEnabled(false);
+         resourceAdapter = new HornetQResourceAdapter();
+
+         resourceAdapter.setConnectorClassName(InVMConnectorFactory.class.getName());
+         MyBootstrapContext ctx = new MyBootstrapContext();
+         resourceAdapter.start(ctx);
+         HornetQRAConnectionManager qraConnectionManager = new HornetQRAConnectionManager();
+         HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+         mcf.setResourceAdapter(resourceAdapter);
+         HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
+
+         QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
+         s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         mc = (HornetQRAManagedConnection) ((HornetQRASession) s).getManagedConnection();
+
+         QueueConnection queueConnection2 = qraConnectionFactory.createQueueConnection();
+         s2 = queueConnection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         mc2 = (HornetQRAManagedConnection) ((HornetQRASession) s2).getManagedConnection();
+
+         mc.destroy();
+
+         MessageProducer producer = s2.createProducer(HornetQJMSClient.createQueue(MDBQUEUE));
+         producer.send(s2.createTextMessage("x"));
+      }
+      finally
+      {
+         if (s != null)
+         {
+            s.close();
+         }
+
+         if (mc != null)
+         {
+            mc.destroy();
+         }
+
+         if (s2 != null)
+         {
+            s2.close();
+         }
+
+         if (mc2 != null)
+         {
+            mc2.destroy();
+         }
+      }
+   }
 }

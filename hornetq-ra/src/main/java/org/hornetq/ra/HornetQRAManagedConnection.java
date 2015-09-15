@@ -315,7 +315,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
          // we must close the HornetQConnectionFactory because it contains a ServerLocator
          if (connectionFactory != null)
          {
-            connectionFactory.close();
+            ra.closeConnectionFactory(mcf.getProperties());
          }
       }
       catch (Throwable e)
