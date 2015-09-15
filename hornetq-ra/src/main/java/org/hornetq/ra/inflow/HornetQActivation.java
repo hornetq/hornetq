@@ -482,7 +482,7 @@ public class HornetQActivation
 
       if (spec.isHasBeenUpdated() && factory != null)
       {
-         factory.close();
+         ra.closeConnectionFactory(spec);
          factory = null;
       }
 
