@@ -336,6 +336,10 @@ public class HornetQServerImpl implements HornetQServer
       {
          configuration = new ConfigurationImpl();
       }
+      else
+      {
+         ConfigurationUtils.validateConfiguration(configuration);
+      }
 
       if (mbeanServer == null)
       {
