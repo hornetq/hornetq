@@ -112,6 +112,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private final List<HornetQRAManagedConnectionFactory> managedConnectionFactories = new ArrayList<HornetQRAManagedConnectionFactory>();
 
    /**
+    * Keep track of the connection factories that we create so we don't create a bunch of instances of factories
+    * configured the exact same way. Using the same connection factory instance also makes connection load-balancing
+    * behave as expected for outbound connections.
+    */
+   private Map<ConnectionFactoryProperties, HornetQConnectionFactory> knownConnectionFactories = new HashMap<ConnectionFactoryProperties, HornetQConnectionFactory>();
+
+   /**
     * Constructor
     */
    public HornetQResourceAdapter()
@@ -284,6 +291,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       managedConnectionFactories.clear();
+
+      for (HornetQConnectionFactory knownConnectionFactory : knownConnectionFactories.values())
+      {
+         knownConnectionFactory.close();
+      }
+
+      knownConnectionFactories.clear();
 
       if (defaultHornetQConnectionFactory != null)
       {
@@ -1848,137 +1862,149 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    public HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
       HornetQConnectionFactory cf;
-      List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames()
-         : raProperties.getParsedConnectorClassNames();
+      boolean known = false;
 
-      String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
-         : getDiscoveryAddress();
-
-      Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
-
-      String jgroupsFileName = overrideProperties.getJgroupsFile() != null ? overrideProperties.getJgroupsFile()
-         : getJgroupsFile();
-
-      String jgroupsChannel = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName()
-         : getJgroupsChannelName();
-
-      String jgroupsLocatorClassName = raProperties.getJgroupsChannelLocatorClass();
-
-      if (ha == null)
+      synchronized (knownConnectionFactories)
       {
-         ha = HornetQClient.DEFAULT_IS_HA;
-      }
-
-      if (discoveryAddress != null || jgroupsFileName != null || jgroupsLocatorClassName != null)
-      {
-         BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = null;
-
-         if (jgroupsLocatorClassName != null)
+         if (!knownConnectionFactories.keySet().contains(overrideProperties))
          {
-            String jchannelRefName = raProperties.getJgroupsChannelRefName();
-            JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClassName, jchannelRefName);
-            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
-         }
-         else if (discoveryAddress != null)
-         {
-            Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-               : getDiscoveryPort();
-            if (discoveryPort == null)
+            List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames() : raProperties.getParsedConnectorClassNames();
+
+            String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress() : getDiscoveryAddress();
+
+            Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
+
+            String jgroupsFileName = overrideProperties.getJgroupsFile() != null ? overrideProperties.getJgroupsFile() : getJgroupsFile();
+
+            String jgroupsChannel = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName() : getJgroupsChannelName();
+
+            String jgroupsLocatorClassName = raProperties.getJgroupsChannelLocatorClass();
+
+            if (ha == null)
             {
-               discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+               ha = HornetQClient.DEFAULT_IS_HA;
             }
 
-            String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress()
-               : raProperties.getDiscoveryLocalBindAddress();
-            endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
-         }
-         else if (jgroupsFileName != null)
-         {
-            endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
-         }
-         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
-            : raProperties.getDiscoveryRefreshTimeout();
-         if (refreshTimeout == null)
-         {
-            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
-         }
-
-         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
-            : raProperties.getDiscoveryInitialWaitTimeout();
-
-         if (initialTimeout == null)
-         {
-            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
-         }
-
-         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(refreshTimeout, initialTimeout, endpointFactoryConfiguration);
-
-         if (HornetQRALogger.LOGGER.isDebugEnabled())
-         {
-            HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for discovery=" + groupConfiguration + " with ha=" + ha);
-         }
-
-         if (ha)
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
-         }
-         else
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
-         }
-      }
-      else if (connectorClassName != null)
-      {
-         TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
-
-         List<Map<String, Object>> connectionParams;
-         if (overrideProperties.getParsedConnectorClassNames() != null)
-         {
-            connectionParams = overrideProperties.getParsedConnectionParameters();
-         }
-         else
-         {
-            connectionParams = raProperties.getParsedConnectionParameters();
-         }
-
-         for (int i = 0; i < connectorClassName.size(); i++)
-         {
-            TransportConfiguration tc;
-            if (connectionParams == null || i >= connectionParams.size())
+            if (discoveryAddress != null || jgroupsFileName != null || jgroupsLocatorClassName != null)
             {
-               tc = new TransportConfiguration(connectorClassName.get(i));
-               HornetQRALogger.LOGGER.debug("No connector params provided using default");
+               BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = null;
+
+               if (jgroupsLocatorClassName != null)
+               {
+                  String jchannelRefName = raProperties.getJgroupsChannelRefName();
+                  JChannel jchannel = HornetQRaUtils.locateJGroupsChannel(jgroupsLocatorClassName, jchannelRefName);
+                  endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jchannel, jgroupsChannel);
+               }
+               else if (discoveryAddress != null)
+               {
+                  Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort() : getDiscoveryPort();
+                  if (discoveryPort == null)
+                  {
+                     discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+                  }
+
+                  String localBindAddress = overrideProperties.getDiscoveryLocalBindAddress() != null ? overrideProperties.getDiscoveryLocalBindAddress() : raProperties.getDiscoveryLocalBindAddress();
+                  endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(discoveryAddress, discoveryPort, localBindAddress, -1);
+               }
+               else if (jgroupsFileName != null)
+               {
+                  endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsFileName, jgroupsChannel);
+               }
+               Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout() : raProperties.getDiscoveryRefreshTimeout();
+               if (refreshTimeout == null)
+               {
+                  refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+               }
+
+               Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout() : raProperties.getDiscoveryInitialWaitTimeout();
+
+               if (initialTimeout == null)
+               {
+                  initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+               }
+
+               DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(refreshTimeout, initialTimeout, endpointFactoryConfiguration);
+
+               if (HornetQRALogger.LOGGER.isDebugEnabled())
+               {
+                  HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for discovery=" + groupConfiguration + " with ha=" + ha);
+               }
+
+               if (ha)
+               {
+                  cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
+               }
+               else
+               {
+                  cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
+               }
+            }
+            else if (connectorClassName != null)
+            {
+               TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
+
+               List<Map<String, Object>> connectionParams;
+               if (overrideProperties.getParsedConnectorClassNames() != null)
+               {
+                  connectionParams = overrideProperties.getParsedConnectionParameters();
+               }
+               else
+               {
+                  connectionParams = raProperties.getParsedConnectionParameters();
+               }
+
+               for (int i = 0; i < connectorClassName.size(); i++)
+               {
+                  TransportConfiguration tc;
+                  if (connectionParams == null || i >= connectionParams.size())
+                  {
+                     tc = new TransportConfiguration(connectorClassName.get(i));
+                     HornetQRALogger.LOGGER.debug("No connector params provided using default");
+                  }
+                  else
+                  {
+                     tc = new TransportConfiguration(connectorClassName.get(i), connectionParams.get(i));
+                  }
+
+                  transportConfigurations[i] = tc;
+               }
+
+               if (HornetQRALogger.LOGGER.isDebugEnabled())
+               {
+                  HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for transport=" +
+                                                  Arrays.toString(transportConfigurations) + " with ha=" + ha);
+               }
+
+               if (ha)
+               {
+                  cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
+               }
+               else
+               {
+                  cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
+               }
             }
             else
             {
-               tc = new TransportConfiguration(connectorClassName.get(i), connectionParams.get(i));
+               throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
             }
 
-            transportConfigurations[i] = tc;
-         }
-
-
-         if (HornetQRALogger.LOGGER.isDebugEnabled())
-         {
-            HornetQRALogger.LOGGER.debug("Creating Connection Factory on the resource adapter for transport=" +
-                                            Arrays.toString(transportConfigurations) + " with ha=" + ha);
-         }
-
-         if (ha)
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
+            setParams(cf, overrideProperties);
+            knownConnectionFactories.put(overrideProperties, cf);
          }
          else
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
+            cf = knownConnectionFactories.get(overrideProperties);
+            known = true;
          }
       }
-      else
+
+      if (known && cf.getServerLocator().isClosed())
       {
-         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
+         knownConnectionFactories.remove(overrideProperties);
+         cf = createHornetQConnectionFactory(overrideProperties);
       }
 
-      setParams(cf, overrideProperties);
       return cf;
    }
 
