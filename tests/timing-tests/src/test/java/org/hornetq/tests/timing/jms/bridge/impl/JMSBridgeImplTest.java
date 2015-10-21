@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -80,6 +81,8 @@ public class JMSBridgeImplTest extends UnitTestCase
    private static final String TARGET = RandomUtil.randomString();
 
    private JMSServerManager jmsServer;
+
+   private static final AtomicBoolean tcclClassFound = new AtomicBoolean(false);
 
    // Static --------------------------------------------------------
 
@@ -153,6 +156,32 @@ public class JMSBridgeImplTest extends UnitTestCase
          public ConnectionFactory createConnectionFactory() throws Exception
          {
             return cf;
+         }
+      };
+   }
+
+   private static ConnectionFactoryFactory newTCCLAwareConnectionFactoryFactory(final ConnectionFactory cf)
+   {
+      return new ConnectionFactoryFactory()
+      {
+         public ConnectionFactory createConnectionFactory() throws Exception
+         {
+            loadATCCLClass();
+            return cf;
+         }
+
+         private void loadATCCLClass()
+         {
+            ClassLoader tcclClassLoader = Thread.currentThread().getContextClassLoader();
+            try
+            {
+               tcclClassLoader.loadClass("com.class.only.visible.to.tccl.SomeClass");
+               tcclClassFound.set(true);
+            }
+            catch (ClassNotFoundException e)
+            {
+               e.printStackTrace();
+            }
          }
       };
    }
@@ -598,9 +627,87 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    }
 
+   @Test
+   public void testStartWithSpecificTCCL() throws Exception
+   {
+      MockContextClassLoader mockTccl = setMockTCCL();
+      try
+      {
+         final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
+         HornetQJMSConnectionFactory failingSourceCF = new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()))
+         {
+            private static final long serialVersionUID = -8866390811966688830L;
+
+            @Override
+            public Connection createConnection() throws JMSException
+            {
+               sourceConn.set(super.createConnection());
+               return sourceConn.get();
+            }
+         };
+         // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
+         failingSourceCF.setReconnectAttempts(0);
+         failingSourceCF.setBlockOnNonDurableSend(true);
+         failingSourceCF.setBlockOnDurableSend(true);
+
+         ConnectionFactoryFactory sourceCFF = JMSBridgeImplTest.newTCCLAwareConnectionFactoryFactory(failingSourceCF);
+         ConnectionFactoryFactory targetCFF = JMSBridgeImplTest.newConnectionFactoryFactory(JMSBridgeImplTest.createConnectionFactory());
+         DestinationFactory sourceDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.SOURCE));
+         DestinationFactory targetDF = JMSBridgeImplTest.newDestinationFactory(HornetQJMSClient.createQueue(JMSBridgeImplTest.TARGET));
+         TransactionManager tm = JMSBridgeImplTest.newTransactionManager();
+
+         JMSBridgeImpl bridge = new JMSBridgeImpl();
+         Assert.assertNotNull(bridge);
+
+         bridge.setSourceConnectionFactoryFactory(sourceCFF);
+         bridge.setSourceDestinationFactory(sourceDF);
+         bridge.setTargetConnectionFactoryFactory(targetCFF);
+         bridge.setTargetDestinationFactory(targetDF);
+         bridge.setFailureRetryInterval(10);
+         bridge.setMaxRetries(2);
+         bridge.setMaxBatchSize(1);
+         bridge.setMaxBatchTime(-1);
+         bridge.setTransactionManager(tm);
+         bridge.setQualityOfServiceMode(QualityOfServiceMode.AT_MOST_ONCE);
+
+         Assert.assertFalse(bridge.isStarted());
+         bridge.start();
+         Assert.assertTrue(bridge.isStarted());
+
+         unsetMockTCCL(mockTccl);
+         tcclClassFound.set(false);
+
+         sourceConn.get().getExceptionListener().onException(new JMSException("exception on the source"));
+         Thread.sleep(4 * bridge.getFailureRetryInterval());
+         // reconnection must have succeeded
+         Assert.assertTrue(bridge.isStarted());
+
+         bridge.stop();
+         Assert.assertFalse(bridge.isStarted());
+         assertTrue(tcclClassFound.get());
+      }
+      finally
+      {
+         if (mockTccl != null) unsetMockTCCL(mockTccl);
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   private static MockContextClassLoader setMockTCCL()
+   {
+      ClassLoader parent = JMSBridgeImpl.class.getClassLoader();
+      MockContextClassLoader tccl = new MockContextClassLoader(parent);
+      Thread.currentThread().setContextClassLoader(tccl);
+      return tccl;
+   }
+
+   private static void unsetMockTCCL(MockContextClassLoader mockTccl)
+   {
+      Thread.currentThread().setContextClassLoader(mockTccl.getOriginal());
+   }
 
    @Override
    @Before
@@ -635,5 +742,30 @@ public class JMSBridgeImplTest extends UnitTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   private static class MockContextClassLoader extends ClassLoader
+   {
+      private final ClassLoader original;
+      private final String knownClass = "com.class.only.visible.to.tccl.SomeClass";
 
+      public MockContextClassLoader(ClassLoader parent)
+      {
+         super(parent);
+         original = Thread.currentThread().getContextClassLoader();
+      }
+
+      public ClassLoader getOriginal()
+      {
+         return original;
+      }
+
+      @Override
+      protected Class<?> findClass(String name) throws ClassNotFoundException
+      {
+         if (knownClass.equals(name))
+         {
+            return null;
+         }
+         return super.findClass(name);
+      }
+   }
 }
