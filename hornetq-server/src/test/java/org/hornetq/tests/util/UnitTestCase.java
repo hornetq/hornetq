@@ -213,8 +213,9 @@ public abstract class UnitTestCase extends CoreUnitTestCase
                                                             List<String> connectors)
    {
       ClusterConnectionConfiguration ccc =
-         new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, false, 1, 1, connectors,
-                                            false);
+               new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, true, 1, 1, connectors,
+                                                  false);
+
       mainConfig.getClusterConfigurations().add(ccc);
    }
 

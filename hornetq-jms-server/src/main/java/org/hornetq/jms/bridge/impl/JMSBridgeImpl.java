@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
@@ -186,6 +187,8 @@ public final class JMSBridgeImpl implements JMSBridge
    private static final int FORWARD_MODE_NONTX = 2;
 
    private HornetQRegistryBase registry;
+
+   private ClassLoader moduleTccl;
 
    /*
     * Constructor for MBean
@@ -378,6 +381,14 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          stopping = false;
       }
+
+      moduleTccl = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return Thread.currentThread().getContextClassLoader();
+         }
+      });
 
       locateRecoveryRegistry();
 
@@ -1894,7 +1905,27 @@ public final class JMSBridgeImpl implements JMSBridge
     */
    private ExecutorService createExecutor()
    {
-      return Executors.newFixedThreadPool(3);
+      ExecutorService service = Executors.newFixedThreadPool(3, new ThreadFactory() {
+
+         @Override
+         public Thread newThread(Runnable r)
+         {
+            final Thread thr = new Thread(r);
+            if (moduleTccl != null)
+            {
+               AccessController.doPrivileged(new PrivilegedAction()
+               {
+                  public Object run()
+                  {
+                     thr.setContextClassLoader(moduleTccl);
+                     return null;
+                  }
+               });
+            }
+            return thr;
+         }
+      });
+      return service;
    }
 
    // Inner classes ---------------------------------------------------------------
