@@ -81,6 +81,10 @@ public interface HornetQRALogger extends BasicLogger
    @Message(id = 151005, value = "awaiting HornetQ Server availability", format = Message.Format.MESSAGE_FORMAT)
    void awaitingJMSServerCreation();
 
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 151006, value = "Cluster topology change detected. Re-balancing connections.", format = Message.Format.MESSAGE_FORMAT)
+   void rebalancingConnections();
+
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 152000, value = "It wasn't possible to lookup for a Transaction Manager through the configured properties TransactionManagerLocatorClass and TransactionManagerLocatorMethod" +
          "\nHornetQ Resource Adapter won't be able to set and verify transaction timeouts in certain cases.", format = Message.Format.MESSAGE_FORMAT)
