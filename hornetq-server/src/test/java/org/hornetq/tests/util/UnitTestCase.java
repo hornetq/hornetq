@@ -703,6 +703,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
       deleteDirectory(file);
       file.mkdirs();
 
+      recreateDataDirectories(testDir1);
+   }
+
+   protected void recreateDataDirectories(String testDir1)
+   {
       recreateDirectory(getJournalDir(testDir1));
       recreateDirectory(getBindingsDir(testDir1));
       recreateDirectory(getPageDir(testDir1));
