@@ -124,6 +124,8 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    // undefined by default, default is specified at the RA level in HornetQRAProperties
    private Long setupInterval;
 
+   private Boolean rebalanceConnections = false;
+
    /**
     * Constructor
     */
@@ -705,6 +707,26 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       this.setupInterval = setupInterval;
    }
 
+   public boolean isRebalanceConnections()
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQRALogger.LOGGER.trace("isRebalanceConnections()");
+      }
+
+      return rebalanceConnections;
+   }
+
+   public void setRebalanceConnections(boolean rebalanceConnections)
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setRebalanceConnections(" + rebalanceConnections + ")");
+      }
+
+      this.rebalanceConnections = rebalanceConnections;
+   }
+
    /**
     * Validate
     *
@@ -870,6 +892,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       if (parsedJndiParams != null ? !parsedJndiParams.equals(that.parsedJndiParams) : that.parsedJndiParams != null)
          return false;
       if (localTx != null ? !localTx.equals(that.localTx) : that.localTx != null) return false;
+      if (rebalanceConnections != null ? !rebalanceConnections.equals(that.rebalanceConnections) : that.rebalanceConnections != null) return false;
       if (setupAttempts != null ? !setupAttempts.equals(that.setupAttempts) : that.setupAttempts != null) return false;
       return !(setupInterval != null ? !setupInterval.equals(that.setupInterval) : that.setupInterval != null);
 
@@ -897,6 +920,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       result = 31 * result + (jndiParams != null ? jndiParams.hashCode() : 0);
       result = 31 * result + (parsedJndiParams != null ? parsedJndiParams.hashCode() : 0);
       result = 31 * result + (localTx != null ? localTx.hashCode() : 0);
+      result = 31 * result + (rebalanceConnections != null ? rebalanceConnections.hashCode() : 0);
       result = 31 * result + (setupAttempts != null ? setupAttempts.hashCode() : 0);
       result = 31 * result + (setupInterval != null ? setupInterval.hashCode() : 0);
       return result;

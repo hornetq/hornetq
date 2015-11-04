@@ -1,5 +1,6 @@
 package org.hornetq.tests.integration.ra;
 
+import javax.naming.Context;
 import java.util.HashMap;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -8,12 +9,14 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Before;
 
 public class HornetQRAClusteredTestBase extends HornetQRATestBase
 {
    protected HornetQServer secondaryServer;
+   protected Context secondaryContext;
    protected JMSServerManagerImpl secondaryJmsServer;
    protected TransportConfiguration secondaryConnector;
    protected TransportConfiguration primaryConnector;
@@ -33,6 +36,8 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
       secondaryServer = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
       addServer(secondaryServer);
       secondaryJmsServer = new JMSServerManagerImpl(secondaryServer);
+      secondaryContext = new InVMContext();
+      secondaryJmsServer.setContext(secondaryContext);
       secondaryJmsServer.start();
       waitForTopology(secondaryServer, 2);
    }
@@ -96,5 +101,11 @@ public class HornetQRAClusteredTestBase extends HornetQRATestBase
       configuration.setSecurityEnabled(false);
       configuration.setJMXManagementEnabled(true);
       return configuration;
+   }
+
+   @Override
+   protected boolean usePersistence()
+   {
+      return true;
    }
 }
