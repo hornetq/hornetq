@@ -13,43 +13,9 @@
 
 package org.hornetq.core.protocol.core;
 
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CLOSE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_COMMIT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CONSUMER_CLOSE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CREATECONSUMER;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_EXPIRED;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_CONTINUATION;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_LARGE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_START;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_STOP;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_COMMIT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_END;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FORGET;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_GET_TIMEOUT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_INDOUBT_XIDS;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_JOIN;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_PREPARE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESUME;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_ROLLBACK;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FAILED;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
-
-import java.util.List;
-
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.List;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -99,12 +65,45 @@ import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.server.BindingQueryResult;
-import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.HornetQMessageBundle;
+import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.remoting.Connection;
+
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CLOSE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_COMMIT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CONSUMER_CLOSE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CREATECONSUMER;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_EXPIRED;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FLOWTOKEN;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_INDIVIDUAL_ACKNOWLEDGE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_QUEUEQUERY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ROLLBACK;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_CONTINUATION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_LARGE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_START;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_STOP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_COMMIT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_END;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FAILED;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FORGET;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_GET_TIMEOUT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_INDOUBT_XIDS;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_JOIN;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_PREPARE;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_RESUME;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_ROLLBACK;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 
 /**
  * A ServerSessionPacketHandler
@@ -116,6 +115,9 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public class ServerSessionPacketHandler implements ChannelHandler
 {
+
+   private final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+
    private final ServerSession session;
 
    private final StorageManager storageManager;
@@ -206,6 +208,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
       boolean flush = false;
       boolean closeChannel = false;
       boolean requiresResponse = false;
+
+      if (isTrace)
+      {
+         HornetQServerLogger.LOGGER.trace("ServerSessionPacketHandler::handlePacket," + packet);
+      }
 
       try
       {
@@ -579,6 +586,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
                              final boolean flush,
                              final boolean closeChannel)
    {
+
+      if (isTrace)
+      {
+         HornetQServerLogger.LOGGER.trace("ServerSessionPacketHandler::scheduling response::" + response);
+      }
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
          public void onError(final int errorCode, final String errorMessage)
@@ -588,8 +600,12 @@ public class ServerSessionPacketHandler implements ChannelHandler
             HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage( HornetQExceptionType.createException(errorCode, errorMessage));
 
             doConfirmAndResponse(confirmPacket, exceptionMessage, flush, closeChannel);
-         }
 
+            if (isTrace)
+            {
+               HornetQServerLogger.LOGGER.trace("ServerSessionPacketHandler::response sent::" + response);
+            }
+         }
          public void done()
          {
             doConfirmAndResponse(confirmPacket, response, flush, closeChannel);

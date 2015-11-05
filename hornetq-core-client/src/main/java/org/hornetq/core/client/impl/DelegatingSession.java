@@ -501,7 +501,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.setTransactionTimeout(seconds);
    }
 
-   public void resetIfNeeded() throws HornetQException
+   public void resetIfNeeded()
    {
       session.resetIfNeeded();
    }

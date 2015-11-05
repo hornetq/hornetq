@@ -17,7 +17,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 
 /**
@@ -68,16 +67,10 @@ public class HornetQRAXAResource implements XAResource
 
       managedConnection.lock();
 
+      managedConnection.lookupCurrentTransaction();
+
       ClientSessionInternal sessionInternal = (ClientSessionInternal) xaResource;
-      try
-      {
-         //this resets any tx stuff, we assume here that the tm and jca layer are well behaved when it comes to this
-         sessionInternal.resetIfNeeded();
-      }
-      catch (HornetQException e)
-      {
-         HornetQRALogger.LOGGER.problemResettingXASession();
-      }
+
       try
       {
          xaResource.start(xid, flags);
@@ -127,7 +120,11 @@ public class HornetQRAXAResource implements XAResource
          HornetQRALogger.LOGGER.trace("prepare(" + xid + ")");
       }
 
-      return xaResource.prepare(xid);
+      int retVal = xaResource.prepare(xid);
+
+      managedConnection.clearCurrentTransaction();
+
+      return retVal;
    }
 
    /**
@@ -144,6 +141,8 @@ public class HornetQRAXAResource implements XAResource
       }
 
       xaResource.commit(xid, onePhase);
+
+      managedConnection.clearCurrentTransaction();
    }
 
    /**
@@ -159,6 +158,8 @@ public class HornetQRAXAResource implements XAResource
       }
 
       xaResource.rollback(xid);
+
+      managedConnection.clearCurrentTransaction();
    }
 
    /**

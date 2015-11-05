@@ -13,13 +13,10 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
-import org.junit.Test;
-
+import javax.transaction.xa.Xid;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -37,6 +34,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.tests.util.UnitTestCase;
+import org.junit.Test;
 
 /**
  * A BindingImplTest
@@ -126,6 +124,12 @@ public class BindingsImplTest extends UnitTestCase
       public void addOperation(final TransactionOperation sync)
       {
 
+      }
+
+      @Override
+      public boolean isEffective()
+      {
+         return false;
       }
 
       public boolean hasTimedOut(long currentTime, int defaultTimeout)

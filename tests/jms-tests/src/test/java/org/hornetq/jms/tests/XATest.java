@@ -12,9 +12,6 @@
  */
 
 package org.hornetq.jms.tests;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -22,6 +19,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.XAConnection;
@@ -32,13 +30,22 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.jms.client.HornetQXAConnectionFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.hornetq.tests.util.RandomUtil;
 import org.jboss.tm.TxUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -365,6 +372,117 @@ public class XATest extends HornetQServerTestCase
          if (conn2 != null)
          {
             conn2.close();
+         }
+      }
+   }
+
+
+   @Test
+   public void testFailWhileConsumeRetry() throws Exception
+   {
+      String outQueueName = "outQueue" + RandomUtil.randomString();
+      String inQueueName = "inQueue" + RandomUtil.randomString();
+      createQueue(outQueueName);
+      createQueue(inQueueName);
+
+      Queue inQueue;
+      Queue outQueue;
+
+      {
+         Connection conn = getConnectionFactory().createConnection();
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         outQueue = session.createQueue(outQueueName);
+         inQueue = session.createQueue(inQueueName);
+         MessageProducer producer = session.createProducer(inQueue);
+         for (int i = 0; i < 100; i++)
+         {
+            TextMessage msg = session.createTextMessage("msg " + i);
+            msg.setIntProperty("i", i);
+            producer.send(msg);
+         }
+         conn.close();
+      }
+
+
+      HornetQXAConnectionFactory connectionFactory = (HornetQXAConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      connectionFactory.setRetryInterval(10);
+      connectionFactory.setReconnectAttempts(-1);
+      connectionFactory.setConsumerWindowSize(1024 * 1024 );
+
+
+      XAConnection connSource = null;
+      XAConnection connTarget = null;
+      try
+      {
+         connSource = connectionFactory.createXAConnection();
+         connTarget = connectionFactory.createXAConnection();
+
+
+         XASession sessionSource = connSource.createXASession();
+         XASession sessionTarget = connTarget.createXASession();
+
+         MessageConsumer consumer = sessionSource.createConsumer(inQueue);
+         MessageProducer producer = sessionTarget.createProducer(outQueue);
+
+         connSource.start();
+
+         for (int i = 0; i < 101; i++)
+         {
+            tm.begin();
+
+
+            ClientSessionInternal internalSessionSource = (ClientSessionInternal) sessionSource.getXAResource();
+            ClientSessionInternal internalSessionTarget = (ClientSessionInternal) sessionTarget.getXAResource();
+            internalSessionSource.resetIfNeeded();
+            internalSessionTarget.resetIfNeeded();
+
+
+            Transaction tx = tm.getTransaction();
+
+            tx.enlistResource(sessionSource.getXAResource());
+            tx.enlistResource(sessionTarget.getXAResource());
+
+            TextMessage message = (TextMessage)consumer.receive(5000);
+            Assert.assertNotNull(message);
+
+            System.out.println("Received message " + message.getText());
+
+            producer.send(message);
+
+            tx.delistResource(sessionSource.getXAResource(), XAResource.TMSUCCESS);
+            tx.delistResource(sessionTarget.getXAResource(), XAResource.TMSUCCESS);
+
+            if (i == 9)
+            {
+               internalSessionSource.getConnection().fail(new HornetQException("forced failure"));
+            }
+
+            try
+            {
+               tm.commit();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+            if (i == 10)
+            {
+               internalSessionSource.getConnection().fail(new HornetQException("forced failure"));
+            }
+
+         }
+
+         Assert.assertNull(consumer.receiveNoWait());
+      }
+      finally
+      {
+         if (connSource != null)
+         {
+            connSource.close();
+         }
+         if (connTarget != null)
+         {
+            connTarget.close();
          }
       }
    }
@@ -1227,9 +1345,6 @@ public class XATest extends HornetQServerTestCase
 
          tm.rollback();
 
-         // Rollback causes cancel which is asynch
-         Thread.sleep(1000);
-
          // We cannot assume anything about the order in which the transaction manager rollsback
          // the sessions - this is implementation dependent
 
@@ -1368,9 +1483,6 @@ public class XATest extends HornetQServerTestCase
 
          cons1.close();
 
-         // Cancel is asynch
-         Thread.sleep(500);
-
          MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue1);
          TextMessage r2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -1390,9 +1502,6 @@ public class XATest extends HornetQServerTestCase
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
          tm.rollback();
-
-         // Rollback causes cancel which is asynch
-         Thread.sleep(1000);
 
          // We cannot assume anything about the order in which the transaction manager rollsback
          // the sessions - this is implementation dependent
@@ -1546,10 +1655,6 @@ public class XATest extends HornetQServerTestCase
          tx.delistResource(res1, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
-         // rollback will cause an attemp to deliver messages locally to the original consumers.
-         // the original consumer has closed, so it will cancelled to the server
-         // the server cancel is asynch, so we need to sleep for a bit to make sure it completes
-         log.trace("Forcing failure");
          try
          {
             tm.commit();
@@ -1559,8 +1664,6 @@ public class XATest extends HornetQServerTestCase
          {
             // We should expect this
          }
-
-         Thread.sleep(1000);
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
@@ -2192,6 +2295,7 @@ public class XATest extends HornetQServerTestCase
 
          // suspend the tx
          Transaction suspended = tm.suspend();
+         tx1.delistResource(res1, XAResource.TMSUSPEND);
 
          tm.begin();
 
@@ -2216,10 +2320,10 @@ public class XATest extends HornetQServerTestCase
 
          ProxyAssertSupport.assertNull(r1);
 
+         tx1.delistResource(res1, XAResource.TMSUCCESS);
+
          // now resume the first tx and then commit it
          tm.resume(suspended);
-
-         tx1.delistResource(res1, XAResource.TMSUCCESS);
 
          tm.commit();
 

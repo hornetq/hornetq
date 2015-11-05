@@ -1165,6 +1165,7 @@ public class FailoverTest extends FailoverTestBase
       try
       {
          session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
 
          Assert.fail("Should throw exception");
       }
@@ -1208,6 +1209,8 @@ public class FailoverTest extends FailoverTestBase
       try
       {
          session.end(xid, XAResource.TMSUCCESS);
+
+         session.prepare(xid);
 
          Assert.fail("Should throw exception");
       }
@@ -1387,6 +1390,8 @@ public class FailoverTest extends FailoverTestBase
       {
          session2.end(xid, XAResource.TMSUCCESS);
 
+         session2.prepare(xid);
+
          Assert.fail("Should throw exception");
       }
       catch (XAException e)
@@ -1429,12 +1434,15 @@ public class FailoverTest extends FailoverTestBase
       try
       {
          session2.end(xid, XAResource.TMSUCCESS);
+         session2.prepare(xid);
 
          Assert.fail("Should throw exception");
       }
       catch (XAException e)
       {
       }
+
+      session2.rollback(xid);
 
       // Since the end was not accepted, the messages should be redelivered
       receiveMessages(consumer);

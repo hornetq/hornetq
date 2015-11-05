@@ -765,13 +765,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
 
-      if (tx != null && tx.getXid().equals(xid))
-      {
-         final String msg = "Cannot commit, session is currently doing work in transaction " + tx.getXid();
-
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
-      }
-      else
+      try
       {
          Transaction theTx = resourceManager.removeTransaction(xid);
 
@@ -820,58 +814,65 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
          }
       }
+      finally
+      {
+         tx = null;
+      }
    }
 
    public synchronized void xaEnd(final Xid xid) throws Exception
    {
-      if (tx != null && tx.getXid().equals(xid))
+      try
       {
-         if (tx.getState() == Transaction.State.SUSPENDED)
+         if (tx != null && tx.getXid().equals(xid))
          {
-            final String msg = "Cannot end, transaction is suspended";
-
-            throw new HornetQXAException(XAException.XAER_PROTO, msg);
-         }
-         else if (tx.getState() == Transaction.State.ROLLEDBACK)
-         {
-            final String msg = "Cannot end, transaction is rolled back";
-
-            tx = null;
-
-            throw new HornetQXAException(XAException.XAER_PROTO, msg);
-         }
-         else
-         {
-            tx = null;
-         }
-      }
-      else
-      {
-         // It's also legal for the TM to call end for a Xid in the suspended
-         // state
-         // See JTA 1.1 spec 3.4.4 - state diagram
-         // Although in practice TMs rarely do this.
-         Transaction theTx = resourceManager.getTransaction(xid);
-
-         if (theTx == null)
-         {
-            final String msg = "Cannot find suspended transaction to end " + xid;
-
-            throw new HornetQXAException(XAException.XAER_NOTA, msg);
-         }
-         else
-         {
-            if (theTx.getState() != Transaction.State.SUSPENDED)
+            if (tx.getState() == Transaction.State.SUSPENDED)
             {
-               final String msg = "Transaction is not suspended " + xid;
+               final String msg = "Cannot end, transaction is suspended";
 
                throw new HornetQXAException(XAException.XAER_PROTO, msg);
             }
-            else
+            else if (tx.getState() == Transaction.State.ROLLEDBACK)
             {
-               theTx.resume();
+               final String msg = "Cannot end, transaction is rolled back";
+
+               tx = null;
+
+               throw new HornetQXAException(XAException.XAER_PROTO, msg);
             }
          }
+         else
+         {
+            // It's also legal for the TM to call end for a Xid in the suspended
+            // state
+            // See JTA 1.1 spec 3.4.4 - state diagram
+            // Although in practice TMs rarely do this.
+            Transaction theTx = resourceManager.getTransaction(xid);
+
+            if (theTx == null)
+            {
+               final String msg = "Cannot find suspended transaction to end " + xid;
+
+               throw new HornetQXAException(XAException.XAER_NOTA, msg);
+            }
+            else
+            {
+               if (theTx.getState() != Transaction.State.SUSPENDED)
+               {
+                  final String msg = "Transaction is not suspended " + xid;
+
+                  throw new HornetQXAException(XAException.XAER_PROTO, msg);
+               }
+               else
+               {
+                  theTx.resume();
+               }
+            }
+         }
+      }
+      finally
+      {
+         tx = null;
       }
    }
 
@@ -958,15 +959,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaRollback(final Xid xid) throws Exception
    {
-      if (tx != null && tx.getXid().equals(xid))
+      try
       {
-         final String msg = "Cannot roll back, session is currently doing work in a transaction " + tx.getXid();
+         Transaction theTx = internalRemoveXID(xid);
 
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
-      }
-      else
-      {
-         Transaction theTx = resourceManager.removeTransaction(xid);
          if (isTrace)
          {
             HornetQServerLogger.LOGGER.trace("xarollback into " + theTx);
@@ -1030,6 +1026,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
          }
       }
+      finally
+      {
+         this.tx = null;
+      }
+   }
+
+   private Transaction internalRemoveXID(Xid xid)
+   {
+      Transaction theTx = resourceManager.removeTransaction(xid);
+
+      // if the resource manager don't have the XID
+      // we will try the current tx, as long as the XID matches.
+      // this shouldn't happen in regular cases...
+      // but we will try this to be more resilient to failures
+      if (theTx == null && tx != null && tx.getXid() != null && tx.getXid().equals(xid))
+      {
+         theTx = tx;
+      }
+
+      return theTx;
    }
 
    public synchronized void xaStart(final Xid xid) throws Exception
@@ -1038,22 +1054,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          HornetQServerLogger.LOGGER.xidReplacedOnXStart(tx.getXid().toString(), xid.toString());
 
-         try
-         {
-            if (tx.getState() != Transaction.State.PREPARED)
-            {
-               // we don't want to rollback anything prepared here
-               if (tx.getXid() != null)
-               {
-                  resourceManager.removeTransaction(tx.getXid());
-               }
-               tx.rollback();
-            }
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.debug("An exception happened while we tried to debug the previous tx, we can ignore this exception", e);
-         }
+         // We can't do anything here, as we can't mess with the TM's XIDs
+         // At the worse timeout should take care of it
       }
 
       tx = newTransaction(xid);
@@ -1075,31 +1077,29 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaFailed(final Xid xid) throws Exception
    {
-      if (tx != null)
-      {
-         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
 
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
+      Transaction theTX = resourceManager.getTransaction(xid);
+
+      if (theTX == null)
+      {
+         theTX = newTransaction(xid);
+         resourceManager.putTransaction(xid, theTX);
+      }
+
+      if (theTX.isEffective())
+      {
+         HornetQServerLogger.LOGGER.debug("Client failed with Xid " + xid + " but the server already had it prepared");
+         tx = null;
       }
       else
       {
+         theTX.markAsRollbackOnly(new HornetQException("Can't commit as a Failover happened during the operation"));
+         tx = theTX;
+      }
 
-         tx = newTransaction(xid);
-         tx.markAsRollbackOnly(new HornetQException("Can't commit as a Failover happened during the operation"));
-
-         if (isTrace)
-         {
-            HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
-         }
-
-         boolean added = resourceManager.putTransaction(xid, tx);
-
-         if (!added)
-         {
-            final String msg = "Cannot start, there is already a xid " + tx.getXid();
-
-            throw new HornetQXAException(XAException.XAER_DUPID, msg);
-         }
+      if (isTrace)
+      {
+         HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
       }
    }
 
@@ -1111,38 +1111,37 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          HornetQServerLogger.LOGGER.trace("xasuspend on " + this.tx);
       }
 
-      if (tx == null)
+      try
       {
-         final String msg = "Cannot suspend, session is not doing work in a transaction ";
-
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
-      }
-      else
-      {
-         if (tx.getState() == Transaction.State.SUSPENDED)
+         if (tx == null)
          {
-            final String msg = "Cannot suspend, transaction is already suspended " + tx.getXid();
+            final String msg = "Cannot suspend, session is not doing work in a transaction ";
 
             throw new HornetQXAException(XAException.XAER_PROTO, msg);
          }
          else
          {
-            tx.suspend();
+            if (tx.getState() == Transaction.State.SUSPENDED)
+            {
+               final String msg = "Cannot suspend, transaction is already suspended " + tx.getXid();
 
-            tx = null;
+               throw new HornetQXAException(XAException.XAER_PROTO, msg);
+            }
+            else
+            {
+               tx.suspend();
+            }
          }
+      }
+      finally
+      {
+         tx = null;
       }
    }
 
    public synchronized void xaPrepare(final Xid xid) throws Exception
    {
-      if (tx != null && tx.getXid().equals(xid))
-      {
-         final String msg = "Cannot commit, session is currently doing work in a transaction " + tx.getXid();
-
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
-      }
-      else
+      try
       {
          Transaction theTx = resourceManager.getTransaction(xid);
 
@@ -1173,6 +1172,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                theTx.prepare();
             }
          }
+      }
+      finally
+      {
+         tx = null;
       }
    }
 

@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.hornetq.api.core.client.FailoverEventListener;
+import org.hornetq.api.core.client.FailoverEventType;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQXAConnection;
@@ -99,6 +101,8 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
     * Handles
     */
    private final Set<HornetQRASession> handles;
+
+   private volatile Transaction currentTransaction;
 
    /**
     * Lock
@@ -387,7 +391,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       {
          try
          {
-            Transaction tx = tm.getTransaction();
+            Transaction tx = getTransaction();
             if (tx != null)
             {
                int status = tx.getStatus();
@@ -407,6 +411,35 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
             throw jmsE;
          }
       }
+   }
+
+   public Transaction getTransaction() throws SystemException
+   {
+      if (tm != null)
+      {
+         return tm.getTransaction();
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   public void lookupCurrentTransaction()
+   {
+      try
+      {
+         this.currentTransaction = getTransaction();
+      }
+      catch (Throwable e)
+      {
+         HornetQRALogger.LOGGER.warn(e.getMessage(), e);
+      }
+   }
+
+   public void clearCurrentTransaction()
+   {
+      this.currentTransaction = null;
    }
 
 
@@ -885,6 +918,39 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
       catch (JMSException je)
       {
          throw new ResourceException(je.getMessage(), je);
+      }
+
+      try
+      {
+         connection.setFailoverListener(new FailoverListener());
+      }
+      catch (Exception ignored)
+      {
+         HornetQRALogger.LOGGER.warn(ignored.getMessage(), ignored);
+      }
+   }
+
+   private class FailoverListener implements FailoverEventListener
+   {
+      @Override
+      public void failoverEvent(FailoverEventType eventType)
+      {
+         Transaction checkTX = currentTransaction;
+         if (checkTX != null)
+         {
+            try
+            {
+               if (checkTX.getStatus() != Status.STATUS_COMMITTED && currentTransaction.getStatus() != Status.STATUS_PREPARED)
+               {
+                  HornetQRALogger.LOGGER.debug("Managed connection is marking transaction " + checkTX + " as rollbackOnly due to a failover event");
+                  checkTX.setRollbackOnly();
+               }
+            }
+            catch (Throwable ignored)
+            {
+               HornetQRALogger.LOGGER.warn(ignored.getMessage(), ignored);
+            }
+         }
       }
    }
 
