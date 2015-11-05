@@ -208,7 +208,6 @@ public class BasicXaTest extends ServiceTestBase
       assertNotNull(message);
       message = clientConsumer.receiveImmediate();
       assertNull(message);
-      clientSession.end(xid2, XAResource.TMSUCCESS);
       clientSession.commit(xid2, true);
       message = clientConsumer.receiveImmediate();
       assertNotNull(message);

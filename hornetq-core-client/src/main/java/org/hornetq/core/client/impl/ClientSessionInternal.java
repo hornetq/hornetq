@@ -95,7 +95,7 @@ public interface ClientSessionInternal extends ClientSession
 
    void setPacketSize(int packetSize);
 
-   void resetIfNeeded() throws HornetQException;
+   void resetIfNeeded();
 
    /** This is used internally to control and educate the user
     *  about using the thread boundaries properly.

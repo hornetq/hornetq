@@ -141,7 +141,6 @@
                   <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
                   <exclude>org/hornetq/jms/tests/XARecoveryTest.java</exclude>
                   <exclude>org/hornetq/jms/tests/XAResourceRecoveryTest.java</exclude>
-                  <exclude>org/hornetq/jms/tests/XATest.java</exclude>
                   <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
                   <exclude>org/hornetq/jms/tests/manual/**</exclude>
                </excludes>
