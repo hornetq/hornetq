@@ -13,12 +13,6 @@
 
 package org.hornetq.jms.tests;
 
-import org.junit.Test;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.util.concurrent.CountDownLatch;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -32,8 +26,13 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
+import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -970,6 +969,14 @@ public class AcknowledgementTest extends JMSTestCase
          messageReceived = (TextMessage)consumer.receive(1000);
 
          ProxyAssertSupport.assertEquals("two", messageReceived.getText());
+
+         messageReceived = (TextMessage)consumer.receiveNoWait();
+
+         if (messageReceived != null)
+         {
+            System.out.println("Message received " + messageReceived.getText());
+         }
+         Assert.assertNull(messageReceived);
 
          consumer.close();
 
