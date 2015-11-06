@@ -186,12 +186,26 @@ public class TopicControlTest extends ManagementTestBase
 
       TopicControl topicControl = createManagementControl();
       String jsonString = topicControl.listDurableSubscriptionsAsJSON();
+      System.out.println("jsonString::" + jsonString);
       SubscriptionInfo[] infos = SubscriptionInfo.from(jsonString);
+
       Assert.assertEquals(2, infos.length);
-      Assert.assertEquals(clientID, infos[0].getClientID());
-      Assert.assertEquals(subscriptionName, infos[0].getName());
-      Assert.assertEquals(clientID + "2", infos[1].getClientID());
-      Assert.assertEquals(subscriptionName + "2", infos[1].getName());
+
+      int id0, id1;
+      if (infos[0].getClientID().equals(clientID))
+      {
+         id0 = 0;
+         id1 = 1;
+      }
+      else
+      {
+         id0 = 1;
+         id1 = 0;
+      }
+      Assert.assertEquals(clientID, infos[id0].getClientID());
+      Assert.assertEquals(subscriptionName, infos[id0].getName());
+      Assert.assertEquals(clientID + "2", infos[id1].getClientID());
+      Assert.assertEquals(subscriptionName + "2", infos[id1].getName());
 
       jsonString = topicControl.listNonDurableSubscriptionsAsJSON();
       infos = SubscriptionInfo.from(jsonString);
