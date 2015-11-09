@@ -116,6 +116,9 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public class ServerSessionPacketHandler implements ChannelHandler
 {
+
+   private final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+
    private final ServerSession session;
 
    private final StorageManager storageManager;
@@ -206,6 +209,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
       boolean flush = false;
       boolean closeChannel = false;
       boolean requiresResponse = false;
+
+      if (isTrace)
+      {
+         HornetQServerLogger.LOGGER.trace("ServerSessionPacketHandler::handlePacket," + packet);
+      }
 
       try
       {
@@ -579,6 +587,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
                              final boolean flush,
                              final boolean closeChannel)
    {
+
+      if (isTrace)
+      {
+         HornetQServerLogger.LOGGER.trace("ServerSessionPacketHandler::scheduling response::" + response);
+      }
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
          public void onError(final int errorCode, final String errorMessage)
@@ -588,8 +601,12 @@ public class ServerSessionPacketHandler implements ChannelHandler
             HornetQExceptionMessage exceptionMessage = new HornetQExceptionMessage( HornetQExceptionType.createException(errorCode, errorMessage));
 
             doConfirmAndResponse(confirmPacket, exceptionMessage, flush, closeChannel);
-         }
 
+            if (isTrace)
+            {
+               HornetQServerLogger.LOGGER.trace("ServerSessionPacketHandler::response sent::" + response);
+            }
+         }
          public void done()
          {
             doConfirmAndResponse(confirmPacket, response, flush, closeChannel);

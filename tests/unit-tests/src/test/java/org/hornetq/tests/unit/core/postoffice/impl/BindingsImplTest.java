@@ -128,6 +128,12 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
+      @Override
+      public boolean isEffective()
+      {
+         return false;
+      }
+
       public boolean hasTimedOut(long currentTime, int defaultTimeout)
       {
          return false;

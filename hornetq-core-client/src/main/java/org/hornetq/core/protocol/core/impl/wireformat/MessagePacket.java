@@ -40,4 +40,10 @@ public abstract class MessagePacket extends PacketImpl
       return message;
    }
 
+   public String toString()
+   {
+      return this.getParentString() + ",message=" + message + "]";
+
+   }
+
 }
