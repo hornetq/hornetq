@@ -1227,9 +1227,6 @@ public class XATest extends HornetQServerTestCase
 
          tm.rollback();
 
-         // Rollback causes cancel which is asynch
-         Thread.sleep(1000);
-
          // We cannot assume anything about the order in which the transaction manager rollsback
          // the sessions - this is implementation dependent
 
@@ -1368,9 +1365,6 @@ public class XATest extends HornetQServerTestCase
 
          cons1.close();
 
-         // Cancel is asynch
-         Thread.sleep(500);
-
          MessageConsumer cons2 = sess2.createConsumer(HornetQServerTestCase.queue1);
          TextMessage r2 = (TextMessage)cons2.receive(HornetQServerTestCase.MAX_TIMEOUT);
 
@@ -1390,9 +1384,6 @@ public class XATest extends HornetQServerTestCase
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
          tm.rollback();
-
-         // Rollback causes cancel which is asynch
-         Thread.sleep(1000);
 
          // We cannot assume anything about the order in which the transaction manager rollsback
          // the sessions - this is implementation dependent
@@ -1546,10 +1537,6 @@ public class XATest extends HornetQServerTestCase
          tx.delistResource(res1, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
-         // rollback will cause an attemp to deliver messages locally to the original consumers.
-         // the original consumer has closed, so it will cancelled to the server
-         // the server cancel is asynch, so we need to sleep for a bit to make sure it completes
-         log.trace("Forcing failure");
          try
          {
             tm.commit();
@@ -1559,8 +1546,6 @@ public class XATest extends HornetQServerTestCase
          {
             // We should expect this
          }
-
-         Thread.sleep(1000);
 
          Session sess = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer cons = sess.createConsumer(HornetQServerTestCase.queue1);
@@ -2192,6 +2177,7 @@ public class XATest extends HornetQServerTestCase
 
          // suspend the tx
          Transaction suspended = tm.suspend();
+         tx1.delistResource(res1, XAResource.TMSUSPEND);
 
          tm.begin();
 
@@ -2216,10 +2202,10 @@ public class XATest extends HornetQServerTestCase
 
          ProxyAssertSupport.assertNull(r1);
 
+         tx1.delistResource(res1, XAResource.TMSUCCESS);
+
          // now resume the first tx and then commit it
          tm.resume(suspended);
-
-         tx1.delistResource(res1, XAResource.TMSUCCESS);
 
          tm.commit();
 

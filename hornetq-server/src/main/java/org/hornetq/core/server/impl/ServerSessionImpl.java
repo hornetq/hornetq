@@ -1040,7 +1040,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          try
          {
-            if (tx.getState() != Transaction.State.PREPARED)
+            if (!tx.isEffective())
             {
                // we don't want to rollback anything prepared here
                if (tx.getXid() != null)
@@ -1075,31 +1075,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public synchronized void xaFailed(final Xid xid) throws Exception
    {
-      if (tx != null)
-      {
-         final String msg = "Cannot start, session is already doing work in a transaction " + tx.getXid();
+      Transaction theTX = resourceManager.getTransaction(xid);
 
-         throw new HornetQXAException(XAException.XAER_PROTO, msg);
+      if (theTX == null)
+      {
+         theTX = newTransaction(xid);
+         resourceManager.putTransaction(xid, theTX);
+      }
+
+      if (theTX.isEffective())
+      {
+         HornetQServerLogger.LOGGER.debug("Client failed with Xid " + xid + " but the server already had it prepared");
+         tx = null;
       }
       else
       {
+         theTX.markAsRollbackOnly(new HornetQException("Can't commit as a Failover happened during the operation"));
+         tx = theTX;
+      }
 
-         tx = newTransaction(xid);
-         tx.markAsRollbackOnly(new HornetQException("Can't commit as a Failover happened during the operation"));
-
-         if (isTrace)
-         {
-            HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
-         }
-
-         boolean added = resourceManager.putTransaction(xid, tx);
-
-         if (!added)
-         {
-            final String msg = "Cannot start, there is already a xid " + tx.getXid();
-
-            throw new HornetQXAException(XAException.XAER_DUPID, msg);
-         }
+      if (isTrace)
+      {
+         HornetQServerLogger.LOGGER.trace("xastart into tx= " + tx);
       }
    }
 

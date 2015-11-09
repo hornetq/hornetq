@@ -124,6 +124,7 @@ public class JMSTestBase extends ServiceTestBase
       Configuration conf = createDefaultConfig(true);
       conf.setSecurityEnabled(useSecurity());
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      conf.setTransactionTimeoutScanPeriod(100);
 
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
       addServer(server);

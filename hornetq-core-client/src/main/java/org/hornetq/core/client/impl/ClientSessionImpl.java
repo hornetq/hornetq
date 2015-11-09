@@ -91,6 +91,7 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
 import org.hornetq.utils.TokenBucketLimiterImpl;
+import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.XidCodecSupport;
 
 /**
@@ -106,7 +107,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    private final ClientSessionFactoryInternal sessionFactory;
 
-   private final String name;
+   private String name;
 
    private final String username;
 
@@ -189,8 +190,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
    private volatile boolean mayAttemptToFailover = true;
 
    private volatile SimpleString defaultAddress;
-
-   private boolean xaRetry = false;
 
    /**
     * Current XID. this will be used in case of failover
@@ -1044,6 +1043,12 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             else
             {
 
+               // We change the name of the Session, otherwise the server could close it while we are still sending the recreate
+               // in certain failure scenarios
+               // For instance the fact we didn't change the name of the session after failover or reconnect
+               // was the reason allowing multiple Sessions to be closed simultaneously breaking concurrency
+               this.name = UUIDGenerator.getInstance().generateStringUUID();
+
                HornetQClientLogger.LOGGER.creatingNewSession(channel.getID());
 
                if (HornetQClientLogger.LOGGER.isDebugEnabled())
@@ -1411,8 +1416,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       {
          HornetQClientLogger.LOGGER.failoverDuringCommit();
 
-         // Unblocked on failover
-         xaRetry = true;
          // Any error on commit -> RETRY
          // We can't rollback a Prepared TX for definition
          XAException xaException = new XAException(XAException.XA_RETRY);
@@ -1605,7 +1608,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          }
          else
          {
-            xaRetry = false;
             return response.getResponseCode();
          }
       }
@@ -1628,7 +1630,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                   throw new XAException(response.getResponseCode());
                }
 
-               xaRetry = false;
                return response.getResponseCode();
             }
             catch (Throwable t)
@@ -1761,7 +1762,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
          if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
             // Unblocked on failover
-            xaRetry = true;
             throw new XAException(XAException.XA_RETRY);
          }
 

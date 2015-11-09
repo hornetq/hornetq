@@ -109,6 +109,12 @@ public class TransactionImpl implements Transaction
    // Transaction implementation
    // -----------------------------------------------------------
 
+   public boolean isEffective()
+   {
+      return state == State.PREPARED || state == State.COMMITTED;
+
+   }
+
    public void setContainsPersistent()
    {
       containsPersistent = true;
@@ -153,6 +159,11 @@ public class TransactionImpl implements Transaction
       {
          synchronized (timeoutLock)
          {
+            if (isEffective())
+            {
+               HornetQServerLogger.LOGGER.debug("XID " + xid + " has already been prepared or committed before, just ignoring the prepare call");
+               return;
+            }
             if (state == State.ROLLBACK_ONLY)
             {
                if (exception != null)
@@ -218,6 +229,12 @@ public class TransactionImpl implements Transaction
    {
       synchronized (timeoutLock)
       {
+         if (state == State.COMMITTED)
+         {
+            // I don't think this could happen, but just in case
+            HornetQServerLogger.LOGGER.debug("XID " + xid + " has been committed before, just ignoring the commit call");
+            return;
+         }
          if (state == State.ROLLBACK_ONLY)
          {
             rollback();
@@ -281,17 +298,24 @@ public class TransactionImpl implements Transaction
    {
       if (containsPersistent || xid != null && state == State.PREPARED)
       {
-
+         // ^^ These are the scenarios where we require a storage.commit
+         // for anything else we won't use the journal
          storageManager.commit(id);
-
-         state = State.COMMITTED;
       }
+
+      state = State.COMMITTED;
    }
 
    public void rollback() throws Exception
    {
       synchronized (timeoutLock)
       {
+         if (state == State.ROLLEDBACK)
+         {
+            // I don't think this could happen, but just in case
+            HornetQServerLogger.LOGGER.debug("XID " + xid + " has been rolledBack before, just ignoring the rollback call", new Exception("trace"));
+            return;
+         }
          if (xid != null)
          {
             if (state != State.PREPARED && state != State.ACTIVE && state != State.ROLLBACK_ONLY)
@@ -333,20 +357,26 @@ public class TransactionImpl implements Transaction
 
    public void suspend()
    {
-      if (state != State.ACTIVE)
+      synchronized (timeoutLock)
       {
-         throw new IllegalStateException("Can only suspend active transaction");
+         if (state != State.ACTIVE)
+         {
+            throw new IllegalStateException("Can only suspend active transaction");
+         }
+         state = State.SUSPENDED;
       }
-      state = State.SUSPENDED;
    }
 
    public void resume()
    {
-      if (state != State.SUSPENDED)
+      synchronized (timeoutLock)
       {
-         throw new IllegalStateException("Can only resume a suspended transaction");
+         if (state != State.SUSPENDED)
+         {
+            throw new IllegalStateException("Can only resume a suspended transaction");
+         }
+         state = State.ACTIVE;
       }
-      state = State.ACTIVE;
    }
 
    public Transaction.State getState()
@@ -366,13 +396,22 @@ public class TransactionImpl implements Transaction
 
    public void markAsRollbackOnly(final HornetQException exception1)
    {
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      synchronized (timeoutLock)
       {
-         HornetQServerLogger.LOGGER.debug("Marking Transaction " + this.id + " as rollback only");
-      }
-      state = State.ROLLBACK_ONLY;
+         if (isEffective())
+         {
+            HornetQServerLogger.LOGGER.debug("Trying to mark transaction " + this.id + " xid=" + this.xid + " as rollbackOnly but it was already effective (prepared or committed!)");
+            return;
+         }
 
-      this.exception = exception1;
+         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+         {
+            HornetQServerLogger.LOGGER.debug("Marking Transaction " + this.id + " as rollback only");
+         }
+         state = State.ROLLBACK_ONLY;
+
+         this.exception = exception1;
+      }
    }
 
    public synchronized void addOperation(final TransactionOperation operation)
@@ -505,6 +544,7 @@ public class TransactionImpl implements Transaction
       return "TransactionImpl [xid=" + xid +
          ", id=" +
          id +
+         ", xid=" + xid +
          ", state=" +
          state +
          ", createTime=" +
