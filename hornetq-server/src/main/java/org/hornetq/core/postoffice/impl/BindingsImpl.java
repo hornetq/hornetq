@@ -390,9 +390,7 @@ public final class BindingsImpl implements Bindings
             }
             else
             {
-               //https://issues.jboss.org/browse/HORNETQ-1254 When !routeWhenNoConsumers,
-               // the localQueue should always have the priority over the secondary bindings
-               if (lastLowPriorityBinding == -1 || !routeWhenNoConsumers && binding instanceof LocalQueueBinding)
+               if (lastLowPriorityBinding == -1)
                {
                   lastLowPriorityBinding = pos;
                }
@@ -403,13 +401,11 @@ public final class BindingsImpl implements Bindings
 
          if (pos == startPos)
          {
-
-            // if no bindings were found, we will apply a secondary level on the routing logic
             if (lastLowPriorityBinding != -1)
             {
                try
                {
-                  theBinding = bindings.get(lastLowPriorityBinding);
+                  theBinding = bindings.get(pos);
                }
                catch (IndexOutOfBoundsException e)
                {
