@@ -37,6 +37,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.ra.HornetQResourceAdapter;
@@ -196,15 +197,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
                   return;
                }
 
-               List<ServerSession> serverSessions = new LinkedList<ServerSession>();
-
-               for (ServerSession session : server.getSessions())
-               {
-                  if (session.getMetaData("resource-adapter") != null)
-                  {
-                     serverSessions.add(session);
-                  }
-               }
+               List<ServerSession> serverSessions = lookupServerSessions("resource-adapter");
 
                System.err.println("Contains " + serverSessions.size() + " RA sessions");
 
@@ -225,9 +218,27 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
                   int randomBother = RandomUtil.randomInterval(0, serverSessions.size() - 1);
                   System.out.println("bugging session " + randomBother);
 
-                  RemotingConnection connection = serverSessions.get(randomBother).getRemotingConnection();
+                  ServerSession serverSession = serverSessions.get(randomBother);
 
-                  connection.fail(new HornetQException("failt at random " + randomBother));
+                  for (ServerConsumer consumer: serverSession.getServerConsumers())
+                  {
+                     try
+                     {
+                        // Simulating a rare race that could happen in production
+                        // where the consumer is closed while things are still happening
+                        consumer.close(true);
+                        Thread.sleep(500);
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+
+
+                  RemotingConnection connection = serverSession.getRemotingConnection();
+
+                  connection.fail(new HornetQException("failed at random " + randomBother));
                }
             }
 
@@ -311,6 +322,20 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       session.close();
    }
 
+   private List<ServerSession> lookupServerSessions(String parameter)
+   {
+      List<ServerSession> serverSessions = new LinkedList<ServerSession>();
+
+      for (ServerSession session : server.getSessions())
+      {
+         if (session.getMetaData(parameter) != null)
+         {
+            serverSessions.add(session);
+         }
+      }
+      return serverSessions;
+   }
+
    protected class TestEndpointFactory implements MessageEndpointFactory
    {
       private final boolean isDeliveryTransacted;
@@ -375,6 +400,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
          {
             throw new RuntimeException(e.getMessage(), e);
          }
+
       }
 
       public void onMessage(Message message)
