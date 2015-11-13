@@ -2250,6 +2250,10 @@ public class QueueImpl implements Queue
       // create the redistributor only once if there are no local consumers
       if (consumerSet.isEmpty() && redistributor == null)
       {
+         if (isTrace)
+         {
+            HornetQServerLogger.LOGGER.trace("QueueImpl::Adding redistributor on queue " + this.toString());
+         }
          redistributor = new Redistributor(this,
                                            storageManager,
                                            postOffice,

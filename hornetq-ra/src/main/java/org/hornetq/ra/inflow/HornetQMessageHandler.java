@@ -316,6 +316,12 @@ public class HornetQMessageHandler implements MessageHandler
          {
             tm.setTransactionTimeout(activation.getActivationSpec().getTransactionTimeout());
          }
+
+         if (trace)
+         {
+            HornetQRALogger.LOGGER.trace("HornetQMessageHandler::calling beforeDelivery on message " + message);
+         }
+
          endpoint.beforeDelivery(HornetQActivation.ONMESSAGE);
          beforeDelivery = true;
          msg.doBeforeReceive();
@@ -332,6 +338,11 @@ public class HornetQMessageHandler implements MessageHandler
          if (!transacted)
          {
             message.acknowledge();
+         }
+
+         if (trace)
+         {
+            HornetQRALogger.LOGGER.trace("HornetQMessageHandler::calling afterDelivery on message " + message);
          }
 
          try
