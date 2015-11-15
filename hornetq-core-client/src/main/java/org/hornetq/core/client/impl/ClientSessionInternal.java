@@ -97,6 +97,8 @@ public interface ClientSessionInternal extends ClientSession
 
    void resetIfNeeded() throws HornetQException;
 
+   void markRollbackOnly();
+
    /** This is used internally to control and educate the user
     *  about using the thread boundaries properly.
     *  if more than one thread is using the session simultaneously
