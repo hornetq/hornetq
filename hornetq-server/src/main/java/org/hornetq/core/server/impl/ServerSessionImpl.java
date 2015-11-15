@@ -642,20 +642,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
-      ServerConsumer consumer = consumers.get(consumerID);
-
-      if (consumer == null)
-      {
-         Transaction currentTX = tx;
-         HornetQIllegalStateException exception = HornetQMessageBundle.BUNDLE.consumerDoesntExist(consumerID);
-
-         if (currentTX != null)
-         {
-            currentTX.markAsRollbackOnly(exception);
-         }
-
-         throw exception;
-      }
+      ServerConsumer consumer = findConsumer(consumerID);
 
       if (tx != null && tx.getState() == State.ROLLEDBACK)
       {
@@ -682,9 +669,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
+   private ServerConsumer findConsumer(long consumerID) throws HornetQIllegalStateException
    {
       ServerConsumer consumer = consumers.get(consumerID);
+
+      if (consumer == null)
+      {
+         Transaction currentTX = tx;
+         HornetQIllegalStateException exception = HornetQMessageBundle.BUNDLE.consumerDoesntExist(consumerID);
+
+         if (currentTX != null)
+         {
+            currentTX.markAsRollbackOnly(exception);
+         }
+
+         throw exception;
+      }
+      return consumer;
+   }
+
+   public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
+   {
+      ServerConsumer consumer = findConsumer(consumerID);
 
       if (this.xa && tx == null)
       {

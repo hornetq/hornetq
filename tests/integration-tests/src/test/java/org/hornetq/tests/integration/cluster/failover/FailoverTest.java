@@ -1295,7 +1295,7 @@ public class FailoverTest extends FailoverTestBase
 
       try
       {
-         session.commit(xid, true);
+         session.commit(xid, false);
 
          Assert.fail("Should throw exception");
       }
@@ -1514,7 +1514,7 @@ public class FailoverTest extends FailoverTestBase
 
       try
       {
-         session2.commit(xid, true);
+         session2.commit(xid, false);
 
          Assert.fail("Should throw exception");
       }

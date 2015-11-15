@@ -643,6 +643,11 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       rollbackOnly = false;
    }
 
+   public void markRollbackOnly()
+   {
+      rollbackOnly = true;
+   }
+
    public ClientMessage createMessage(final byte type,
                                       final boolean durable,
                                       final long expiration,
@@ -1383,7 +1388,14 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       // we should never throw rollback if we have already prepared
       if (rollbackOnly)
       {
-         HornetQClientLogger.LOGGER.commitAfterFailover();
+         if (onePhase)
+         {
+            throw new XAException(XAException.XAER_RMFAIL);
+         }
+         else
+         {
+            HornetQClientLogger.LOGGER.commitAfterFailover();
+         }
       }
 
       // Note - don't need to flush acks since the previous end would have

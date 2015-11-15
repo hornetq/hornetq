@@ -151,6 +151,11 @@ public class DelegatingSession implements ClientSessionInternal
       session.close();
    }
 
+   public void markRollbackOnly()
+   {
+      session.markRollbackOnly();
+   }
+
    public void commit() throws HornetQException
    {
       session.commit();

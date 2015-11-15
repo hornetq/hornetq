@@ -14,12 +14,20 @@ package org.hornetq.tests.integration.ra;
 
 import javax.jms.Message;
 import javax.resource.ResourceException;
+import javax.resource.spi.LocalTransactionException;
 import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +69,10 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
    ServerLocator nettyLocator;
 
+   private volatile boolean playTXTimeouts = true;
+   private volatile boolean playServerClosingSession = true;
+   private volatile boolean playServerClosingConsumer = true;
+
    @Before
    public void setUp() throws Exception
    {
@@ -96,7 +108,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
    public void testReconnectMDBNoMessageLoss() throws Exception
    {
       AddressSettings settings = new AddressSettings();
-      settings.setRedeliveryDelay(1000);
+      settings.setRedeliveryDelay(100);
       settings.setMaxDeliveryAttempts(-1);
       server.getAddressSettingsRepository().clear();
       server.getAddressSettingsRepository().addMatch("#", settings);
@@ -132,7 +144,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       Assert.assertEquals(1, resourceAdapter.getActivations().values().size());
       HornetQActivation activation = resourceAdapter.getActivations().values().toArray(new HornetQActivation[1])[0];
 
-      final int NUMBER_OF_MESSAGES = 3000;
+      final int NUMBER_OF_MESSAGES = 1000;
 
 
       Thread producer = new Thread()
@@ -212,7 +224,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
                   metaDataFailed.set(false);
                }
 
-               if (serverSessions.size() > 0)
+               if (playServerClosingSession && serverSessions.size() > 0)
                {
 
                   int randomBother = RandomUtil.randomInterval(0, serverSessions.size() - 1);
@@ -220,21 +232,24 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
                   ServerSession serverSession = serverSessions.get(randomBother);
 
-                  for (ServerConsumer consumer: serverSession.getServerConsumers())
+                  if (playServerClosingConsumer && RandomUtil.randomBoolean())
                   {
-                     try
+                     // will play this randomly, only half of the times
+                     for (ServerConsumer consumer : serverSession.getServerConsumers())
                      {
-                        // Simulating a rare race that could happen in production
-                        // where the consumer is closed while things are still happening
-                        consumer.close(true);
-                        Thread.sleep(500);
-                     }
-                     catch (Exception e)
-                     {
-                        e.printStackTrace();
+                        try
+                        {
+                           // Simulating a rare race that could happen in production
+                           // where the consumer is closed while things are still happening
+                           consumer.close(true);
+                           Thread.sleep(100);
+                        }
+                        catch (Exception e)
+                        {
+                           e.printStackTrace();
+                        }
                      }
                   }
-
 
                   RemotingConnection connection = serverSession.getRemotingConnection();
 
@@ -262,6 +277,17 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
             break;
          }
 
+         if (i == NUMBER_OF_MESSAGES * 0.90)
+         {
+            System.out.println("Disabled failures at " + i);
+            playTXTimeouts = false;
+            playServerClosingSession = false;
+            playServerClosingConsumer = false;
+
+         }
+
+         System.out.println("Received " + i + " messages");
+
          Assert.assertNotNull(message);
          message.acknowledge();
 
@@ -285,6 +311,8 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       session.commit();
       Assert.assertNull(consumer.receiveImmediate());
 
+      StringWriter writer = new StringWriter();
+      PrintWriter out = new PrintWriter(writer);
 
       boolean failed = false;
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -293,12 +321,12 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
          if (atomicInteger == null)
          {
-            System.out.println("didn't receive message with i=" + i);
+            out.println("didn't receive message with i=" + i);
             failed = true;
          }
          else if (atomicInteger.get() > 1)
          {
-            System.out.println("message with i=" + i + " received " + atomicInteger.get() + " times");
+            out.println("message with i=" + i + " received " + atomicInteger.get() + " times");
             failed = true;
          }
       }
@@ -309,17 +337,26 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       buggerThread.join();
       producer.join();
 
-      Assert.assertFalse("There was meta-data failures, some sessions didn't reconnect properly", metaDataFailed.get());
+      qResourceAdapter.stop();
+
+      session.close();
+
+      if (failed)
+      {
+         for (int i = 0; i < 10; i++)
+         {
+            System.out.println("----------------------------------------------------");
+         }
+         System.out.println(writer.toString());
+      }
 
       Assert.assertFalse(failed);
 
       System.out.println("Received " + NUMBER_OF_MESSAGES + " messages");
 
+      Assert.assertFalse("There was meta-data failures, some sessions didn't reconnect properly", metaDataFailed.get());
 
-      qResourceAdapter.stop();
 
-
-      session.close();
    }
 
    private List<ServerSession> lookupServerSessions(String parameter)
@@ -405,14 +442,6 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
       public void onMessage(Message message)
       {
-//         try
-//         {
-//            System.out.println(Thread.currentThread().getName() + "**** onMessage enter " + message.getIntProperty("i"));
-//         }
-//         catch (Exception e)
-//         {
-//         }
-
          Integer value = 0;
 
          try
@@ -430,9 +459,17 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
          {
             currentTX.enlistResource(endpointSession);
             ClientMessage message1 = endpointSession.createMessage(true);
-            message1.putIntProperty("i", message.getIntProperty("i"));
+            message1.putIntProperty("i", value);
             producer.send(message1);
             currentTX.delistResource(endpointSession, XAResource.TMSUCCESS);
+
+            if (playTXTimeouts)
+            {
+               if (RandomUtil.randomInterval(0, 5) == 3)
+               {
+                  Thread.sleep(2000);
+               }
+            }
          }
          catch (Exception e)
          {
@@ -452,13 +489,33 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       @Override
       public void afterDelivery() throws ResourceException
       {
+         // This is a copy & paste of what the Application server would do here
          try
          {
-            DummyTMLocator.tm.commit();
-//            currentTX.commit();
+            if (currentTX.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+            {
+               DummyTMLocator.tm.rollback();
+            }
+            else
+            {
+               DummyTMLocator.tm.commit();
+            }
          }
-         catch (Throwable e)
+         catch (HeuristicMixedException e)
          {
+            throw new LocalTransactionException(e);
+         }
+         catch (SystemException e)
+         {
+            throw new LocalTransactionException(e);
+         }
+         catch (HeuristicRollbackException e)
+         {
+            throw new LocalTransactionException(e);
+         }
+         catch (RollbackException e)
+         {
+            throw new LocalTransactionException(e);
          }
          super.afterDelivery();
       }

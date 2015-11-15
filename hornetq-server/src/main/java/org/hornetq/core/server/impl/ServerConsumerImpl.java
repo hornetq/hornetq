@@ -38,7 +38,6 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.HandleStatus;
-import org.hornetq.core.server.HornetQMessageBundle;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -751,7 +750,10 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          MessageReference ref;
          do
          {
-            ref = deliveringRefs.poll();
+            synchronized (lock)
+            {
+               ref = deliveringRefs.poll();
+            }
 
             if (HornetQServerLogger.LOGGER.isTraceEnabled())
             {
@@ -760,7 +762,12 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
             if (ref == null)
             {
-               throw HornetQMessageBundle.BUNDLE.consumerNoReference(id, messageID, messageQueue.getName());
+               HornetQIllegalStateException ils = new HornetQIllegalStateException("Cannot find ref to ack " + messageID);
+               if (tx != null)
+               {
+                  tx.markAsRollbackOnly(ils);
+               }
+               throw ils;
             }
 
             ackReference(tx, ref);
@@ -817,7 +824,12 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       if (ref == null)
       {
-         throw new IllegalStateException("Cannot find ref to ack " + messageID);
+         HornetQIllegalStateException ils = new HornetQIllegalStateException("Cannot find ref to ack " + messageID);
+         if (tx != null)
+         {
+            tx.markAsRollbackOnly(ils);
+         }
+         throw ils;
       }
 
       if (autoCommitAcks)
@@ -838,27 +850,34 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          return null;
       }
 
-      // Expiries can come in out of sequence with respect to delivery order
-
-      Iterator<MessageReference> iter = deliveringRefs.iterator();
-
-      MessageReference ref = null;
-
-      while (iter.hasNext())
+      synchronized (lock)
       {
-         MessageReference theRef = iter.next();
-
-         if (theRef.getMessage().getMessageID() == messageID)
+         // This is an optimization, if the reference is the first one, we just poll it.
+         if (deliveringRefs.peek().getMessage().getMessageID() == messageID)
          {
-            iter.remove();
-
-            ref = theRef;
-
-            break;
+            return deliveringRefs.poll();
          }
+
+         Iterator<MessageReference> iter = deliveringRefs.iterator();
+
+         MessageReference ref = null;
+
+         while (iter.hasNext())
+         {
+            MessageReference theRef = iter.next();
+
+            if (theRef.getMessage().getMessageID() == messageID)
+            {
+               iter.remove();
+
+               ref = theRef;
+
+               break;
+            }
+         }
+         return ref;
       }
 
-      return ref;
    }
 
    public void readyForWriting(final boolean ready)
