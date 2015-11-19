@@ -823,6 +823,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       @Override
       public void onMessage(Message message)
       {
+         System.out.println("Received message " + message);
          try
          {
             latch.countDown();
@@ -835,6 +836,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
                }
                catch (InterruptedException e)
                {
+                  e.printStackTrace();
                   interrupted.incrementAndGet();
                }
             }

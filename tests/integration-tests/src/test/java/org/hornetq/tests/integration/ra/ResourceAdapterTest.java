@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.ra;
 import javax.jms.Connection;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +29,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -92,30 +90,18 @@ public class ResourceAdapterTest extends HornetQRATestBase
 
       ServerLocatorImpl serverLocator = (ServerLocatorImpl)ra.getDefaultHornetQConnectionFactory().getServerLocator();
 
-      Field f = Class.forName(ServerLocatorImpl.class.getName()).getDeclaredField("factories");
-
       Set<XARecoveryConfig> resources = ra.getRecoveryManager().getResources();
-
-      f.setAccessible(true);
-
-      Set<ClientSessionFactoryInternal> factories = (Set<ClientSessionFactoryInternal>)f.get(serverLocator);
 
       for (int i = 0; i < 10; i++)
       {
          System.out.println(i);
-         assertEquals(factories.size(), 0);
          activation.start();
-         assertEquals(factories.size(), 15);
          assertEquals(1, resources.size());
          activation.stop();
-         assertEquals(factories.size(), 0);
       }
 
-      System.out.println("before RA stop => " + factories.size());
       ra.stop();
       assertEquals(0, resources.size());
-      System.out.println("after RA stop => " + factories.size());
-      assertEquals(factories.size(), 0);
       locator.close();
 
    }
@@ -449,7 +435,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
       DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
       UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration();
       assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
@@ -481,7 +467,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDiscoveryPort(1234);
       spec.setDiscoveryInitialWaitTimeout(1L);
       spec.setDiscoveryRefreshTimeout(1L);
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
       DiscoveryGroupConfiguration dc = fac.getServerLocator().getDiscoveryGroupConfiguration();
       UDPBroadcastGroupConfiguration udpDg = (UDPBroadcastGroupConfiguration)dc.getBroadcastEndpointFactoryConfiguration();
       assertEquals(udpDg.getGroupAddress(), "231.6.6.6");
@@ -508,7 +494,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
 
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
 
       assertTrue(fac.isHA());
 
@@ -532,7 +518,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
 
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
 
       assertFalse(fac.isHA());
 
@@ -556,7 +542,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
       spec.setHA(true);
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
 
       assertTrue(fac.isHA());
 
@@ -581,7 +567,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
 
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
 
       assertEquals(100, fac.getReconnectAttempts());
 
@@ -605,7 +591,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
 
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
 
       assertEquals(-1, fac.getReconnectAttempts());
 
@@ -629,7 +615,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
       spec.setReconnectAttempts(100);
-      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      HornetQConnectionFactory fac = qResourceAdapter.getConnectionFactory(spec);
 
       assertEquals(100, fac.getReconnectAttempts());
 

@@ -827,7 +827,7 @@ public final class HornetQRAManagedConnection implements ManagedConnection, Exce
 
       try
       {
-         connectionFactory = ra.createHornetQConnectionFactory(mcf.getProperties());
+         connectionFactory = ra.getConnectionFactory(mcf.getProperties());
          boolean transacted = cri.isTransacted();
          int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
          if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)

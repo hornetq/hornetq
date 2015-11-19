@@ -120,6 +120,11 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       server.getAddressSettingsRepository().addMatch("#", settings);
       HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
       resourceAdapter = qResourceAdapter;
+      resourceAdapter.setConfirmationWindowSize(-1);
+      resourceAdapter.setCallTimeout(1000L);
+      resourceAdapter.setConsumerWindowSize(1024 * 1024);
+      resourceAdapter.setReconnectAttempts(-1);
+      resourceAdapter.setRetryInterval(100L);
 
       qResourceAdapter.setTransactionManagerLocatorClass(DummyTMLocator.class.getName());
       qResourceAdapter.setTransactionManagerLocatorMethod("getTM");
@@ -132,19 +137,19 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       final int NUMBER_OF_SESSIONS = 10;
 
       HornetQActivationSpec spec = new HornetQActivationSpec();
-      spec.setMaxSession(NUMBER_OF_SESSIONS);
+
       spec.setTransactionTimeout(1);
-      spec.setReconnectAttempts(-1);
+      spec.setMaxSession(NUMBER_OF_SESSIONS);
       spec.setSetupAttempts(-1);
-      spec.setSetupInterval(500);
-      spec.setConfirmationWindowSize(-1);
-      spec.setReconnectInterval(1000);
-      spec.setCallTimeout(1000L);
+      spec.setSetupInterval(100);
       spec.setResourceAdapter(qResourceAdapter);
       spec.setUseJNDI(false);
       spec.setDestinationType("javax.jms.Queue");
       spec.setDestination(MDBQUEUE);
-      spec.setConsumerWindowSize(1024 * 1024);
+
+
+      // Some the routines would be screwed up if using the default one
+      Assert.assertFalse(spec.isHasBeenUpdated());
 
       TestEndpointFactory endpointFactory = new TestEndpointFactory(true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
@@ -310,18 +315,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
          System.out.println("Received " + i + " messages");
 
-         Assert.assertNotNull(message);
-         message.acknowledge();
-
-         Integer value = message.getIntProperty("i");
-         AtomicInteger mapCount = new AtomicInteger(1);
-
-         mapCount = mapCounter.putIfAbsent(value, mapCount);
-
-         if (mapCount != null)
-         {
-            mapCount.incrementAndGet();
-         }
+         doReceiveMessage(message);
 
          if (i % 200 == 0)
          {
@@ -331,6 +325,22 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       }
 
       session.commit();
+
+      while (true)
+      {
+         ClientMessage message = consumer.receiveImmediate();
+         if (message == null)
+         {
+            break;
+         }
+
+         System.out.println("Received extra message " + message);
+
+         doReceiveMessage(message);
+      }
+
+      session.commit();
+
       Assert.assertNull(consumer.receiveImmediate());
 
       StringWriter writer = new StringWriter();
@@ -381,6 +391,21 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
    }
 
+   private void doReceiveMessage(ClientMessage message) throws HornetQException
+   {
+      Assert.assertNotNull(message);
+      message.acknowledge();
+      Integer value = message.getIntProperty("i");
+      AtomicInteger mapCount = new AtomicInteger(1);
+
+      mapCount = mapCounter.putIfAbsent(value, mapCount);
+
+      if (mapCount != null)
+      {
+         mapCount.incrementAndGet();
+      }
+   }
+
    private List<ServerSession> lookupServerSessions(String parameter, int numberOfSessions)
    {
       long timeout = System.currentTimeMillis() + 50000;
@@ -389,7 +414,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       {
          if (!serverSessions.isEmpty())
          {
-            System.err.println("Retry on serverSessions!!!");
+            System.err.println("Retry on serverSessions!!! currently with " + serverSessions.size());
             serverSessions.clear();
             try
             {
