@@ -124,6 +124,6 @@ public final class TopologyMemberImpl implements TopologyMember
    @Override
    public String toString()
    {
-      return "TopologyMember[name = " + nodeName + ", connector=" + connector + "]";
+      return "TopologyMember[name = " + nodeName + ", nodeID=" + nodeId + ", connector=" + connector + "]";
    }
 }

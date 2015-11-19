@@ -1422,15 +1422,18 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       catch (XAException xae)
       {
+         this.markRollbackOnly();
          throw xae;
       }
       catch (Throwable t)
       {
+         this.markRollbackOnly();
          HornetQClientLogger.LOGGER.failoverDuringCommit();
 
          // Any error on commit -> RETRY
          // We can't rollback a Prepared TX for definition
-         XAException xaException = new XAException(XAException.XA_RETRY);
+         // But if it's onePhase we can!
+         XAException xaException = new XAException(onePhase ? XAException.XAER_RMFAIL : XAException.XA_RETRY);
          xaException.initCause(t);
          throw xaException;
       }
@@ -1451,7 +1454,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
       try
       {
-         if (rollbackOnly)
+         // We won't do a rollback here because the TM will be rollingback anyways
+         if (rollbackOnly && flags != XAResource.TMFAIL)
          {
             try
             {
@@ -1459,9 +1463,17 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             }
             catch (Throwable ignored)
             {
+               this.markRollbackOnly();
                HornetQClientLogger.LOGGER.debug("Error on rollback during end call!", ignored);
             }
             throw new XAException(XAException.XAER_RMFAIL);
+         }
+
+         if (flags == XAResource.TMFAIL)
+         {
+            // this could be coming from the Timeout Reaper from the TM
+            // on this case we issue this so buffers will be cleared properly
+            this.markRollbackOnly();
          }
 
          try
@@ -1500,15 +1512,18 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
             if (response.isError())
             {
+               this.markRollbackOnly();
                throw new XAException(response.getResponseCode());
             }
          }
          catch (XAException xae)
          {
+            this.markRollbackOnly();
             throw xae;
          }
          catch (Throwable t)
          {
+            this.markRollbackOnly();
             HornetQClientLogger.LOGGER.errorCallingEnd(t);
             // This could occur if the TM interrupts the thread
             XAException xaException = new XAException(XAException.XAER_RMFAIL);
@@ -1625,10 +1640,12 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       catch (XAException xae)
       {
+         this.markRollbackOnly();
          throw xae;
       }
       catch (HornetQException e)
       {
+         this.markRollbackOnly();
          if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
             // Unblocked on failover
@@ -1655,6 +1672,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
             }
             catch (Throwable t)
             {
+               this.markRollbackOnly();
+
                // This could occur if the TM interrupts the thread
                XAException xaException = new XAException(XAException.XAER_RMFAIL);
                xaException.initCause(t);
@@ -1663,6 +1682,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
             HornetQClientLogger.LOGGER.errorDuringPrepare(e);
 
+            this.markRollbackOnly();
             throw new XAException(XAException.XAER_RMFAIL);
          }
 
@@ -1675,6 +1695,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       catch (Throwable t)
       {
+         this.markRollbackOnly();
          HornetQClientLogger.LOGGER.errorDuringPrepare(t);
 
          // This could occur if the TM interrupts the thread
@@ -1803,6 +1824,8 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       catch (Throwable t)
       {
+         this.markRollbackOnly();
+
          // This could occur if the TM interrupts the thread
          XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);
@@ -1847,16 +1870,20 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
          if (response.isError())
          {
+            this.markRollbackOnly();
             HornetQClientLogger.LOGGER.errorCallingStart(response.getMessage(), response.getResponseCode());
             throw new XAException(response.getResponseCode());
          }
       }
       catch (XAException xae)
       {
+         this.markRollbackOnly();
          throw xae;
       }
       catch (HornetQException e)
       {
+         this.markRollbackOnly();
+
          // we can retry this only because we know for sure that no work would have been done
          if (e.getType() == HornetQExceptionType.UNBLOCKED)
          {
@@ -1890,6 +1917,7 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       }
       catch (Throwable t)
       {
+         this.markRollbackOnly();
          // This could occur if the TM interrupts the thread
          XAException xaException = new XAException(XAException.XAER_RMFAIL);
          xaException.initCause(t);

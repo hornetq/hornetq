@@ -699,10 +699,22 @@ public class HornetQActivation
       return buffer.toString();
    }
 
-   public void rebalance()
+   public void startReconnectThread(final String threadName)
    {
-      HornetQRALogger.LOGGER.rebalancingConnections();
-      reconnect(null);
+      if (trace)
+      {
+         HornetQRALogger.LOGGER.trace("Starting reconnect Thread " + threadName + " on MDB activation " + this);
+      }
+      Runnable runnable = new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            reconnect(null);
+         }
+      };
+      Thread t = new Thread(runnable, threadName);
+      t.start();
    }
 
    /**
@@ -712,6 +724,10 @@ public class HornetQActivation
     */
    public void reconnect(Throwable failure)
    {
+      if (trace)
+      {
+         HornetQRALogger.LOGGER.trace("reconnecting activation " + this);
+      }
       if (failure != null)
       {
          if (failure instanceof HornetQException && ((HornetQException) failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
@@ -840,16 +856,8 @@ public class HornetQActivation
 
          if (lastReceived && newNode)
          {
-            Runnable runnable = new Runnable()
-            {
-               @Override
-               public void run()
-               {
-                  rebalance();
-               }
-            };
-            Thread t = new Thread(runnable, "NodeUP Connection Rebalancer");
-            t.start();
+            HornetQRALogger.LOGGER.rebalancingConnections("nodeUp " + member.toString());
+            startReconnectThread("NodeUP Connection Rebalancer");
          }
          else if (last)
          {
@@ -863,16 +871,8 @@ public class HornetQActivation
          if (nodes.remove(nodeID))
          {
             removedNodes.put(nodeID, eventUID);
-            Runnable runnable = new Runnable()
-            {
-               @Override
-               public void run()
-               {
-                  rebalance();
-               }
-            };
-            Thread t = new Thread(runnable, "NodeDOWN Connection Rebalancer");
-            t.start();
+            HornetQRALogger.LOGGER.rebalancingConnections("nodeDown " + nodeID);
+            startReconnectThread("NodeDOWN Connection Rebalancer");
          }
       }
    }
