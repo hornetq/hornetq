@@ -69,6 +69,11 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
    ServerLocator nettyLocator;
 
+   // This thread will keep bugging the handlers.
+   // if they behave well with XA, the test pass!
+   final AtomicBoolean running = new AtomicBoolean(true);
+
+
    private volatile boolean playTXTimeouts = true;
    private volatile boolean playServerClosingSession = true;
    private volatile boolean playServerClosingConsumer = true;
@@ -84,6 +89,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       super.setUp();
       createQueue(true, "outQueue");
       DummyTMLocator.startTM();
+      running.set(true);
    }
 
    @After
@@ -129,6 +135,8 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       spec.setMaxSession(NUMBER_OF_SESSIONS);
       spec.setTransactionTimeout(1);
       spec.setReconnectAttempts(-1);
+      spec.setSetupAttempts(-1);
+      spec.setSetupInterval(500);
       spec.setConfirmationWindowSize(-1);
       spec.setReconnectInterval(1000);
       spec.setCallTimeout(1000L);
@@ -159,12 +167,20 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
                ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
 
+               StringBuffer buffer = new StringBuffer();
+
+               for (int b = 0; b < 500; b++)
+               {
+                  buffer.append("ab");
+               }
+
                for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
                {
 
                   ClientMessage message = session.createMessage(true);
 
-                  message.getBodyBuffer().writeString("teststring " + i);
+                  message.getBodyBuffer().writeString(buffer.toString() + i);
+
                   message.putIntProperty("i", i);
 
                   clientProducer.send(message);
@@ -189,10 +205,6 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       final AtomicBoolean metaDataFailed = new AtomicBoolean(false);
 
 
-      // This thread will keep bugging the handlers.
-      // if they behave well with XA, the test pass!
-      final AtomicBoolean running = new AtomicBoolean(true);
-
       Thread buggerThread = new Thread()
       {
          public void run()
@@ -209,7 +221,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
                   return;
                }
 
-               List<ServerSession> serverSessions = lookupServerSessions("resource-adapter");
+               List<ServerSession> serverSessions = lookupServerSessions("resource-adapter", NUMBER_OF_SESSIONS);
 
                System.err.println("Contains " + serverSessions.size() + " RA sessions");
 
@@ -267,6 +279,7 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
       ClientSession session = factory.createSession(false, false);
       session.start();
 
+
       ClientConsumer consumer = session.createConsumer("jms.queue.outQueue");
 
       for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -275,6 +288,15 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
          if (message == null)
          {
             break;
+         }
+
+
+         if (i == NUMBER_OF_MESSAGES * 0.50)
+         {
+            // This is to make sure the MDBs will survive a reboot
+            // and no duplications or message loss will happen because of this
+            System.err.println("Rebooting the MDBs at least once!");
+            activation.startReconnectThread("I");
          }
 
          if (i == NUMBER_OF_MESSAGES * 0.90)
@@ -359,17 +381,37 @@ public class MDBMultipleHandlersServerDisconnectTest extends HornetQRATestBase
 
    }
 
-   private List<ServerSession> lookupServerSessions(String parameter)
+   private List<ServerSession> lookupServerSessions(String parameter, int numberOfSessions)
    {
+      long timeout = System.currentTimeMillis() + 50000;
       List<ServerSession> serverSessions = new LinkedList<ServerSession>();
-
-      for (ServerSession session : server.getSessions())
+      do
       {
-         if (session.getMetaData(parameter) != null)
+         if (!serverSessions.isEmpty())
          {
-            serverSessions.add(session);
+            System.err.println("Retry on serverSessions!!!");
+            serverSessions.clear();
+            try
+            {
+               Thread.sleep(100);
+            }
+            catch (Exception e)
+            {
+               break;
+            }
+         }
+         serverSessions.clear();
+         for (ServerSession session : server.getSessions())
+         {
+            if (session.getMetaData(parameter) != null)
+            {
+               serverSessions.add(session);
+            }
          }
       }
+      while (running.get() && serverSessions.size() != numberOfSessions && timeout > System.currentTimeMillis());
+
+      System.err.println("Returning " + serverSessions.size() + " sessions");
       return serverSessions;
    }
 

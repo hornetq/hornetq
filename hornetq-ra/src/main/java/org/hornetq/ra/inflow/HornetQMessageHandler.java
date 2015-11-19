@@ -431,7 +431,8 @@ public class HornetQMessageHandler implements MessageHandler
          }
          catch (HornetQException e)
          {
-            HornetQRALogger.LOGGER.unableToResetSession();
+            HornetQRALogger.LOGGER.unableToResetSession(activation.toString(), e);
+            activation.startReconnectThread("Reset MessageHandler after Failure Thread");
          }
       }
 
