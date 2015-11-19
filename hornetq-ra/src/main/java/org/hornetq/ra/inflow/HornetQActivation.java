@@ -470,14 +470,24 @@ public class HornetQActivation
          // nothing to be done on this context.. we will just keep going as we need to send an interrupt to threadTearDown and give up
       }
 
+      if (factory != null)
+      {
+         try
+         {
+            // closing the factory will help making sure pending threads are closed
+            factory.close();
+         }
+         catch (Throwable e)
+         {
+            HornetQRALogger.LOGGER.warn(e);
+         }
+
+         factory = null;
+      }
+
+
       if (threadTearDown.isAlive())
       {
-         if (factory != null)
-         {
-            // This will interrupt any threads waiting on reconnect
-            factory.close();
-            factory = null;
-         }
          threadTearDown.interrupt();
 
          try
@@ -495,11 +505,6 @@ public class HornetQActivation
          }
       }
 
-      if (spec.isHasBeenUpdated() && factory != null)
-      {
-         ra.closeConnectionFactory(spec);
-         factory = null;
-      }
 
       nodes.clear();
       lastReceived = false;
@@ -509,14 +514,7 @@ public class HornetQActivation
 
    protected void setupCF() throws Exception
    {
-      if (spec.isHasBeenUpdated())
-      {
-         factory = ra.createHornetQConnectionFactory(spec);
-      }
-      else
-      {
-         factory = ra.getDefaultHornetQConnectionFactory();
-      }
+      factory = ra.newConnectionFactory(spec);
    }
 
    /**
