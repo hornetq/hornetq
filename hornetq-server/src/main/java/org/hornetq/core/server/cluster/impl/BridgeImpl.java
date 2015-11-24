@@ -30,6 +30,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
@@ -267,6 +268,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       bb.putLong(messageID);
 
       return bytes;
+   }
+
+   // for tests
+   public ClientSessionFactory getSessionFactory()
+   {
+      return csf;
    }
 
    /* (non-Javadoc)
@@ -1035,6 +1042,19 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          catch (Exception e)
          {
             HornetQServerLogger.LOGGER.errorConnectingBridge(e, this);
+            if (csf != null)
+            {
+               try
+               {
+                  csf.close();
+                  csf = null;
+               }
+               catch (Throwable ignored)
+               {
+               }
+            }
+            fail(false);
+            scheduleRetryConnect();
          }
       }
    }
