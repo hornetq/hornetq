@@ -92,7 +92,7 @@ public interface HornetQRALogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 152001, value = "problem resetting HornetQ xa session after failure" , format = Message.Format.MESSAGE_FORMAT)
-   void problemResettingXASession();
+   void problemResettingXASession(@Cause Throwable t);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 152002, value = "Unable to roll local transaction back" , format = Message.Format.MESSAGE_FORMAT)
