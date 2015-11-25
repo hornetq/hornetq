@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
@@ -55,27 +56,170 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TransactionImplTest
+public class TransactionImplTest extends ServiceTestBase
 {
 
    @Test
-   public void testTimeoutAndThenRollback() throws Exception
+   public void testTimeoutAndThenCommitWithARollback() throws Exception
    {
-      TransactionImpl tx = new TransactionImpl(new FakeSM(), 10);
+      TransactionImpl tx = new TransactionImpl(newXID(), new FakeSM(), 10);
       Assert.assertTrue(tx.hasTimedOut(System.currentTimeMillis() + 60000, 10));
 
-      try
-      {
-         tx.commit();
-         Assert.fail("Exception expected!");
-      }
-      catch (HornetQException expected)
-      {
+      final AtomicInteger commit = new AtomicInteger(0);
+      final AtomicInteger rollback = new AtomicInteger(0);
 
+      tx.addOperation(new TransactionOperation()
+      {
+         @Override
+         public void beforePrepare(Transaction tx) throws Exception
+         {
+
+         }
+
+         @Override
+         public void afterPrepare(Transaction tx)
+         {
+
+         }
+
+         @Override
+         public void beforeCommit(Transaction tx) throws Exception
+         {
+
+         }
+
+         @Override
+         public void afterCommit(Transaction tx)
+         {
+            System.out.println("commit...");
+            commit.incrementAndGet();
+         }
+
+         @Override
+         public void beforeRollback(Transaction tx) throws Exception
+         {
+
+         }
+
+         @Override
+         public void afterRollback(Transaction tx)
+         {
+            System.out.println("rollback...");
+            rollback.incrementAndGet();
+         }
+
+         @Override
+         public List<MessageReference> getRelatedMessageReferences()
+         {
+            return null;
+         }
+
+         @Override
+         public List<MessageReference> getListOnConsumer(long consumerID)
+         {
+            return null;
+         }
+      });
+
+      for (int i = 0; i < 2; i++)
+      {
+         try
+         {
+            tx.commit();
+            Assert.fail("Exception expected!");
+         }
+         catch (HornetQException expected)
+         {
+         }
       }
+
+      // it should just be ignored!
+      tx.rollback();
+
+
+
+      Assert.assertEquals(0, commit.get());
+      Assert.assertEquals(1, rollback.get());
+
+   }
+
+
+   @Test
+   public void testTimeoutThenRollbackWithRollback() throws Exception
+   {
+      TransactionImpl tx = new TransactionImpl(newXID(), new FakeSM(), 10);
+      Assert.assertTrue(tx.hasTimedOut(System.currentTimeMillis() + 60000, 10));
+
+      final AtomicInteger commit = new AtomicInteger(0);
+      final AtomicInteger rollback = new AtomicInteger(0);
+
+      tx.addOperation(new TransactionOperation()
+      {
+         @Override
+         public void beforePrepare(Transaction tx) throws Exception
+         {
+
+         }
+
+         @Override
+         public void afterPrepare(Transaction tx)
+         {
+
+         }
+
+         @Override
+         public void beforeCommit(Transaction tx) throws Exception
+         {
+
+         }
+
+         @Override
+         public void afterCommit(Transaction tx)
+         {
+            System.out.println("commit...");
+            commit.incrementAndGet();
+         }
+
+         @Override
+         public void beforeRollback(Transaction tx) throws Exception
+         {
+
+         }
+
+         @Override
+         public void afterRollback(Transaction tx)
+         {
+            System.out.println("rollback...");
+            rollback.incrementAndGet();
+         }
+
+         @Override
+         public List<MessageReference> getRelatedMessageReferences()
+         {
+            return null;
+         }
+
+         @Override
+         public List<MessageReference> getListOnConsumer(long consumerID)
+         {
+            return null;
+         }
+      });
+
+      tx.rollback();
+
+      // This is a case where another failure was detected (In parallel with the TX timeout for instance)
+      tx.markAsRollbackOnly(new HornetQException("rollback only again"));
+      tx.rollback();
+
+
+      Assert.assertEquals(0, commit.get());
+      Assert.assertEquals(1, rollback.get());
 
    }
 
@@ -139,7 +283,7 @@ public class TransactionImplTest
       @Override
       public void afterCompleteOperations(IOAsyncTask run)
       {
-
+         run.done();
       }
 
       @Override
