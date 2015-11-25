@@ -142,13 +142,24 @@ public class TransactionImpl implements Transaction
 
    public boolean hasTimedOut(final long currentTime, final int defaultTimeout)
    {
-      if (timeoutSeconds == -1)
+      synchronized (timeoutLock)
       {
-         return getState() != Transaction.State.PREPARED && currentTime > createTime + defaultTimeout * 1000;
-      }
-      else
-      {
-         return getState() != Transaction.State.PREPARED && currentTime > createTime + timeoutSeconds * 1000;
+         boolean timedout;
+         if (timeoutSeconds == -1)
+         {
+            timedout = getState() != Transaction.State.PREPARED && currentTime > createTime + defaultTimeout * 1000;
+         }
+         else
+         {
+            timedout = getState() != Transaction.State.PREPARED && currentTime > createTime + timeoutSeconds * 1000;
+         }
+
+         if (timedout)
+         {
+            markAsRollbackOnly(new HornetQException("TX Timeout"));
+         }
+
+         return timedout;
       }
    }
 
