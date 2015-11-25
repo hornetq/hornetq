@@ -24,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -3483,7 +3484,7 @@ public class JournalStorageManager implements StorageManager
       @Override
       public String toString()
       {
-         return "ScheduledDeliveryEncoding [scheduledDeliveryTime=" + scheduledDeliveryTime + "]";
+         return "ScheduledDeliveryEncoding [scheduledDeliveryTime=" + scheduledDeliveryTime + "(" + new Date(scheduledDeliveryTime) + ")]";
       }
 
       private ScheduledDeliveryEncoding(final long scheduledDeliveryTime, final long queueID)

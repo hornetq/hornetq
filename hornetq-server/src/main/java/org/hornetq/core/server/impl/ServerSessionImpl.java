@@ -1065,7 +1065,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          try
          {
-            if (!tx.isEffective())
+            if (tx.getState() != Transaction.State.PREPARED)
             {
                // we don't want to rollback anything prepared here
                if (tx.getXid() != null)
@@ -1110,7 +1110,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (theTX.isEffective())
       {
-         HornetQServerLogger.LOGGER.debug("Client failed with Xid " + xid + " but the server already had it prepared");
+         HornetQServerLogger.LOGGER.debug("Client failed with Xid " + xid + " but the server already had it " + theTX.getState());
          tx = null;
       }
       else
@@ -1649,9 +1649,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          Transaction newTX = newTransaction();
          cancelAndRollback(clientFailed, newTX, wasStarted, toCancel);
-         throw new IllegalStateException("Transaction has already been rolled back");
       }
-      cancelAndRollback(clientFailed, theTx, wasStarted, toCancel);
+      else
+      {
+         cancelAndRollback(clientFailed, theTx, wasStarted, toCancel);
+      }
    }
 
    private void cancelAndRollback(boolean clientFailed, Transaction theTx, boolean wasStarted, List<MessageReference> toCancel) throws Exception

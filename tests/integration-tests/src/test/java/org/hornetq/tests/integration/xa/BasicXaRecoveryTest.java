@@ -470,6 +470,9 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       {
          clientSession.rollback(xid);
       }
+
+      xids = clientSession.recover(XAResource.TMSTARTRSCAN);
+      Assert.assertEquals(xids.length, 0);
    }
 
    @Test
