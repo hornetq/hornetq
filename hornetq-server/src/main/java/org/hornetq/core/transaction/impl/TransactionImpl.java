@@ -492,7 +492,14 @@ public class TransactionImpl implements Transaction
 
    public synchronized List<TransactionOperation> getAllOperations()
    {
-      return new ArrayList<TransactionOperation>(operations);
+      if ( operations != null)
+      {
+         return new ArrayList<TransactionOperation>(operations);
+      }
+      else
+      {
+         return new ArrayList<TransactionOperation>();
+      }
    }
 
    public void putProperty(final int index, final Object property)
