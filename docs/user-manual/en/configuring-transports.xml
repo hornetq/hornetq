@@ -324,8 +324,12 @@ buffer_size = bandwidth * RTT.</programlisting>
                         SSL key store which holds the client certificates. This is only relevant
                         for a <literal>connector</literal> if you are using 2-way SSL (i.e. mutual
                         authentication). Although this value is configured on the server, it is
-                        downloaded and used by the client. Furthermore, it can be overridden on the
-                        client-side by using the customary "javax.net.ssl.keyStore" system property.</para>
+                        downloaded and used by the client. If the client needs to use a different path
+                        from that set on the server then it can override the server-side setting by either
+                        using the customary "javax.net.ssl.keyStore" system property or the HornetQ-specific
+                        "org.hornetq.ssl.keyStore" system property. The HornetQ-specific system property
+                        is useful if another component on client is already making use of the standard, Java
+                        system property.</para>
                 </listitem>
                 <listitem>
                     <para><literal>key-store-password</literal></para>
@@ -334,9 +338,12 @@ buffer_size = bandwidth * RTT.</programlisting>
                     <para>When used on a <literal>connector</literal> this is the password for the
                         client-side keystore.  This is only relevant for a <literal>connector</literal>
                         if you are using 2-way SSL (i.e. mutual authentication). Although this value can
-                        be configured on the server, it is downloaded and used by the client. If
-                        necessary, it can be overridden on the client-side by using the customary
-                        "javax.net.ssl.keyStorePassword" system property.</para>
+                        be configured on the server, it is downloaded and used by the client.  If the client
+                        needs to use a different password from that set on the server then it can override
+                        the server-side setting by either using the customary "javax.net.ssl.keyStorePassword"
+                        system property or the HornetQ-specific "org.hornetq.ssl.keyStorePassword" system
+                        property. The HornetQ-specific system property is useful if another component on client
+                        is already making use of the standard, Java system property.</para>
                 </listitem>
                 <listitem>
                     <para><literal>trust-store-path</literal></para>
@@ -347,8 +354,12 @@ buffer_size = bandwidth * RTT.</programlisting>
                     <para>When used on a <literal>connector</literal> this is the path to the client-side
                         SSL key store which holds the public keys of all the servers that the client
                         trusts. Although this value can be configured on the server, it is downloaded and
-                        used by the client. If necessary, it can be overridden on the client-side by using
-                        the customary "javax.net.ssl.trustStore" system property.</para>
+                        used by the client.  If the client needs to use a different path
+                        from that set on the server then it can override the server-side setting by either
+                        using the customary "javax.net.ssl.trustStore" system property or the HornetQ-specific
+                        "org.hornetq.ssl.trustStore" system property. The HornetQ-specific system property
+                        is useful if another component on client is already making use of the standard, Java
+                        system property.</para>
                 </listitem>
                 <listitem>
                     <para><literal>trust-store-password</literal></para>
@@ -357,9 +368,12 @@ buffer_size = bandwidth * RTT.</programlisting>
                         if you are using 2-way SSL (i.e. mutual authentication).</para>
                     <para>When used on a <literal>connector</literal> this is the password for the
                         client-side truststore. Although this value can be configured on the server, it is
-                        downloaded and used by the client. If necessary, it can be overridden on the
-                        client-side by using the customary "javax.net.ssl.trustStorePassword" system
-                        property.</para>
+                        downloaded and used by the client.   If the client
+                        needs to use a different password from that set on the server then it can override
+                        the server-side setting by either using the customary "javax.net.ssl.trustStorePassword"
+                        system property or the HornetQ-specific "org.hornetq.ssl.trustStorePassword" system
+                        property. The HornetQ-specific system property is useful if another component on client
+                        is already making use of the standard, Java system property.</para>
                 </listitem>
             </itemizedlist>
         </section>

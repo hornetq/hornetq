@@ -13,9 +13,13 @@
 
 package org.hornetq.tests.unit.core.remoting.impl.netty;
 
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
+
+import org.junit.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -27,8 +31,6 @@ import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.tests.util.UnitTestCase;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -139,7 +141,7 @@ public class NettyConnectorTest extends UnitTestCase
       }
    }
    @Test
-   public void testSystemPropertyOverrides() throws Exception
+   public void testJavaSystemPropertyOverrides() throws Exception
    {
       BufferHandler handler = new BufferHandler()
       {
@@ -183,6 +185,63 @@ public class NettyConnectorTest extends UnitTestCase
       System.setProperty(NettyConnector.JAVAX_KEYSTORE_PASSWORD_PROP_NAME, "secureexample");
       System.setProperty(NettyConnector.JAVAX_TRUSTSTORE_PATH_PROP_NAME, "client-side.truststore");
       System.setProperty(NettyConnector.JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME, "secureexample");
+
+      connector.start();
+      Assert.assertTrue(connector.isStarted());
+      connector.close();
+      Assert.assertFalse(connector.isStarted());
+   }
+   @Test
+   public void testHornetQSystemPropertyOverrides() throws Exception
+   {
+      BufferHandler handler = new BufferHandler()
+      {
+         public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
+         {
+         }
+      };
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
+      params.put(TransportConstants.KEYSTORE_PATH_PROP_NAME, "bad path");
+      params.put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "bad password");
+      params.put(TransportConstants.TRUSTSTORE_PATH_PROP_NAME, "bad path");
+      params.put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, "bad password");
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         public void connectionException(final Object connectionID, final HornetQException me)
+         {
+         }
+
+         public void connectionDestroyed(final Object connectionID)
+         {
+         }
+
+         public void connectionCreated(final HornetQComponent component, final Connection connection, final ProtocolType protocol)
+         {
+         }
+         public void connectionReadyForWrites(Object connectionID, boolean ready)
+         {
+         }
+      };
+
+      NettyConnector connector = new NettyConnector(params,
+            handler,
+            listener,
+            Executors.newCachedThreadPool(),
+            Executors.newCachedThreadPool(),
+            Executors.newScheduledThreadPool(5));
+
+
+      System.setProperty(NettyConnector.JAVAX_KEYSTORE_PATH_PROP_NAME, "bad path");
+      System.setProperty(NettyConnector.JAVAX_KEYSTORE_PASSWORD_PROP_NAME, "bad password");
+      System.setProperty(NettyConnector.JAVAX_TRUSTSTORE_PATH_PROP_NAME, "bad path");
+      System.setProperty(NettyConnector.JAVAX_TRUSTSTORE_PASSWORD_PROP_NAME, "bad password");
+
+      System.setProperty(NettyConnector.HORNETQ_KEYSTORE_PATH_PROP_NAME, "client-side.keystore");
+      System.setProperty(NettyConnector.HORNETQ_KEYSTORE_PASSWORD_PROP_NAME, "secureexample");
+      System.setProperty(NettyConnector.HORNETQ_TRUSTSTORE_PATH_PROP_NAME, "client-side.truststore");
+      System.setProperty(NettyConnector.HORNETQ_TRUSTSTORE_PASSWORD_PROP_NAME, "secureexample");
+
 
       connector.start();
       Assert.assertTrue(connector.isStarted());
