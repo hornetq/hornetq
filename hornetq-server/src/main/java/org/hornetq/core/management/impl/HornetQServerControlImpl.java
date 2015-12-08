@@ -984,8 +984,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
          {
             Xid xid = entry.getKey();
+
+            Transaction tx = resourceManager.getTransaction(xid);
+            if (tx == null)
+            {
+               continue;
+            }
             TransactionDetail detail = new CoreTransactionDetail(xid,
-                  resourceManager.getTransaction(xid),
+                  tx,
                   entry.getValue());
 
             txDetailListJson.put(detail.toJSON());
