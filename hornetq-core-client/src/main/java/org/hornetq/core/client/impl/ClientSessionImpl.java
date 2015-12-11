@@ -1043,7 +1043,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                if (HornetQClientLogger.LOGGER.isDebugEnabled())
                {
                   HornetQClientLogger.LOGGER.debug("ClientSession reattached fine, replaying commands");
-                  System.exit(-1);
                }
 
                HornetQClientLogger.LOGGER.replayingCommands(channel.getID(), response.getLastConfirmedCommandID());
