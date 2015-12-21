@@ -124,7 +124,8 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    public TestName name = new TestName();
 
    @Rule
-   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+   public final TemporaryFolder temporaryFolder;
+
    private String testDir;
 
    private static final HornetQServerLogger log = HornetQServerLogger.LOGGER;
@@ -351,11 +352,17 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    public UnitTestCase(final String name)
    {
       super(name);
+      File parent = new File("./target/tmp");
+      parent.mkdirs();
+      this.temporaryFolder = new TemporaryFolder(parent);
    }
 
    public UnitTestCase()
    {
       super();
+      File parent = new File("./target/tmp");
+      parent.mkdirs();
+      this.temporaryFolder = new TemporaryFolder(parent);
    }
 
    public static void forceGC()
