@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hornetq.api.core.HornetQDuplicateIdException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.persistence.StorageManager;
@@ -149,7 +150,37 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       return cache.get(new ByteArrayHolder(duplID)) != null;
    }
 
-   public synchronized void addToCache(final byte[] duplID, final Transaction tx) throws Exception
+   public void addToCache(final byte[] duplID) throws Exception
+   {
+      addToCache(duplID, null, false);
+   }
+
+
+   public void addToCache(final byte[] duplID, final Transaction tx) throws Exception
+   {
+      addToCache(duplID, tx, false);
+   }
+
+   public synchronized boolean atomicVerify(final byte[] duplID, final Transaction tx) throws Exception
+   {
+
+      if (contains(duplID))
+      {
+         if (tx != null)
+         {
+            tx.markAsRollbackOnly(new HornetQDuplicateIdException());
+         }
+         return false;
+      }
+      else
+      {
+         addToCache(duplID, tx, true);
+         return true;
+      }
+
+   }
+
+   public synchronized void addToCache(final byte[] duplID, final Transaction tx, boolean instantAdd) throws Exception
    {
       long recordID = -1;
 
@@ -173,9 +204,16 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
             tx.setContainsPersistent();
          }
 
-         // For a tx, it's important that the entry is not added to the cache until commit
-         // since if the client fails then resends them tx we don't want it to get rejected
-         tx.addOperation(new AddDuplicateIDOperation(duplID, recordID));
+         if (instantAdd)
+         {
+            addToCacheInMemory(duplID, recordID);
+         }
+         else
+         {
+            // For a tx, it's important that the entry is not added to the cache until commit
+            // since if the client fails then resends them tx we don't want it to get rejected
+            tx.addOperation(new AddDuplicateIDOperation(duplID, recordID));
+         }
       }
    }
 

@@ -31,7 +31,18 @@ public interface DuplicateIDCache
 {
    boolean contains(byte[] duplicateID);
 
+   boolean atomicVerify(final byte[] duplID, final Transaction tx) throws Exception;
+
+   void addToCache(byte[] duplicateID) throws Exception;
+
    void addToCache(byte[] duplicateID, Transaction tx) throws Exception;
+
+   /**
+    * it will add the data to the cache.
+    * If TX == null it won't use a transaction.
+    * if instantAdd=true, it won't wait a transaction to add on the cache which is needed on the case of the Bridges
+    */
+   void addToCache(byte[] duplicateID, Transaction tx, boolean instantAdd) throws Exception;
 
    void deleteFromCache(byte [] duplicateID) throws Exception;
 

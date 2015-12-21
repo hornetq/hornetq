@@ -165,6 +165,8 @@ import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.SecurityFormatter;
 import org.hornetq.utils.VersionLoader;
+import org.jboss.netty.util.ThreadNameDeterminer;
+import org.jboss.netty.util.ThreadRenamingRunnable;
 
 import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAILURE_REPLICATING;
 import static org.hornetq.core.server.impl.QuorumManager.BACKUP_ACTIVATION.FAIL_OVER;
@@ -390,6 +392,15 @@ public class HornetQServerImpl implements HornetQServer
 
    public final synchronized void start() throws Exception
    {
+
+      ThreadRenamingRunnable.setThreadNameDeterminer(new ThreadNameDeterminer()
+      {
+         @Override
+         public String determineThreadName(String currentThreadName, String proposedThreadName) throws Exception
+         {
+            return proposedThreadName + ", runningThread=" + currentThreadName;
+         }
+      });
       if (state != SERVER_STATE.STOPPED)
       {
          HornetQServerLogger.LOGGER.debug("Server already started!");
