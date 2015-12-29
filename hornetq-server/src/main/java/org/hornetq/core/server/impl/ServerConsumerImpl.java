@@ -813,34 +813,76 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       ref.getQueue().acknowledge(tx, ref);
    }
 
-   public void individualAcknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
+   public void individualAcknowledge(final boolean autoCommitAcks, Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
          return;
       }
 
-      MessageReference ref = removeReferenceByID(messageID);
+      boolean startedTransaction = false;
 
-      if (ref == null)
+      if (tx == null || autoCommitAcks)
       {
-         HornetQIllegalStateException ils = new HornetQIllegalStateException("Cannot find ref to ack " + messageID);
-         if (tx != null)
+         startedTransaction = true;
+         tx = new TransactionImpl(storageManager);
+      }
+
+      try
+      {
+
+         MessageReference ref;
+         ref = removeReferenceByID(messageID);
+
+         if (HornetQServerLogger.LOGGER.isTraceEnabled())
          {
-            tx.markAsRollbackOnly(ils);
+            HornetQServerLogger.LOGGER.trace("ACKing ref " + ref + " on tx= " + tx + ", consumer=" + this);
          }
-         throw ils;
+
+         if (ref == null)
+         {
+            HornetQIllegalStateException ils = new HornetQIllegalStateException("Cannot find ref to ack " + messageID);
+            if (tx != null)
+            {
+               tx.markAsRollbackOnly(ils);
+            }
+            throw ils;
+         }
+
+         ackReference(tx, ref);
+
+         if (startedTransaction)
+         {
+            tx.commit();
+         }
+      }
+      catch (HornetQException e)
+      {
+         if (startedTransaction)
+         {
+            tx.rollback();
+         }
+         else
+         {
+            tx.markAsRollbackOnly(e);
+         }
+         throw e;
+      }
+      catch (Throwable e)
+      {
+         HornetQServerLogger.LOGGER.errorAckingMessage((Exception)e);
+         HornetQException hqex = new HornetQIllegalStateException(e.getMessage());
+         if (startedTransaction)
+         {
+            tx.rollback();
+         }
+         else
+         {
+            tx.markAsRollbackOnly(hqex);
+         }
+         throw hqex;
       }
 
-      if (autoCommitAcks)
-      {
-         ref.getQueue().acknowledge(ref);
-      }
-      else
-      {
-         ackReference(tx, ref);
-      }
-      acks++;
    }
 
    public MessageReference removeReferenceByID(final long messageID) throws Exception

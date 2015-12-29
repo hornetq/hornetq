@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -76,7 +77,17 @@ public class LastValueQueue extends QueueImpl
    @Override
    public synchronized void addTail(final MessageReference ref, final boolean direct)
    {
-      SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
+      SimpleString prop;
+
+      try
+      {
+         prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
+      }
+      catch (HornetQException e)
+      {
+         criticalError(e);
+         throw new IllegalStateException(e);
+      }
 
       if (prop != null)
       {
@@ -120,37 +131,45 @@ public class LastValueQueue extends QueueImpl
    @Override
    public synchronized void addHead(final MessageReference ref)
    {
-      SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
-
-      if (prop != null)
+      try
       {
-         HolderReference hr = map.get(prop);
+         SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
 
-         if (hr != null)
+         if (prop != null)
          {
-            // We keep the current ref and ack the one we are returning
+            HolderReference hr = map.get(prop);
 
-            super.referenceHandled();
-
-            try
+            if (hr != null)
             {
-               super.acknowledge(ref);
+               // We keep the current ref and ack the one we are returning
+
+               super.referenceHandled();
+
+               try
+               {
+                  super.acknowledge(ref);
+               }
+               catch (Exception e)
+               {
+                  HornetQServerLogger.LOGGER.errorAckingOldReference(e);
+               }
             }
-            catch (Exception e)
+            else
             {
-               HornetQServerLogger.LOGGER.errorAckingOldReference(e);
+               map.put(prop, (HolderReference) ref);
+
+               super.addHead(ref);
             }
          }
          else
          {
-            map.put(prop, (HolderReference)ref);
-
             super.addHead(ref);
          }
       }
-      else
+      catch (HornetQException e)
       {
-         super.addHead(ref);
+         criticalError(e);
+         throw new IllegalStateException(e);
       }
    }
 
@@ -158,17 +177,25 @@ public class LastValueQueue extends QueueImpl
    @Override
    protected void refRemoved(MessageReference ref)
    {
-      synchronized (this)
+      try
       {
-         SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
-
-         if (prop != null)
+         synchronized (this)
          {
-            map.remove(prop);
-         }
-      }
+            SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
 
-      super.refRemoved(ref);
+            if (prop != null)
+            {
+               map.remove(prop);
+            }
+         }
+
+         super.refRemoved(ref);
+      }
+      catch (HornetQException e)
+      {
+         criticalError(e);
+         throw new IllegalStateException(e);
+      }
    }
 
    private class HolderReference implements MessageReference
@@ -220,7 +247,15 @@ public class LastValueQueue extends QueueImpl
 
       public ServerMessage getMessage()
       {
-         return ref.getMessage();
+         try
+         {
+            return ref.getMessage();
+         }
+         catch (HornetQException e)
+         {
+            criticalError(e);
+            throw new IllegalStateException(e);
+         }
       }
 
       public Queue getQueue()
@@ -277,7 +312,15 @@ public class LastValueQueue extends QueueImpl
        */
       public int getMessageMemoryEstimate()
       {
-         return ref.getMessage().getMemoryEstimate();
+         try
+         {
+            return ref.getMessage().getMemoryEstimate();
+         }
+         catch (HornetQException e)
+         {
+            criticalError(e);
+            throw new IllegalStateException(e);
+         }
       }
 
       /* (non-Javadoc)

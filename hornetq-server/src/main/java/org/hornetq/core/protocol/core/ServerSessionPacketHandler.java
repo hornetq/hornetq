@@ -53,6 +53,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -528,6 +529,19 @@ public class ServerSessionPacketHandler implements ChannelHandler
                }
             }
          }
+         catch (HornetQIOErrorException e)
+         {
+            getSession().markTXFailed(e);
+            if (requiresResponse)
+            {
+               HornetQServerLogger.LOGGER.debug("Sending exception to client", e);
+               response = new HornetQExceptionMessage(e);
+            }
+            else
+            {
+               HornetQServerLogger.LOGGER.caughtException(e);
+            }
+         }
          catch (HornetQXAException e)
          {
             if (requiresResponse)
@@ -561,6 +575,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
          }
          catch (Throwable t)
          {
+            getSession().markTXFailed(t);
             if (requiresResponse)
             {
                HornetQServerLogger.LOGGER.warn("Sending unexpected exception to the client", t);

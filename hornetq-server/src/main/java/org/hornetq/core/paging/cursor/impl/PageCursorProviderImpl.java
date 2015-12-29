@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
@@ -112,7 +114,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return activeCursors.get(cursorID);
    }
 
-   public PagedMessage getMessage(final PagePosition pos)
+   public PagedMessage getMessage(final PagePosition pos) throws HornetQException
    {
       PageCache cache = getPageCache(pos.getPageNr());
 
@@ -132,12 +134,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return new PagedReferenceImpl(pos, msg, subscription);
    }
 
-   public PageCache getPageCache(final long pageId)
+   public PageCache getPageCache(final long pageId) throws HornetQException
    {
       try
       {
-         boolean needToRead = false;
-         PageCache cache = null;
+         PageCache cache;
          synchronized (softCache)
          {
             if (pageId > pagingStore.getCurrentWritingPage())
@@ -154,55 +155,51 @@ public class PageCursorProviderImpl implements PageCursorProvider
                }
 
                cache = createPageCache(pageId);
-               needToRead = true;
                // anyone reading from this cache will have to wait reading to finish first
                // we also want only one thread reading this cache
-               cache.lock();
                if (isTrace)
                {
                   HornetQServerLogger.LOGGER.trace("adding " + pageId + " into cursor = " + this.pagingStore.getAddress());
                }
+               readPage((int) pageId, cache);
                softCache.put(pageId, cache);
-            }
-         }
-
-         // Reading is done outside of the synchronized block, however
-         // the page stays locked until the entire reading is finished
-         if (needToRead)
-         {
-            Page page = null;
-            try
-            {
-               page = pagingStore.createPage((int)pageId);
-
-               storageManager.beforePageRead();
-               page.open();
-
-               List<PagedMessage> pgdMessages = page.read(storageManager);
-               cache.setMessages(pgdMessages.toArray(new PagedMessage[pgdMessages.size()]));
-            }
-            finally
-            {
-               try
-               {
-                  if (page != null)
-                  {
-                     page.close();
-                  }
-               }
-               catch (Throwable ignored)
-               {
-               }
-               storageManager.afterPageRead();
-               cache.unlock();
             }
          }
 
          return cache;
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
-         throw new RuntimeException("Couldn't complete paging due to an IO Exception on Paging - " + e.getMessage(), e);
+         throw new HornetQIOErrorException("Couldn't complete paging due to an IO Exception on Paging - " + e.getMessage(), e);
+      }
+   }
+
+   private void readPage(int pageId, PageCache cache) throws Exception
+   {
+      Page page = null;
+      try
+      {
+         page = pagingStore.createPage(pageId);
+
+         storageManager.beforePageRead();
+         page.open();
+
+         List<PagedMessage> pgdMessages = page.read(storageManager);
+         cache.setMessages(pgdMessages.toArray(new PagedMessage[pgdMessages.size()]));
+      }
+      finally
+      {
+         try
+         {
+            if (page != null)
+            {
+               page.close();
+            }
+         }
+         catch (Throwable ignored)
+         {
+         }
+         storageManager.afterPageRead();
       }
    }
 

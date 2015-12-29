@@ -16,6 +16,7 @@ package org.hornetq.core.paging.cursor;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -48,12 +49,12 @@ public class PagedReferenceImpl implements PagedReference
 
    private final PageSubscription subscription;
 
-   public ServerMessage getMessage()
+   public ServerMessage getMessage() throws HornetQException
    {
       return getPagedMessage().getMessage();
    }
 
-   public synchronized PagedMessage getPagedMessage()
+   public synchronized PagedMessage getPagedMessage() throws HornetQException
    {
       PagedMessage returnMessage = message != null ? message.get() : null;
 
@@ -114,7 +115,14 @@ public class PagedReferenceImpl implements PagedReference
    {
       if (messageEstimate < 0)
       {
-         messageEstimate = getMessage().getMemoryEstimate();
+         try
+         {
+            messageEstimate = getMessage().getMemoryEstimate();
+         }
+         catch (HornetQException e)
+         {
+            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         }
       }
       return messageEstimate;
    }
@@ -123,7 +131,15 @@ public class PagedReferenceImpl implements PagedReference
    @Override
    public MessageReference copy(final Queue queue)
    {
-      return new PagedReferenceImpl(this.position, this.getPagedMessage(), this.subscription);
+      try
+      {
+         return new PagedReferenceImpl(this.position, this.getPagedMessage(), this.subscription);
+      }
+      catch (HornetQException e)
+      {
+         HornetQServerLogger.LOGGER.warn(e);
+         return this;
+      }
    }
 
    @Override
@@ -131,14 +147,22 @@ public class PagedReferenceImpl implements PagedReference
    {
       if (deliveryTime == null)
       {
-         ServerMessage msg = getMessage();
-         if (msg.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
+         try
          {
-            deliveryTime = getMessage().getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+            ServerMessage msg = getMessage();
+            if (msg.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
+            {
+               deliveryTime = getMessage().getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+            }
+            else
+            {
+               deliveryTime = 0L;
+            }
          }
-         else
+         catch (HornetQException e)
          {
-            deliveryTime = 0L;
+            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            return 0L;
          }
       }
       return deliveryTime;

@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.server;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.filter.Filter;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public interface ScheduledDeliveryHandler
 
    List<MessageReference> getScheduledReferences();
 
-   List<MessageReference> cancel(Filter filter);
+   List<MessageReference> cancel(Filter filter) throws HornetQException;
 
-   MessageReference removeReferenceWithID(long id);
+   MessageReference removeReferenceWithID(long id) throws HornetQException;
 }

@@ -28,8 +28,10 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
@@ -91,7 +93,15 @@ public class PrintPages // NO_UCD (unused code)
                return executor;
             }
          };
-         final StorageManager sm = new NullStorageManager();
+         final StorageManager sm = new NullStorageManager(new IOCriticalErrorListener()
+         {
+            @Override
+            public void onIOException(Throwable code, String message, SequentialFile file)
+            {
+               code.printStackTrace();
+            }
+         });
+
          PagingStoreFactory pageStoreFactory =
             new PagingStoreFactoryNIO(sm, arg[0], 1000L, scheduled, execfactory, false, null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();

@@ -13,6 +13,7 @@
 
 package org.hornetq.core.paging.cursor;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.PagedMessage;
 
@@ -26,7 +27,7 @@ import org.hornetq.core.paging.PagedMessage;
 public interface PageCursorProvider
 {
 
-   PageCache getPageCache(long pageNr);
+   PageCache getPageCache(long pageNr) throws HornetQException;
 
    PagedReference newReference(final PagePosition pos, final PagedMessage msg, PageSubscription sub);
 
@@ -40,7 +41,7 @@ public interface PageCursorProvider
 
    PageSubscription createSubscription(long queueId, Filter filter, boolean durable);
 
-   PagedMessage getMessage(PagePosition pos);
+   PagedMessage getMessage(PagePosition pos) throws HornetQException;
 
    void processReload() throws Exception;
 

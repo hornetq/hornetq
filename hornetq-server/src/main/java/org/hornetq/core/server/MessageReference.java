@@ -13,6 +13,8 @@
 
 package org.hornetq.core.server;
 
+import org.hornetq.api.core.HornetQException;
+
 /**
  * A reference to a message.
  * <p/>
@@ -29,7 +31,7 @@ public interface MessageReference
 
    boolean isPaged();
 
-   ServerMessage getMessage();
+   ServerMessage getMessage() throws HornetQException;
 
    /**
     * We define this method aggregation here because on paging we need to hold the original estimate,

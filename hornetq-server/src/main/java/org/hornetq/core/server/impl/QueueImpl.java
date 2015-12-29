@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.CoreNotificationType;
@@ -930,7 +931,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized MessageReference getReference(final long id1)
+   public synchronized MessageReference getReference(final long id1) throws HornetQException
    {
       LinkedListIterator<MessageReference> iterator = iterator();
 
@@ -1121,7 +1122,14 @@ public class QueueImpl implements Queue
 
    public void cancel(final Transaction tx, final MessageReference reference, boolean ignoreRedeliveryCheck)
    {
-      getRefsOperation(tx, ignoreRedeliveryCheck).addAck(reference);
+      try
+      {
+         getRefsOperation(tx, ignoreRedeliveryCheck).addAck(reference);
+      }
+      catch (Exception e)
+      {
+         getPageSubscription().getPagingStore().criticalException(e);
+      }
    }
 
    public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
@@ -1854,7 +1862,14 @@ public class QueueImpl implements Queue
    private synchronized void internalAddTail(final MessageReference ref)
    {
       refAdded(ref);
-      messageReferences.addTail(ref, ref.getMessage().getPriority());
+      try
+      {
+         messageReferences.addTail(ref, ref.getMessage().getPriority());
+      }
+      catch (HornetQException e)
+      {
+         criticalError(e);
+      }
    }
 
    /**
@@ -1866,9 +1881,21 @@ public class QueueImpl implements Queue
     */
    private void internalAddHead(final MessageReference ref)
    {
-      queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
-      refAdded(ref);
-      messageReferences.addHead(ref, ref.getMessage().getPriority());
+      try
+      {
+         queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
+         refAdded(ref);
+         messageReferences.addHead(ref, ref.getMessage().getPriority());
+      }
+      catch (HornetQException e)
+      {
+         criticalError(e);
+      }
+   }
+
+   protected void criticalError(HornetQException e)
+   {
+      storageManager.criticalError(e);
    }
 
    private synchronized void doInternalPoll()
@@ -2139,14 +2166,19 @@ public class QueueImpl implements Queue
       }
       else
       {
-         // But we don't use the groupID on internal queues (clustered queues) otherwise the group map would leak forever
-         return ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+         try
+         {
+            // But we don't use the groupID on internal queues (clustered queues) otherwise the group map would leak forever
+            return ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
+         }
+         catch (HornetQException e)
+         {
+            criticalError(e);
+            throw new IllegalStateException(e);
+         }
       }
    }
 
-   /**
-    * @param ref
-    */
    protected void refRemoved(MessageReference ref)
    {
       queueMemorySize.addAndGet(-ref.getMessageMemoryEstimate());
@@ -2156,9 +2188,6 @@ public class QueueImpl implements Queue
       }
    }
 
-   /**
-    * @param ref
-    */
    protected void refAdded(final MessageReference ref)
    {
       if (ref.isPaged())
@@ -2559,28 +2588,36 @@ public class QueueImpl implements Queue
 
    private boolean checkExpired(final MessageReference reference)
    {
-      if (reference.getMessage().isExpired())
+      try
       {
-         if (isTrace)
+         if (reference.getMessage().isExpired())
          {
-            HornetQServerLogger.LOGGER.trace("Reference " + reference + " is expired");
-         }
-         reference.handled();
+            if (isTrace)
+            {
+               HornetQServerLogger.LOGGER.trace("Reference " + reference + " is expired");
+            }
+            reference.handled();
 
-         try
-         {
-            expire(reference);
-         }
-         catch (Exception e)
-         {
-            HornetQServerLogger.LOGGER.errorExpiringRef(e);
-         }
+            try
+            {
+               expire(reference);
+            }
+            catch (Exception e)
+            {
+               HornetQServerLogger.LOGGER.errorExpiringRef(e);
+            }
 
-         return true;
+            return true;
+         }
+         else
+         {
+            return false;
+         }
       }
-      else
+      catch (HornetQException e)
       {
-         return false;
+         criticalError(e);
+         throw new IllegalStateException(e);
       }
    }
 
@@ -2628,7 +2665,7 @@ public class QueueImpl implements Queue
    }
 
    // Protected as testcases may change this behaviour
-   protected void postAcknowledge(final MessageReference ref)
+   protected void postAcknowledge(final MessageReference ref) throws HornetQException
    {
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
@@ -2753,7 +2790,7 @@ public class QueueImpl implements Queue
          ignoreRedeliveryCheck = true;
       }
 
-      synchronized void addAck(final MessageReference ref)
+      synchronized void addAck(final MessageReference ref) throws HornetQException
       {
          refsToAck.add(ref);
          if (ref.isPaged())
@@ -2824,7 +2861,14 @@ public class QueueImpl implements Queue
          {
             synchronized (ref.getQueue())
             {
-               postAcknowledge(ref);
+               try
+               {
+                  postAcknowledge(ref);
+               }
+               catch (Exception e)
+               {
+                  getPageSubscription().getPagingStore().criticalException(e);
+               }
             }
          }
 

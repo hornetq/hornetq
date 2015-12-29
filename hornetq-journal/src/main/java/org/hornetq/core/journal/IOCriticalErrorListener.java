@@ -22,5 +22,5 @@ package org.hornetq.core.journal;
  */
 public interface IOCriticalErrorListener
 {
-   void onIOException(Exception code, String message, SequentialFile file);
+   void onIOException(Throwable code, String message, SequentialFile file);
 }
