@@ -108,49 +108,57 @@ public class FakeConsumer implements Consumer
 
    public synchronized HandleStatus handle(final MessageReference reference)
    {
-      if (statusToReturn == HandleStatus.BUSY)
+      try
       {
-         return HandleStatus.BUSY;
-      }
-
-      if (filter != null)
-      {
-         if (filter.match(reference.getMessage()))
+         if (statusToReturn == HandleStatus.BUSY)
          {
-            references.addLast(reference);
+            return HandleStatus.BUSY;
+         }
+
+         if (filter != null)
+         {
+            if (filter.match(reference.getMessage()))
+            {
+               references.addLast(reference);
+               reference.getQueue().referenceHandled();
+               notify();
+
+               return HandleStatus.HANDLED;
+            }
+            else
+            {
+               return HandleStatus.NO_MATCH;
+            }
+         }
+
+         if (newStatus != null)
+         {
+            if (delayCountdown == 0)
+            {
+               statusToReturn = newStatus;
+
+               newStatus = null;
+            }
+            else
+            {
+               delayCountdown--;
+            }
+         }
+
+         if (statusToReturn == HandleStatus.HANDLED)
+         {
             reference.getQueue().referenceHandled();
+            references.addLast(reference);
             notify();
+         }
 
-            return HandleStatus.HANDLED;
-         }
-         else
-         {
-            return HandleStatus.NO_MATCH;
-         }
+         return statusToReturn;
       }
-
-      if (newStatus != null)
+      catch (Exception e)
       {
-         if (delayCountdown == 0)
-         {
-            statusToReturn = newStatus;
-
-            newStatus = null;
-         }
-         else
-         {
-            delayCountdown--;
-         }
+         e.printStackTrace();
+         throw new IllegalStateException(e.getMessage(), e);
       }
-
-      if (statusToReturn == HandleStatus.HANDLED)
-      {
-         reference.getQueue().referenceHandled();
-         references.addLast(reference);
-         notify();
-      }
-
-      return statusToReturn;
    }
 
    @Override

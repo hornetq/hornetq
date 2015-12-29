@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
@@ -108,7 +109,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       return refs;
    }
 
-   public List<MessageReference> cancel(final Filter filter)
+   public List<MessageReference> cancel(final Filter filter) throws HornetQException
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
@@ -129,7 +130,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       return refs;
    }
 
-   public MessageReference removeReferenceWithID(final long id)
+   public MessageReference removeReferenceWithID(final long id) throws HornetQException
    {
       synchronized (scheduledReferences)
       {

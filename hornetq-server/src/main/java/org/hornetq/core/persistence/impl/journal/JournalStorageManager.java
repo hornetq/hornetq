@@ -214,6 +214,8 @@ public class JournalStorageManager implements StorageManager
 
    private boolean journalLoaded = false;
 
+   private final IOCriticalErrorListener ioCriticalErrorListener;
+
    // Persisted core configuration
    private final Map<SimpleString, PersistedRoles> mapPersistedRoles =
       new ConcurrentHashMap<SimpleString, PersistedRoles>();
@@ -232,6 +234,8 @@ public class JournalStorageManager implements StorageManager
                                 final IOCriticalErrorListener criticalErrorListener)
    {
       this.executorFactory = executorFactory;
+
+      this.ioCriticalErrorListener = criticalErrorListener;
 
       executor = executorFactory.getExecutor();
 
@@ -329,6 +333,13 @@ public class JournalStorageManager implements StorageManager
       {
          pageMaxConcurrentIO = null;
       }
+   }
+
+
+   @Override
+   public void criticalError(Throwable error)
+   {
+      ioCriticalErrorListener.onIOException(error, error.getMessage(), null);
    }
 
    public void clearContext()

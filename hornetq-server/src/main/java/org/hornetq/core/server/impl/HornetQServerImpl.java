@@ -507,22 +507,22 @@ public class HornetQServerImpl implements HornetQServer
     */
    public final void stopTheServer(final boolean criticalIOError)
    {
-      ExecutorService executor = Executors.newSingleThreadExecutor();
-      executor.submit(new Runnable()
+      Thread thread = new Thread()
       {
-         @Override
          public void run()
          {
             try
             {
-               stop(configuration.isFailoverOnServerShutdown(), criticalIOError, false);
+               HornetQServerImpl.this.stop(configuration.isFailoverOnServerShutdown(), criticalIOError, false);
             }
             catch (Exception e)
             {
                HornetQServerLogger.LOGGER.errorStoppingServer(e);
             }
          }
-      });
+      };
+
+      thread.start();
    }
 
    public final void stop() throws Exception
@@ -1399,7 +1399,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          return new JournalStorageManager(configuration, executorFactory, shutdownOnCriticalIO);
       }
-      return new NullStorageManager();
+      return new NullStorageManager(shutdownOnCriticalIO);
    }
 
    private void callActivateCallbacks()
@@ -2481,13 +2481,20 @@ public class HornetQServerImpl implements HornetQServer
    {
       boolean failedAlready = false;
 
-      public synchronized void onIOException(Exception cause, String message, SequentialFile file)
+      public synchronized void onIOException(Throwable cause, String message, SequentialFile file)
       {
          if (!failedAlready)
          {
             failedAlready = true;
 
-            HornetQServerLogger.LOGGER.ioCriticalIOError(message, file.toString(), cause);
+            if (file == null)
+            {
+               HornetQServerLogger.LOGGER.ioCriticalIOError(message, "NULL", cause);
+            }
+            else
+            {
+               HornetQServerLogger.LOGGER.ioCriticalIOError(message, file.toString(), cause);
+            }
 
             stopTheServer(true);
          }

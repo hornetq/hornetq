@@ -239,6 +239,12 @@ public class TransactionImplTest extends ServiceTestBase
       }
 
       @Override
+      public void criticalError(Throwable error)
+      {
+         error.printStackTrace();
+      }
+
+      @Override
       public OperationContext newContext(Executor executor)
       {
          return null;

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
@@ -145,7 +146,7 @@ public interface Queue extends Bindable
 
    MessageReference removeReferenceWithID(long id) throws Exception;
 
-   MessageReference getReference(long id);
+   MessageReference getReference(long id) throws HornetQException;
 
    int deleteAllReferences() throws Exception;
 

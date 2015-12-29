@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
@@ -64,6 +65,32 @@ public class NullStorageManager implements StorageManager
    private final AtomicLong idSequence = new AtomicLong(0);
 
    private volatile boolean started;
+
+   private final IOCriticalErrorListener ioCriticalErrorListener;
+
+
+   public NullStorageManager(IOCriticalErrorListener ioCriticalErrorListener)
+   {
+      this.ioCriticalErrorListener = ioCriticalErrorListener;
+   }
+
+   public NullStorageManager()
+   {
+      this(new IOCriticalErrorListener()
+      {
+         @Override
+         public void onIOException(Throwable code, String message, SequentialFile file)
+         {
+            code.printStackTrace();
+         }
+      });
+   }
+
+   @Override
+   public void criticalError(Throwable error)
+   {
+
+   }
 
    private static final OperationContext dummyContext = new OperationContext()
    {

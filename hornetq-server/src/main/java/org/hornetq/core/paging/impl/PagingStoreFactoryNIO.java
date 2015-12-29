@@ -87,6 +87,10 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    }
 
    // Public --------------------------------------------------------
+   public void criticalException(Throwable e)
+   {
+      critialErrorListener.onIOException(e, e.getMessage(), null);
+   }
 
    public void stop()
    {

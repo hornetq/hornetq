@@ -58,6 +58,8 @@ import org.hornetq.core.transaction.Transaction;
 public interface StorageManager extends HornetQComponent
 {
 
+   void criticalError(Throwable error);
+
    /**
     * Get the context associated with the thread for later reuse
     */
