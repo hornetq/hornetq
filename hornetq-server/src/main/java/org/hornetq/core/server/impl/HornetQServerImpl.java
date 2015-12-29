@@ -1332,7 +1332,7 @@ public class HornetQServerImpl implements HornetQServer
          throw HornetQMessageBundle.BUNDLE.bindingNotDivert(name);
       }
 
-      postOffice.removeBinding(name, null);
+      postOffice.removeBinding(name, null, true);
    }
 
    public void deployBridge(BridgeConfiguration config) throws Exception
