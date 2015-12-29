@@ -13,12 +13,16 @@
 
 package org.hornetq.utils;
 
+import org.hornetq.api.core.SimpleString;
+
 /**
  * @author Clebert Suconic
  */
 
 public class ByteUtil
 {
+
+   public static final String NON_ASCII_STRING = "@@@@@";
 
    protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
 
@@ -48,6 +52,22 @@ public class ByteUtil
          hexChars[outPos++] = hexArray[v & 0x0F];
       }
       return new String(hexChars);
+   }
+
+   public static String toSimpleString(byte[] bytes)
+   {
+      SimpleString simpleString = new SimpleString(bytes);
+      String value = simpleString.toString();
+
+      for (char c : value.toCharArray())
+      {
+         if (c < ' ' || c > 127)
+         {
+            return NON_ASCII_STRING;
+         }
+      }
+
+      return value;
    }
 
    private static int numberOfGroups(byte[] bytes, int groupSize)

@@ -3604,7 +3604,7 @@ public class JournalStorageManager implements StorageManager
          }
          else
          {
-            return "DuplicateIDEncoding [address=" + address + ", duplID=" + ByteUtil.bytesToHex(duplID, 2) + "]";
+            return "DuplicateIDEncoding [address=" + address + ",str=" + ByteUtil.toSimpleString(duplID) + ", duplID=" + ByteUtil.bytesToHex(duplID, 2) + "]";
          }
       }
 

@@ -1392,7 +1392,7 @@ public class QueueImpl implements Queue
 
       try
       {
-         postOffice.removeBinding(name, tx);
+         postOffice.removeBinding(name, tx, true);
 
          deleteAllReferences();
 

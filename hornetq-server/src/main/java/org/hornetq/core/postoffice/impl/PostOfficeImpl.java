@@ -488,7 +488,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       managementService.sendNotification(new Notification(uid, CoreNotificationType.BINDING_ADDED, props));
    }
 
-   public synchronized Binding removeBinding(final SimpleString uniqueName, Transaction tx) throws Exception
+   public synchronized Binding removeBinding(final SimpleString uniqueName, Transaction tx, boolean deleteData) throws Exception
    {
 
       addressSettingsRepository.clearCache();
@@ -500,7 +500,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          throw new HornetQNonExistentQueueException();
       }
 
-      if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
+      if (deleteData && addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
       {
          pagingManager.deletePageStore(binding.getAddress());
 

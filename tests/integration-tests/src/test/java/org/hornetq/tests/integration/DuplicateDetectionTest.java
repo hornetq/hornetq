@@ -243,6 +243,81 @@ public class DuplicateDetectionTest extends ServiceTestBase
       Assert.assertEquals(0, ((PostOfficeImpl)messagingService.getPostOffice()).getDuplicateIDCaches().size());
    }
 
+
+   // It is important to test the shrink with this rule
+   // because we could have this after crashes
+   // we would eventually have a higher number of caches while we couldn't have time to clear previous ones
+   @Test
+   public void testShrinkCache() throws Exception
+   {
+      messagingService.stop();
+      messagingService.getConfiguration().setIDCacheSize(150);
+      messagingService.start();
+
+      final int TEST_SIZE = 200;
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+      locator.setBlockOnNonDurableSend(true);
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+      session.createQueue(queueName, queueName, null, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      for (int i = 0; i < TEST_SIZE; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, SimpleString.toSimpleString("DUPL-" + i));
+         producer.send(message);
+      }
+      session.commit();
+
+      sf.close();
+      session.close();
+      locator.close();
+
+      messagingService.stop();
+
+      messagingService.getConfiguration().setIDCacheSize(100);
+
+      messagingService.start();
+
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+      locator.setBlockOnNonDurableSend(true);
+      sf = createSessionFactory(locator);
+      session = sf.createSession(false, false, false);
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      // will send the last 50 again
+      for (int i = TEST_SIZE - 50; i < TEST_SIZE; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, SimpleString.toSimpleString("DUPL-" + i));
+         producer.send(message);
+      }
+
+      try
+      {
+         session.commit();
+         Assert.fail("Exception expected");
+      }
+      catch (HornetQException expected)
+      {
+
+      }
+
+   }
+
    @Test
    public void testSimpleDuplicateDetectionWithString() throws Exception
    {
@@ -1444,204 +1519,6 @@ public class DuplicateDetectionTest extends ServiceTestBase
          producer.send(message);
          ClientMessage message2 = consumer.receiveImmediate();
          Assert.assertNull(message2);
-      }
-
-      session.close();
-
-      sf.close();
-
-      locator.close();
-
-      messagingService2.stop();
-   }
-
-   @Test
-   public void testDuplicateCachePersistedRestartWithSmallerCache() throws Exception
-   {
-      messagingService.stop();
-
-      Configuration conf = createDefaultConfig();
-
-      final int initialCacheSize = 10;
-      final int subsequentCacheSize = 5;
-
-      conf.setIDCacheSize(initialCacheSize);
-
-      HornetQServer messagingService2 = createServer(conf);
-
-      messagingService2.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-
-      ClientSessionFactory sf = createSessionFactory(locator);
-
-      ClientSession session = sf.createSession(false, true, true);
-
-      session.start();
-
-      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
-
-      session.createQueue(queueName, queueName, null, false);
-
-      ClientProducer producer = session.createProducer(queueName);
-
-      ClientConsumer consumer = session.createConsumer(queueName);
-
-      for (int i = 0; i < initialCacheSize; i++)
-      {
-         ClientMessage message = createMessage(session, i);
-         SimpleString dupID = new SimpleString("abcdefg" + i);
-         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-         producer.send(message);
-         ClientMessage message2 = consumer.receive(1000);
-         Assert.assertEquals(i, message2.getObjectProperty(propKey));
-      }
-
-      session.close();
-
-      sf.close();
-
-      messagingService2.stop();
-
-      conf.setIDCacheSize(subsequentCacheSize);
-
-      messagingService2 = createServer(conf);
-
-      messagingService2.start();
-
-      sf = createSessionFactory(locator);
-
-      session = sf.createSession(false, true, true);
-
-      session.start();
-
-      session.createQueue(queueName, queueName, null, false);
-
-      producer = session.createProducer(queueName);
-
-      consumer = session.createConsumer(queueName);
-
-      for (int i = 0; i < initialCacheSize; i++)
-      {
-         ClientMessage message = createMessage(session, i);
-         SimpleString dupID = new SimpleString("abcdefg" + i);
-         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-         producer.send(message);
-         if (i >= subsequentCacheSize)
-         {
-            // Message should get through
-            ClientMessage message2 = consumer.receive(1000);
-            Assert.assertEquals(i, message2.getObjectProperty(propKey));
-         }
-         else
-         {
-            ClientMessage message2 = consumer.receiveImmediate();
-            Assert.assertNull(message2);
-         }
-      }
-
-      session.close();
-
-      sf.close();
-
-      locator.close();
-
-      messagingService2.stop();
-   }
-
-   @Test
-   public void testDuplicateCachePersistedRestartWithSmallerCacheEnsureDeleted() throws Exception
-   {
-      messagingService.stop();
-
-      Configuration conf = createDefaultConfig();
-
-      final int initialCacheSize = 10;
-      final int subsequentCacheSize = 5;
-
-      conf.setIDCacheSize(initialCacheSize);
-
-      HornetQServer messagingService2 = createServer(conf);
-
-      messagingService2.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-
-      ClientSessionFactory sf = createSessionFactory(locator);
-
-      ClientSession session = sf.createSession(false, true, true);
-
-      session.start();
-
-      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
-
-      session.createQueue(queueName, queueName, null, false);
-
-      ClientProducer producer = session.createProducer(queueName);
-
-      ClientConsumer consumer = session.createConsumer(queueName);
-
-      for (int i = 0; i < initialCacheSize; i++)
-      {
-         ClientMessage message = createMessage(session, i);
-         SimpleString dupID = new SimpleString("abcdefg" + i);
-         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-         producer.send(message);
-         ClientMessage message2 = consumer.receive(1000);
-         Assert.assertEquals(i, message2.getObjectProperty(propKey));
-      }
-
-      session.close();
-
-      sf.close();
-
-      messagingService2.stop();
-
-      conf.setIDCacheSize(subsequentCacheSize);
-
-      messagingService2 = createServer(conf);
-
-      messagingService2.start();
-
-      // Now stop and set back to original cache size and restart
-
-      messagingService2.stop();
-
-      conf.setIDCacheSize(initialCacheSize);
-
-      messagingService2 = createServer(conf);
-
-      messagingService2.start();
-
-      sf = createSessionFactory(locator);
-
-      session = sf.createSession(false, true, true);
-
-      session.start();
-
-      session.createQueue(queueName, queueName, null, false);
-
-      producer = session.createProducer(queueName);
-
-      consumer = session.createConsumer(queueName);
-
-      for (int i = 0; i < initialCacheSize; i++)
-      {
-         ClientMessage message = createMessage(session, i);
-         SimpleString dupID = new SimpleString("abcdefg" + i);
-         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-         producer.send(message);
-         if (i >= subsequentCacheSize)
-         {
-            // Message should get through
-            ClientMessage message2 = consumer.receive(1000);
-            Assert.assertEquals(i, message2.getObjectProperty(propKey));
-         }
-         else
-         {
-            ClientMessage message2 = consumer.receiveImmediate();
-            Assert.assertNull(message2);
-         }
       }
 
       session.close();
