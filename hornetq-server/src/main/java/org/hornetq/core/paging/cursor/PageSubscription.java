@@ -97,7 +97,7 @@ public interface PageSubscription
 
    void reloadPageCompletion(PagePosition position);
 
-   void reloadPageInfo(long pageNr) throws HornetQException;
+   void reloadPageInfo(long pageNr);
 
    /**
     * To be called when the cursor decided to ignore a position.
@@ -113,7 +113,7 @@ public interface PageSubscription
     *
     * @param position
     */
-   void reloadPreparedACK(Transaction tx, PagePosition position);
+   void reloadPreparedACK(Transaction tx, PagePosition position) throws HornetQException;
 
    void processReload() throws Exception;
 
@@ -149,7 +149,7 @@ public interface PageSubscription
     * @param pos
     * @return
     */
-   PagedMessage queryMessage(PagePosition pos) throws HornetQException;
+   PagedMessage queryMessage(PagePosition pos);
 
    /**
     * @return executor used by the PageSubscription

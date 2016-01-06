@@ -370,7 +370,7 @@ final class PageSubscriptionImpl implements PageSubscription
       return "PageSubscriptionImpl [cursorId=" + cursorId + ", queue=" + queue + ", filter = " + filter + "]";
    }
 
-   private PagedReference getReference(PagePosition pos) throws HornetQException
+   private PagedReference getReference(PagePosition pos)
    {
       return cursorProvider.newReference(pos, cursorProvider.getMessage(pos), this);
    }
@@ -381,7 +381,7 @@ final class PageSubscriptionImpl implements PageSubscription
       return new CursorIterator();
    }
 
-   private PagedReference internalGetNext(final PagePosition pos) throws HornetQException
+   private PagedReference internalGetNext(final PagePosition pos)
    {
       PagePosition retPos = pos.nextMessage();
 
@@ -512,20 +512,12 @@ final class PageSubscriptionImpl implements PageSubscription
          {
             error = " errorCode=" + errorCode + ", msg=" + errorMessage;
             HornetQServerLogger.LOGGER.pageSubscriptionError(this, error);
-            getPagingStore().criticalException(new HornetQException(errorMessage));
          }
 
          @Override
          public void done()
          {
-            try
-            {
-               processACK(position);
-            }
-            catch (HornetQException e)
-            {
-               getPagingStore().criticalException(e);
-            }
+            processACK(position);
          }
 
          @Override
@@ -561,13 +553,11 @@ final class PageSubscriptionImpl implements PageSubscription
 
    public void addPendingDelivery(final PagePosition position)
    {
-      try
+      PageCursorInfo info = getPageInfo(position);
+
+      if (info != null)
       {
-         getPageInfo(position).incrementPendingTX();
-      }
-      catch (Exception e)
-      {
-         getPagingStore().criticalException(e);
+         info.incrementPendingTX();
       }
    }
 
@@ -594,7 +584,7 @@ final class PageSubscriptionImpl implements PageSubscription
    }
 
    @Override
-   public PagedMessage queryMessage(PagePosition pos) throws HornetQException
+   public PagedMessage queryMessage(PagePosition pos)
    {
       return cursorProvider.getMessage(pos);
    }
@@ -613,43 +603,22 @@ final class PageSubscriptionImpl implements PageSubscription
    }
 
    @Override
-   public void reloadPreparedACK(final Transaction tx, final PagePosition position)
+   public void reloadPreparedACK(final Transaction tx, final PagePosition position) throws HornetQException
    {
       deliveredCount.incrementAndGet();
-      try
-      {
-         installTXCallback(tx, position);
-      }
-      catch (Exception e)
-      {
-         getPagingStore().criticalException(e);
-      }
+      installTXCallback(tx, position);
    }
 
    @Override
    public void positionIgnored(final PagePosition position)
    {
-      try
-      {
-         processACK(position);
-      }
-      catch (Exception e)
-      {
-         getPagingStore().criticalException(e);
-      }
+      processACK(position);
    }
 
    public void lateDeliveryRollback(PagePosition position)
    {
-      try
-      {
-         PageCursorInfo cursorInfo = processACK(position);
-         cursorInfo.decrementPendingTX();
-      }
-      catch (HornetQException e)
-      {
-         getPagingStore().criticalException(e);
-      }
+      PageCursorInfo cursorInfo = processACK(position);
+      cursorInfo.decrementPendingTX();
    }
 
    @Override
@@ -856,17 +825,17 @@ final class PageSubscriptionImpl implements PageSubscription
    }
 
 
-   public void reloadPageInfo(long pageNr) throws HornetQException
+   public void reloadPageInfo(long pageNr)
    {
       getPageInfo(pageNr, true);
    }
 
-   private PageCursorInfo getPageInfo(final PagePosition pos) throws HornetQException
+   private PageCursorInfo getPageInfo(final PagePosition pos)
    {
       return getPageInfo(pos.getPageNr(), true);
    }
 
-   private PageCursorInfo getPageInfo(final long pageNr, boolean create) throws HornetQException
+   private PageCursorInfo getPageInfo(final long pageNr, boolean create)
    {
       synchronized (consumedPages)
       {
@@ -907,7 +876,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
    // To be called only after the ACK has been processed and guaranteed to be on storage
    // The only exception is on non storage events such as not matching messages
-   private PageCursorInfo processACK(final PagePosition pos) throws HornetQException
+   private PageCursorInfo processACK(final PagePosition pos)
    {
       if (lastAckedPosition == null || pos.compareTo(lastAckedPosition) > 0)
       {
@@ -1096,15 +1065,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
       public boolean isDone()
       {
-         try
-         {
-            return completePage != null || (getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0);
-         }
-         catch (HornetQException e)
-         {
-            getPagingStore().criticalException(e);
-            throw new RuntimeException(e.getMessage(), e);
-         }
+         return completePage != null || (getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0);
       }
 
       public boolean isPendingDelete()
@@ -1201,7 +1162,7 @@ final class PageSubscriptionImpl implements PageSubscription
          }
       }
 
-      private int getNumberOfMessages() throws HornetQException
+      private int getNumberOfMessages()
       {
          if (wasLive)
          {
@@ -1253,14 +1214,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
             for (PagePosition confirmed : positions)
             {
-               try
-               {
-                  cursor.processACK(confirmed);
-               }
-               catch (HornetQException e)
-               {
-                  getPagingStore().criticalException(e);
-               }
+               cursor.processACK(confirmed);
                cursor.deliveredCount.decrementAndGet();
             }
 
@@ -1330,24 +1284,16 @@ final class PageSubscriptionImpl implements PageSubscription
             return currentDelivery;
          }
 
-         try
+         if (position == null)
          {
-            if (position == null)
-            {
-               position = getStartPosition();
-            }
+            position = getStartPosition();
+         }
 
-            currentDelivery = moveNext();
-            return currentDelivery;
-         }
-         catch (HornetQException e)
-         {
-            getPagingStore().criticalException(e);
-            throw new IllegalStateException(e.getMessage(), e);
-         }
+         currentDelivery = moveNext();
+         return currentDelivery;
       }
 
-      private PagedReference moveNext() throws HornetQException
+      private PagedReference moveNext()
       {
          synchronized (PageSubscriptionImpl.this)
          {
@@ -1504,17 +1450,10 @@ final class PageSubscriptionImpl implements PageSubscription
          PagedReference delivery = currentDelivery;
          if (delivery != null)
          {
-            try
+            PageCursorInfo info = PageSubscriptionImpl.this.getPageInfo(currentDelivery.getPosition());
+            if (info != null)
             {
-               PageCursorInfo info = PageSubscriptionImpl.this.getPageInfo(currentDelivery.getPosition());
-               if (info != null)
-               {
-                  info.remove(currentDelivery.getPosition());
-               }
-            }
-            catch (HornetQException e)
-            {
-               getPagingStore().criticalException(e);
+               info.remove(currentDelivery.getPosition());
             }
          }
       }
