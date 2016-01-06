@@ -21,8 +21,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
@@ -114,7 +112,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return activeCursors.get(cursorID);
    }
 
-   public PagedMessage getMessage(final PagePosition pos) throws HornetQException
+   public PagedMessage getMessage(final PagePosition pos)
    {
       PageCache cache = getPageCache(pos.getPageNr());
 
@@ -134,7 +132,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return new PagedReferenceImpl(pos, msg, subscription);
    }
 
-   public PageCache getPageCache(final long pageId) throws HornetQException
+   public PageCache getPageCache(final long pageId)
    {
       try
       {
@@ -149,7 +147,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cache = softCache.get(pageId);
             if (cache == null)
             {
-               if (!pagingStore.checkPageFileExists((int)pageId))
+               if (!pagingStore.checkPageFileExists((int) pageId))
                {
                   return null;
                }
@@ -168,9 +166,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
          return cache;
       }
-      catch (Throwable e)
+      catch (Exception e)
       {
-         throw new HornetQIOErrorException("Couldn't complete paging due to an IO Exception on Paging - " + e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
       }
    }
 
@@ -495,7 +493,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             PagedMessage[] pgdMessages;
             synchronized (softCache)
             {
-               cache = softCache.get((long)depagedPage.getPageId());
+               cache = softCache.get((long) depagedPage.getPageId());
             }
 
             if (isTrace)
@@ -541,7 +539,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
             synchronized (softCache)
             {
-               softCache.remove((long)depagedPage.getPageId());
+               softCache.remove((long) depagedPage.getPageId());
             }
          }
       }
@@ -644,7 +642,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
    /* Protected as we may let test cases to instrument the test */
    protected PageCacheImpl createPageCache(final long pageId) throws Exception
    {
-      return new PageCacheImpl(pagingStore.createPage((int)pageId));
+      return new PageCacheImpl(pagingStore.createPage((int) pageId));
    }
 
    // Private -------------------------------------------------------

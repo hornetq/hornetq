@@ -43,8 +43,8 @@ public interface PagingStore extends HornetQComponent
    SimpleString getAddress();
 
    int getNumberOfPages();
-
-   void criticalException(Throwable e);
+//
+//   void criticalException(Throwable e);
 
    /**
     * Returns the page id of the current page in which the system is writing files.

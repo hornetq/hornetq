@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.cursor;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.server.MessageReference;
 
@@ -26,5 +25,5 @@ public interface PagedReference extends MessageReference
 {
    PagePosition getPosition();
 
-   PagedMessage getPagedMessage() throws HornetQException;
+   PagedMessage getPagedMessage();
 }

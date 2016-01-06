@@ -178,13 +178,13 @@ public class PagingStoreImpl implements PagingStore
          addressSettings.getPageCacheMaxSize());
 
    }
-
-   @Override
-   public void criticalException(Throwable e)
-   {
-      HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
-      storeFactory.criticalException(e);
-   }
+//
+//   @Override
+//   public void criticalException(Throwable e)
+//   {
+//      HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+//      storeFactory.criticalException(e);
+//   }
 
    /**
     * @param addressSettings

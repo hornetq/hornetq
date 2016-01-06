@@ -1122,14 +1122,7 @@ public class QueueImpl implements Queue
 
    public void cancel(final Transaction tx, final MessageReference reference, boolean ignoreRedeliveryCheck)
    {
-      try
-      {
-         getRefsOperation(tx, ignoreRedeliveryCheck).addAck(reference);
-      }
-      catch (Exception e)
-      {
-         getPageSubscription().getPagingStore().criticalException(e);
-      }
+      getRefsOperation(tx, ignoreRedeliveryCheck).addAck(reference);
    }
 
    public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
@@ -1862,14 +1855,7 @@ public class QueueImpl implements Queue
    private synchronized void internalAddTail(final MessageReference ref)
    {
       refAdded(ref);
-      try
-      {
-         messageReferences.addTail(ref, ref.getMessage().getPriority());
-      }
-      catch (HornetQException e)
-      {
-         criticalError(e);
-      }
+      messageReferences.addTail(ref, getPriority(ref));
    }
 
    /**
@@ -1881,21 +1867,25 @@ public class QueueImpl implements Queue
     */
    private void internalAddHead(final MessageReference ref)
    {
-      try
-      {
-         queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
-         refAdded(ref);
-         messageReferences.addHead(ref, ref.getMessage().getPriority());
-      }
-      catch (HornetQException e)
-      {
-         criticalError(e);
-      }
+      queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
+      refAdded(ref);
+
+      int priority = getPriority(ref);
+
+      messageReferences.addHead(ref, priority);
    }
 
-   protected void criticalError(HornetQException e)
+   private int getPriority(MessageReference ref)
    {
-      storageManager.criticalError(e);
+      try
+      {
+         return ref.getMessage().getPriority();
+      }
+      catch (Throwable e)
+      {
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         return 4; // the default one in case of failure
+      }
    }
 
    private synchronized void doInternalPoll()
@@ -2171,10 +2161,10 @@ public class QueueImpl implements Queue
             // But we don't use the groupID on internal queues (clustered queues) otherwise the group map would leak forever
             return ref.getMessage().getSimpleStringProperty(Message.HDR_GROUP_ID);
          }
-         catch (HornetQException e)
+         catch (Throwable e)
          {
-            criticalError(e);
-            throw new IllegalStateException(e);
+            HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+            return null;
          }
       }
    }
@@ -2614,10 +2604,10 @@ public class QueueImpl implements Queue
             return false;
          }
       }
-      catch (HornetQException e)
+      catch (Throwable e)
       {
-         criticalError(e);
-         throw new IllegalStateException(e);
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         return false;
       }
    }
 
@@ -2665,7 +2655,7 @@ public class QueueImpl implements Queue
    }
 
    // Protected as testcases may change this behaviour
-   protected void postAcknowledge(final MessageReference ref) throws HornetQException
+   protected void postAcknowledge(final MessageReference ref)
    {
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
@@ -2677,18 +2667,21 @@ public class QueueImpl implements Queue
          return;
       }
 
-      final ServerMessage message = ref.getMessage();
-
-      boolean durableRef = message.isDurable() && queue.durable;
+      ServerMessage message;
 
       try
       {
-         message.decrementRefCount();
+         message = ref.getMessage();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
-         HornetQServerLogger.LOGGER.errorDecrementingRefCount(e);
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+         message = null;
       }
+
+      boolean durableRef = message != null && message.isDurable() && queue.durable;
+
+      decrementRefCount(ref);
 
       if (durableRef)
       {
@@ -2775,7 +2768,7 @@ public class QueueImpl implements Queue
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
 
-      List<ServerMessage> pagedMessagesToPostACK = null;
+      List<MessageReference> pagedMessagesToPostACK = null;
 
       /**
        * It will ignore redelivery check, which is used during consumer.close
@@ -2790,16 +2783,16 @@ public class QueueImpl implements Queue
          ignoreRedeliveryCheck = true;
       }
 
-      synchronized void addAck(final MessageReference ref) throws HornetQException
+      synchronized void addAck(final MessageReference ref)
       {
          refsToAck.add(ref);
          if (ref.isPaged())
          {
             if (pagedMessagesToPostACK == null)
             {
-               pagedMessagesToPostACK = new ArrayList<ServerMessage>();
+               pagedMessagesToPostACK = new ArrayList<MessageReference>();
             }
-            pagedMessagesToPostACK.add(ref.getMessage());
+            pagedMessagesToPostACK.add(ref);
          }
       }
 
@@ -2861,29 +2854,15 @@ public class QueueImpl implements Queue
          {
             synchronized (ref.getQueue())
             {
-               try
-               {
-                  postAcknowledge(ref);
-               }
-               catch (Exception e)
-               {
-                  getPageSubscription().getPagingStore().criticalException(e);
-               }
+               postAcknowledge(ref);
             }
          }
 
          if (pagedMessagesToPostACK != null)
          {
-            for (ServerMessage msg : pagedMessagesToPostACK)
+            for (MessageReference refmsg : pagedMessagesToPostACK)
             {
-               try
-               {
-                  msg.decrementRefCount();
-               }
-               catch (Exception e)
-               {
-                  HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
-               }
+               decrementRefCount(refmsg);
             }
          }
       }
@@ -2912,6 +2891,18 @@ public class QueueImpl implements Queue
       }
 
 
+   }
+
+   private void decrementRefCount(MessageReference refmsg)
+   {
+      try
+      {
+         refmsg.getMessage().decrementRefCount();
+      }
+      catch (Exception e)
+      {
+         HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+      }
    }
 
    private class DelayedAddRedistributor implements Runnable

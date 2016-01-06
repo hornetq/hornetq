@@ -16,7 +16,6 @@ package org.hornetq.core.paging.cursor;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.server.HornetQServerLogger;
@@ -49,12 +48,12 @@ public class PagedReferenceImpl implements PagedReference
 
    private final PageSubscription subscription;
 
-   public ServerMessage getMessage() throws HornetQException
+   public ServerMessage getMessage()
    {
       return getPagedMessage().getMessage();
    }
 
-   public synchronized PagedMessage getPagedMessage() throws HornetQException
+   public synchronized PagedMessage getPagedMessage()
    {
       PagedMessage returnMessage = message != null ? message.get() : null;
 
@@ -119,7 +118,7 @@ public class PagedReferenceImpl implements PagedReference
          {
             messageEstimate = getMessage().getMemoryEstimate();
          }
-         catch (HornetQException e)
+         catch (Throwable e)
          {
             HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
          }
@@ -131,15 +130,7 @@ public class PagedReferenceImpl implements PagedReference
    @Override
    public MessageReference copy(final Queue queue)
    {
-      try
-      {
-         return new PagedReferenceImpl(this.position, this.getPagedMessage(), this.subscription);
-      }
-      catch (HornetQException e)
-      {
-         HornetQServerLogger.LOGGER.warn(e);
-         return this;
-      }
+      return new PagedReferenceImpl(this.position, this.getPagedMessage(), this.subscription);
    }
 
    @Override
@@ -159,7 +150,7 @@ public class PagedReferenceImpl implements PagedReference
                deliveryTime = 0L;
             }
          }
-         catch (HornetQException e)
+         catch (Throwable e)
          {
             HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
             return 0L;
