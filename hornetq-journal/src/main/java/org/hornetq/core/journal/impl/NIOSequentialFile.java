@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
@@ -106,6 +107,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
 
          fileSize = channel.size();
       }
+      catch (ClosedChannelException e)
+      {
+         throw e;
+      }
       catch (IOException e)
       {
          factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
@@ -136,6 +141,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
          channel.write(bb);
          channel.force(false);
          channel.position(0);
+      }
+      catch (ClosedChannelException e)
+      {
+         throw e;
       }
       catch (IOException e)
       {
@@ -180,6 +189,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
             rfile.close();
          }
       }
+      catch (ClosedChannelException e)
+      {
+         throw e;
+      }
       catch (IOException e)
       {
          factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
@@ -217,6 +230,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
 
          return bytesRead;
       }
+      catch (ClosedChannelException e)
+      {
+         throw e;
+      }
       catch (IOException e)
       {
          if (callback != null)
@@ -238,6 +255,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
          {
             channel.force(false);
          }
+         catch (ClosedChannelException e)
+         {
+            throw e;
+         }
          catch (IOException e)
          {
             factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
@@ -257,6 +278,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
       {
          return channel.size();
       }
+      catch (ClosedChannelException e)
+      {
+         throw e;
+      }
       catch (IOException e)
       {
          factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
@@ -271,6 +296,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
       {
          super.position(pos);
          channel.position(pos);
+      }
+      catch (ClosedChannelException e)
+      {
+         throw e;
       }
       catch (IOException e)
       {
@@ -354,6 +383,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
          {
             doInternalWrite(bytes, sync, callback);
          }
+         catch (ClosedChannelException e)
+         {
+            throw e;
+         }
          catch (IOException e)
          {
             factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
@@ -373,6 +406,10 @@ public final class NIOSequentialFile extends AbstractSequentialFile
                   try
                   {
                      doInternalWrite(bytes, sync, callback);
+                  }
+                  catch (ClosedChannelException e)
+                  {
+                     HornetQJournalLogger.LOGGER.errorSubmittingWrite(e);
                   }
                   catch (IOException e)
                   {
