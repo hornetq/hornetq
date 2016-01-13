@@ -946,7 +946,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
          if (xids == null || xids.size() == 0)
          {
-            return "";
+            return "[]";
          }
 
          ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
