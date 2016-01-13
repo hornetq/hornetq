@@ -1450,10 +1450,10 @@ final class PageSubscriptionImpl implements PageSubscription
          PagedReference delivery = currentDelivery;
          if (delivery != null)
          {
-            PageCursorInfo info = PageSubscriptionImpl.this.getPageInfo(currentDelivery.getPosition());
+            PageCursorInfo info = PageSubscriptionImpl.this.getPageInfo(delivery.getPosition());
             if (info != null)
             {
-               info.remove(currentDelivery.getPosition());
+               info.remove(delivery.getPosition());
             }
          }
       }
