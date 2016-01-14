@@ -135,7 +135,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
             log.info("#start #test #" + i);
             startServers(1);
             waitForTopology(servers[0], 2, -1, 2000);
-            waitForTopology(servers[1], 2, -1, 2000);
+            waitForTopology(servers[1], 2, -1, 10000);
          }
       }
       finally
