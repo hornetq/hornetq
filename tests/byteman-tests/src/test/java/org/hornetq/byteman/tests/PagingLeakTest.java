@@ -109,7 +109,7 @@ public class PagingLeakTest extends ServiceTestBase
 
       positions.clear();
 
-      timeout = System.currentTimeMillis() + 5000;
+      timeout = System.currentTimeMillis() + 30000;
       while (pagePosInstances.get() != 0 && timeout > System.currentTimeMillis())
       {
          forceGC();
