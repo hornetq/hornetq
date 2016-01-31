@@ -675,13 +675,13 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop(); // Backup stops!
       beforeRestart(backupServer);
       backupServer.start();
-      assertTrue(backupServer.getServer().waitForBackupSync(10, TimeUnit.SECONDS));
+      assertTrue(backupServer.getServer().waitForBackupSync(40, TimeUnit.SECONDS));
       backupServer.stop(); // Backup stops!
 
       liveServer.stop();
       beforeRestart(liveServer);
       liveServer.start();
-      liveServer.getServer().waitForActivation(10, TimeUnit.SECONDS);
+      liveServer.getServer().waitForActivation(40, TimeUnit.SECONDS);
 
       ClientSession session2 = createSession(sf, false, false);
       session2.start();
@@ -727,7 +727,7 @@ public class FailoverTest extends FailoverTestBase
          adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
          beforeRestart(liveServer);
          liveServer.start();
-         assertTrue("live initialized...", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
+         assertTrue("live initialized...", liveServer.getServer().waitForActivation(40, TimeUnit.SECONDS));
          int i = 0;
          while (backupServer.isStarted() && i++ < 100)
          {
@@ -740,7 +740,7 @@ public class FailoverTest extends FailoverTestBase
          backupServer.stop();
          beforeRestart(backupServer);
          backupServer.start();
-         assertTrue(backupServer.getServer().waitForActivation(10, TimeUnit.SECONDS));
+         assertTrue(backupServer.getServer().waitForActivation(40, TimeUnit.SECONDS));
       }
 
       ClientSession session2 = createSession(sf, false, false);
