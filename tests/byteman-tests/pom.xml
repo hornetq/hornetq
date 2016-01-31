@@ -169,6 +169,15 @@
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals><goal>properties</goal></goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <executions>
                <execution>
@@ -215,7 +224,11 @@
                -->
                <parallel>false</parallel>
                <!--<argLine>${hornetq-surefire-argline} -Dorg.jboss.byteman.verbose -Dorg.jboss.byteman.contrib.bmunit.verbose</argLine>-->
-               <argLine>${hornetq-surefire-argline}</argLine>
+               <argLine>${hornetq-surefire-argline} -javaagent:${org.jboss.byteman:byteman:jar}=port:9091,boot:${org.jboss.byteman:byteman:jar}</argLine>
+               <systemPropertyVariables>
+                  <org.jboss.byteman.contrib.bmunit.agent.inhibit>true</org.jboss.byteman.contrib.bmunit.agent.inhibit>
+                  <org.jboss.byteman.contrib.bmunit.agent.port>9091</org.jboss.byteman.contrib.bmunit.agent.port>
+               </systemPropertyVariables>
             </configuration>
          </plugin>
       </plugins>
