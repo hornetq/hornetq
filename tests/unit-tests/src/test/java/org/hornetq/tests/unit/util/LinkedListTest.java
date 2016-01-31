@@ -104,6 +104,10 @@ public class LinkedListTest extends UnitTestCase
 
       assertCount(0, count);
 
+      //IBM garbage collector is aggressive and collects objs,
+      //that couses fail in assert above
+      objs.size();
+
    }
 
    @Test
@@ -176,6 +180,9 @@ public class LinkedListTest extends UnitTestCase
 
       assertCount(999, count);
 
+      //IBM garbage collector is aggressive and collects objs,
+      //that couses fail in assert above
+      objs.size();
    }
 
    /**
