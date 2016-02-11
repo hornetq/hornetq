@@ -5,7 +5,7 @@
    <parent>
       <groupId>org.hornetq.examples.core</groupId>
       <artifactId>core-examples</artifactId>
-     <version>2.3.25.SP9.Final</version>
+     <version>2.3.25.x.Final</version>
    </parent>
 
    <artifactId>hornetq-core-embedded-example</artifactId>
