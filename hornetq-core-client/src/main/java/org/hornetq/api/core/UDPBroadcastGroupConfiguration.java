@@ -190,7 +190,8 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             broadcastingSocket = new MulticastSocket();
          }
 
-         if (System.getProperties().containsKey(PROPERTY_UDP_TTL)) {
+         if (System.getProperties().containsKey(PROPERTY_UDP_TTL))
+         {
             int ttl = Integer.parseInt(System.getProperty(PROPERTY_UDP_TTL));
             HornetQClientLogger.LOGGER.info("Setting broadcast multicast udp ttl to: " + ttl + " from System property: " + PROPERTY_UDP_TTL);
             broadcastingSocket.setTimeToLive(ttl);
