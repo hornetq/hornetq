@@ -15,7 +15,6 @@ package org.hornetq.api.core;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -30,6 +29,10 @@ import org.hornetq.core.client.HornetQClientLogger;
  * The configuration used to determine how the server will broadcast members.
  * <p>
  * This is analogous to {@link org.hornetq.api.core.DiscoveryGroupConfiguration}
+ * <p>
+ * Note that you are able to override broadcast udp ttl with System property {@value #PROPERTY_UDP_TTL}, which
+ * allows you to define a wider multicast network. This only works correctly if
+ * -Djava.net.preferIPv4Stack=true is also specified.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created 18 Nov 2008 08:44:30
  */
@@ -44,6 +47,8 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
    private final String groupAddress;
 
    private final int groupPort;
+
+   public static final String PROPERTY_UDP_TTL = "udp.broadcast.group.ttl";
 
    public UDPBroadcastGroupConfiguration(final String groupAddress,
                                          final int groupPort,
@@ -111,7 +116,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
 
       private final int groupPort;
 
-      private DatagramSocket broadcastingSocket;
+      private MulticastSocket broadcastingSocket;
 
       private MulticastSocket receivingSocket;
 
@@ -174,7 +179,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
       {
          if (localBindPort != -1)
          {
-            broadcastingSocket = new DatagramSocket(localBindPort, localAddress);
+            broadcastingSocket = new MulticastSocket(new InetSocketAddress(localAddress, localBindPort));
          }
          else
          {
@@ -182,7 +187,13 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             {
                HornetQClientLogger.LOGGER.broadcastGroupBindError();
             }
-            broadcastingSocket = new DatagramSocket();
+            broadcastingSocket = new MulticastSocket();
+         }
+
+         if (System.getProperties().containsKey(PROPERTY_UDP_TTL)) {
+            int ttl = Integer.parseInt(System.getProperty(PROPERTY_UDP_TTL));
+            HornetQClientLogger.LOGGER.info("Setting broadcast multicast udp ttl to: " + ttl + " from System property: " + PROPERTY_UDP_TTL);
+            broadcastingSocket.setTimeToLive(ttl);
          }
 
          open = true;
