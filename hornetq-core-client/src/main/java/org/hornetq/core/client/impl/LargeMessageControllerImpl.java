@@ -1227,7 +1227,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          }
 
          int sizeToAdd = currentPacket != null ? currentPacket.getBody().length : 1;
-         currentPacket = packets.poll(readTimeout, TimeUnit.SECONDS);
+         currentPacket = packets.poll(readTimeout, TimeUnit.MILLISECONDS);
          if (currentPacket == null)
          {
             throw new IndexOutOfBoundsException();
