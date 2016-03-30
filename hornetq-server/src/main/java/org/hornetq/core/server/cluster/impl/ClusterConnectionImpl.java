@@ -79,6 +79,12 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 {
    private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
+   private static final int DEFAULT_JMS_MESSAGE_SIZE = 1864;
+
+   private static final int RANGE_SIZE_MIN = 0;
+
+   private static final int RANGE_SZIE_MAX = 4;
+
    private final ExecutorService threadPool;
 
    private final ExecutorFactory executorFactory;
@@ -955,6 +961,27 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       topology.updateAsLive(nodeID, localMember);
    }
 
+   public boolean checkoutDupCacheSize(final int windowSize, final int idCacheSize)
+   {
+      final int msgNumInFlight = windowSize / DEFAULT_JMS_MESSAGE_SIZE;
+
+      boolean sizeGood = false;
+
+      if (idCacheSize >= msgNumInFlight)
+      {
+         int r = idCacheSize / msgNumInFlight;
+
+         // This setting is here to accomodate the current default setting.
+         if ( (r >= RANGE_SIZE_MIN) && (r <= RANGE_SZIE_MAX))
+         {
+            sizeGood = true;
+         }
+
+      }
+
+      return sizeGood;
+   }
+
    private void createNewRecord(final long eventUID,
                                 final String targetNodeID,
                                 final TransportConfiguration connector,
@@ -1064,6 +1091,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       if (start)
       {
          bridge.start();
+      }
+
+      if ( !checkoutDupCacheSize(serverLocator.getConfirmationWindowSize(),server.getConfiguration().getIDCacheSize()))
+      {
+         HornetQServerLogger.LOGGER.duplicateCacheSizeWarning();
       }
    }
 
