@@ -1029,6 +1029,13 @@ public interface HornetQServerLogger extends BasicLogger
            format = Message.Format.MESSAGE_FORMAT)
    void connectionTTLEqualsCheckPeriod(String connectionName, String ttl, String checkPeriod);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222192,
+      value = "The size of duplicate cache detection (<id_cache-size/>) appears to be too large. It should be no greater than the number of messages that can be squeezed into conformation buffer (<confirmation-window-size/>).",
+      format = Message.Format.MESSAGE_FORMAT)
+   void duplicateCacheSizeWarning();
+
+
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
    void initializationError(@Cause Throwable e);
