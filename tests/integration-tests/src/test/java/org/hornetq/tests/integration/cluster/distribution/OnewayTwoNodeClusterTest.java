@@ -12,6 +12,7 @@
  */
 
 package org.hornetq.tests.integration.cluster.distribution;
+import org.hornetq.core.server.HornetQServer;
 import org.junit.Before;
 
 import org.junit.Test;
@@ -33,20 +34,52 @@ import org.hornetq.tests.integration.IntegrationTestLogger;
 public class OnewayTwoNodeClusterTest extends ClusterTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+   private static final String FORWARD_WHEN_NO_CONSUMERS = "activate.correct.semantics.for.forward.when.no.consumers";
+
+   private static final boolean isForwardWhenNoConsumers = Boolean.parseBoolean(System.getProperty(OnewayTwoNodeClusterTest.FORWARD_WHEN_NO_CONSUMERS,"false"));
+
 
    @Override
    @Before
    public void setUp() throws Exception
    {
-      super.setUp();
+      if (isForwardWhenNoConsumers)
+      {
+         super.setUp();
 
-      setupServer(0, isFileStorage(), isNetty());
-      setupServer(1, isFileStorage(), isNetty());
+         setupServer(0, isFileStorage(), isNetty());
+         setupServer(1, isFileStorage(), isNetty());
+         setupCluster(false);
 
+      }
+      else
+      {
+         super.setUp();
+
+         setupServer(0, isFileStorage(), isNetty());
+         setupServer(1, isFileStorage(), isNetty());
+         // server #0 is connected to server #1
+         setupClusterConnection("cluster1", 0, 1, "queues", false, 1,  isNetty(), true);
+         // server #1 is connected to nobody
+         setupClusterConnection("clusterX", 1, -1, "queues", false, 1,  isNetty(), true);
+      }
+
+   }
+
+
+   private void setupCluster(boolean forward)
+   {
+      for (HornetQServer server : servers)
+      {
+         if (server != null)
+         {
+            server.getConfiguration().getClusterConfigurations().clear();
+         }
+      }
       // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", false, 1,  isNetty(), true);
+      setupClusterConnection("cluster1", 0, 1, "queues", forward, 1,  isNetty(), true);
       // server #1 is connected to nobody
-      setupClusterConnection("clusterX", 1, -1, "queues", false, 1,  isNetty(), true);
+      setupClusterConnection("clusterX", 1, -1, "queues", forward, 1,  isNetty(), true);
    }
 
    protected boolean  isNetty()
@@ -496,7 +529,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       waitForBindings(0, "queues.testaddress", 8, 8, false);
 
-      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(0, isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -827,9 +860,14 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    @Test
    public void testRouteWhenNoConsumersFalseLoadBalancedQueues() throws Exception
    {
+      if (isForwardWhenNoConsumers)
+      {
+         setupCluster(true);
+      }
+
       startServers(1, 0);
 
-      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(0, isNetty(), true);
       setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
@@ -869,7 +907,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(0, isNetty(), true);
       setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
@@ -903,6 +941,11 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    @Test
    public void testRouteWhenNoConsumersFalseLoadBalancedQueuesNoLocalQueue() throws Exception
    {
+      if (isForwardWhenNoConsumers)
+      {
+         setupCluster(true);
+      }
+
       startServers(1, 0);
 
       setupSessionFactory(0,  isNetty(), true);
@@ -934,10 +977,15 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    @Test
    public void testRouteWhenNoConsumersTrueLoadBalancedQueues() throws Exception
    {
+      if (isForwardWhenNoConsumers)
+      {
+         setupCluster(true);
+      }
+
       startServers(1, 0);
 
       setupSessionFactory(0,  isNetty(), true);
-      setupSessionFactory(1,  isNetty(), true);
+      setupSessionFactory(1, isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -1103,6 +1151,11 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    @Test
    public void testRoundRobinMultipleQueuesWithConsumersWithFilters() throws Exception
    {
+      if (isForwardWhenNoConsumers)
+      {
+         setupCluster(false);
+      }
+
       startServers(1, 0);
 
       setupSessionFactory(0,  isNetty(), true);
@@ -1154,7 +1207,19 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       send(0, "queues.testaddress", 10, false, filter2);
 
-      verifyReceiveRoundRobin(10, 6, 7);
+      if (isForwardWhenNoConsumers)
+      {
+         // verifyReceiverRoundRobin should play nicely independently of who receives first.
+         // I had some issues recently with the first being consumer 7, because of some fixes on binding.
+         // this is still legal. We just need to guarantee is round robbed. no need to be strict on what performs first.
+         // When this is the first time receiving 6 is always the first but it can change depending on what happened earlier
+         verifyReceiveRoundRobin(10, 7, 6);
+      }
+      else
+      {
+         verifyReceiveRoundRobin(10, 6, 7);
+      }
+
       verifyReceiveRoundRobin(10, 8, 9);
 
       verifyReceiveAll(10, 3, 4);

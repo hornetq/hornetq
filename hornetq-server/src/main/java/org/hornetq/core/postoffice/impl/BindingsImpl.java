@@ -52,6 +52,10 @@ public final class BindingsImpl implements Bindings
 
    private static boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
 
+   private static final String FORWARD_WHEN_NO_CONSUMERS = "activate.correct.semantics.for.forward.when.no.consumers";
+
+   private static final boolean isForwardWhenNoConsumers = Boolean.parseBoolean(System.getProperty(BindingsImpl.FORWARD_WHEN_NO_CONSUMERS,"false"));
+
    private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
 
    private final Map<SimpleString, Integer> routingNamePositions = new ConcurrentHashMap<SimpleString, Integer>();
@@ -390,9 +394,21 @@ public final class BindingsImpl implements Bindings
             }
             else
             {
-               if (lastLowPriorityBinding == -1)
+               //https://issues.jboss.org/browse/HORNETQ-1254 When !routeWhenNoConsumers,
+               // the localQueue should always have the priority over the secondary bindings
+               if (isForwardWhenNoConsumers)
                {
-                  lastLowPriorityBinding = pos;
+                  if (lastLowPriorityBinding == -1 || !routeWhenNoConsumers && binding instanceof LocalQueueBinding)
+                  {
+                     lastLowPriorityBinding = pos;
+                  }
+               }
+               else
+               {
+                  if (lastLowPriorityBinding == -1)
+                  {
+                     lastLowPriorityBinding = pos;
+                  }
                }
             }
          }
@@ -401,11 +417,20 @@ public final class BindingsImpl implements Bindings
 
          if (pos == startPos)
          {
+
+            // if no bindings were found, we will apply a secondary level on the routing logic
             if (lastLowPriorityBinding != -1)
             {
                try
                {
-                  theBinding = bindings.get(pos);
+                  if (isForwardWhenNoConsumers)
+                  {
+                     theBinding = bindings.get(lastLowPriorityBinding);
+                  }
+                  else
+                  {
+                     theBinding = bindings.get(pos);
+                  }
                }
                catch (IndexOutOfBoundsException e)
                {
