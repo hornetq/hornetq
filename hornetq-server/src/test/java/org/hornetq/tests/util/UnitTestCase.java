@@ -126,6 +126,11 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    @Rule
    public final TemporaryFolder temporaryFolder;
 
+   private static final String FORWARD_WHEN_NO_CONSUMERS = "activate.correct.semantics.for.forward.when.no.consumers";
+
+   private static final boolean isForwardWhenNoConsumers = Boolean.parseBoolean(System.getProperty(UnitTestCase.FORWARD_WHEN_NO_CONSUMERS,"false"));
+
+
    private String testDir;
 
    private static final HornetQServerLogger log = HornetQServerLogger.LOGGER;
@@ -213,9 +218,20 @@ public abstract class UnitTestCase extends CoreUnitTestCase
                                                             String connectorName,
                                                             List<String> connectors)
    {
-      ClusterConnectionConfiguration ccc =
-         new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, false, 1, 1, connectors,
-                                            false);
+      ClusterConnectionConfiguration ccc = null;
+
+      if (isForwardWhenNoConsumers)
+      {
+            // https://issues.jboss.org/browse/HORNETQ-1254 - changing routing logic to only send locally when forwardWhenNoConsumers = false
+         ccc = new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, true, 1, 1, connectors,
+                                                     false);
+      }
+      else
+      {
+         ccc = new ClusterConnectionConfiguration("cluster1", "jms", connectorName, 10, false, false, 1, 1, connectors,
+                                                     false);
+      }
+
       mainConfig.getClusterConfigurations().add(ccc);
    }
 

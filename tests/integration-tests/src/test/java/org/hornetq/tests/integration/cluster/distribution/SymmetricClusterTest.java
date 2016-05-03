@@ -31,6 +31,10 @@ import org.junit.Test;
 public class SymmetricClusterTest extends ClusterTestBase
 {
    private static final IntegrationTestLogger log = IntegrationTestLogger.LOGGER;
+   private static final String FORWARD_WHEN_NO_CONSUMERS = "activate.correct.semantics.for.forward.when.no.consumers";
+
+   private static final boolean isForwardWhenNoConsumers = Boolean.parseBoolean(System.getProperty(SymmetricClusterTest.FORWARD_WHEN_NO_CONSUMERS,"false"));
+
 
    @Override
    @Before
@@ -1087,117 +1091,180 @@ public class SymmetricClusterTest extends ClusterTestBase
    @Test
    public void testRouteWhenNoConsumersFalseNoLocalConsumerLoadBalancedQueues() throws Exception
    {
-      setupCluster(false);
-
-      startServers();
-
-      for (int i = 0; i <= 4; i++)
+      if (!isForwardWhenNoConsumers)
       {
-         waitForTopology(servers[i], 5);
+         setupCluster(false);
+
+         startServers();
+
+         for (int i = 0; i <= 4; i++)
+         {
+            waitForTopology(servers[i], 5);
+         }
+
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+         setupSessionFactory(2, isNetty());
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
+
+         createQueue(0, "queues.testaddress", "queue0", null, false);
+         createQueue(1, "queues.testaddress", "queue0", null, false);
+         createQueue(2, "queues.testaddress", "queue0", null, false);
+         createQueue(3, "queues.testaddress", "queue0", null, false);
+         createQueue(4, "queues.testaddress", "queue0", null, false);
+
+         waitForBindings(0, "queues.testaddress", 1, 0, true);
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
+         waitForBindings(2, "queues.testaddress", 1, 0, true);
+         waitForBindings(3, "queues.testaddress", 1, 0, true);
+         waitForBindings(4, "queues.testaddress", 1, 0, true);
+
+         waitForBindings(0, "queues.testaddress", 4, 0, false);
+         waitForBindings(1, "queues.testaddress", 4, 0, false);
+         waitForBindings(2, "queues.testaddress", 4, 0, false);
+         waitForBindings(3, "queues.testaddress", 4, 0, false);
+         waitForBindings(4, "queues.testaddress", 4, 0, false);
+
+         send(0, "queues.testaddress", 10, false, null);
+
+         addConsumer(0, 0, "queue0", null);
+         addConsumer(1, 1, "queue0", null);
+         addConsumer(2, 2, "queue0", null);
+         addConsumer(3, 3, "queue0", null);
+         addConsumer(4, 4, "queue0", null);
+
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
+
+         waitForBindings(0, "queues.testaddress", 4, 4, false);
+         waitForBindings(1, "queues.testaddress", 4, 4, false);
+         waitForBindings(2, "queues.testaddress", 4, 4, false);
+         waitForBindings(3, "queues.testaddress", 4, 4, false);
+         waitForBindings(4, "queues.testaddress", 4, 4, false);
+
+         // Should still be round robined since no local consumer
+
+         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
       }
-
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
-      setupSessionFactory(2, isNetty());
-      setupSessionFactory(3, isNetty());
-      setupSessionFactory(4, isNetty());
-
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-      createQueue(2, "queues.testaddress", "queue0", null, false);
-      createQueue(3, "queues.testaddress", "queue0", null, false);
-      createQueue(4, "queues.testaddress", "queue0", null, false);
-
-      waitForBindings(0, "queues.testaddress", 1, 0, true);
-      waitForBindings(1, "queues.testaddress", 1, 0, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
-      waitForBindings(3, "queues.testaddress", 1, 0, true);
-      waitForBindings(4, "queues.testaddress", 1, 0, true);
-
-      waitForBindings(0, "queues.testaddress", 4, 0, false);
-      waitForBindings(1, "queues.testaddress", 4, 0, false);
-      waitForBindings(2, "queues.testaddress", 4, 0, false);
-      waitForBindings(3, "queues.testaddress", 4, 0, false);
-      waitForBindings(4, "queues.testaddress", 4, 0, false);
-
-      send(0, "queues.testaddress", 10, false, null);
-
-      addConsumer(0, 0, "queue0", null);
-      addConsumer(1, 1, "queue0", null);
-      addConsumer(2, 2, "queue0", null);
-      addConsumer(3, 3, "queue0", null);
-      addConsumer(4, 4, "queue0", null);
-
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
-      waitForBindings(3, "queues.testaddress", 1, 1, true);
-      waitForBindings(4, "queues.testaddress", 1, 1, true);
-
-      waitForBindings(0, "queues.testaddress", 4, 4, false);
-      waitForBindings(1, "queues.testaddress", 4, 4, false);
-      waitForBindings(2, "queues.testaddress", 4, 4, false);
-      waitForBindings(3, "queues.testaddress", 4, 4, false);
-      waitForBindings(4, "queues.testaddress", 4, 4, false);
-
-      // Should still be round robined since no local consumer
-
-      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
    }
 
    @Test
    public void testRouteWhenNoConsumersFalseLocalConsumerLoadBalancedQueues() throws Exception
    {
-      setupCluster(false);
+      if (isForwardWhenNoConsumers)
+      {
+         setupCluster(false);
 
-      startServers();
+         startServers();
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
-      setupSessionFactory(2, isNetty());
-      setupSessionFactory(3, isNetty());
-      setupSessionFactory(4, isNetty());
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+         setupSessionFactory(2, isNetty());
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
 
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-      createQueue(2, "queues.testaddress", "queue0", null, false);
-      createQueue(3, "queues.testaddress", "queue0", null, false);
-      createQueue(4, "queues.testaddress", "queue0", null, false);
+         createQueue(0, "queues.testaddress", "queue0", null, false);
+         createQueue(1, "queues.testaddress", "queue0", null, false);
+         createQueue(2, "queues.testaddress", "queue0", null, false);
+         createQueue(3, "queues.testaddress", "queue0", null, false);
+         createQueue(4, "queues.testaddress", "queue0", null, false);
 
-      addConsumer(0, 0, "queue0", null);
+         addConsumer(0, 0, "queue0", null);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 0, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
-      waitForBindings(3, "queues.testaddress", 1, 0, true);
-      waitForBindings(4, "queues.testaddress", 1, 0, true);
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
+         waitForBindings(2, "queues.testaddress", 1, 0, true);
+         waitForBindings(3, "queues.testaddress", 1, 0, true);
+         waitForBindings(4, "queues.testaddress", 1, 0, true);
 
-      waitForBindings(0, "queues.testaddress", 4, 0, false);
-      waitForBindings(1, "queues.testaddress", 4, 1, false);
-      waitForBindings(2, "queues.testaddress", 4, 1, false);
-      waitForBindings(3, "queues.testaddress", 4, 1, false);
-      waitForBindings(4, "queues.testaddress", 4, 1, false);
+         waitForBindings(0, "queues.testaddress", 4, 0, false);
+         waitForBindings(1, "queues.testaddress", 4, 1, false);
+         waitForBindings(2, "queues.testaddress", 4, 1, false);
+         waitForBindings(3, "queues.testaddress", 4, 1, false);
+         waitForBindings(4, "queues.testaddress", 4, 1, false);
 
-      send(0, "queues.testaddress", 10, false, null);
+         send(0, "queues.testaddress", 10, false, null);
 
-      addConsumer(1, 1, "queue0", null);
-      addConsumer(2, 2, "queue0", null);
-      addConsumer(3, 3, "queue0", null);
-      addConsumer(4, 4, "queue0", null);
+         addConsumer(1, 1, "queue0", null);
+         addConsumer(2, 2, "queue0", null);
+         addConsumer(3, 3, "queue0", null);
+         addConsumer(4, 4, "queue0", null);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
-      waitForBindings(3, "queues.testaddress", 1, 1, true);
-      waitForBindings(4, "queues.testaddress", 1, 1, true);
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
 
-      waitForBindings(0, "queues.testaddress", 4, 4, false);
-      waitForBindings(1, "queues.testaddress", 4, 4, false);
-      waitForBindings(2, "queues.testaddress", 4, 4, false);
-      waitForBindings(3, "queues.testaddress", 4, 4, false);
-      waitForBindings(4, "queues.testaddress", 4, 4, false);
+         waitForBindings(0, "queues.testaddress", 4, 4, false);
+         waitForBindings(1, "queues.testaddress", 4, 4, false);
+         waitForBindings(2, "queues.testaddress", 4, 4, false);
+         waitForBindings(3, "queues.testaddress", 4, 4, false);
+         waitForBindings(4, "queues.testaddress", 4, 4, false);
 
-      verifyReceiveAll(10, 0);
+         verifyReceiveAll(10, 0);
+      }
+   }
+
+   @Test
+   public void testRouteWhenNoConsumersFalseNonLoadBalancedQueues2() throws Exception
+   {
+      if (isForwardWhenNoConsumers)
+      {
+         setupCluster(false);
+
+         startServers();
+
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+         setupSessionFactory(2, isNetty());
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
+
+         createQueue(0, "queues.testaddress", "queue0", null, false);
+         createQueue(1, "queues.testaddress", "queue0", null, false);
+         createQueue(2, "queues.testaddress", "queue0", null, false);
+         createQueue(3, "queues.testaddress", "queue0", null, false);
+         createQueue(4, "queues.testaddress", "queue0", null, false);
+
+         waitForBindings(0, "queues.testaddress", 1, 0, true);
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
+         waitForBindings(2, "queues.testaddress", 1, 0, true);
+         waitForBindings(3, "queues.testaddress", 1, 0, true);
+         waitForBindings(4, "queues.testaddress", 1, 0, true);
+
+         waitForBindings(0, "queues.testaddress", 4, 0, false);
+         waitForBindings(1, "queues.testaddress", 4, 0, false);
+         waitForBindings(2, "queues.testaddress", 4, 0, false);
+         waitForBindings(3, "queues.testaddress", 4, 0, false);
+         waitForBindings(4, "queues.testaddress", 4, 0, false);
+
+         send(0, "queues.testaddress", 10, false, null);
+
+         addConsumer(0, 0, "queue0", null);
+         addConsumer(1, 1, "queue0", null);
+         addConsumer(2, 2, "queue0", null);
+         addConsumer(3, 3, "queue0", null);
+         addConsumer(4, 4, "queue0", null);
+
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
+
+         waitForBindings(0, "queues.testaddress", 4, 4, false);
+         waitForBindings(1, "queues.testaddress", 4, 4, false);
+         waitForBindings(2, "queues.testaddress", 4, 4, false);
+         waitForBindings(3, "queues.testaddress", 4, 4, false);
+         waitForBindings(4, "queues.testaddress", 4, 4, false);
+
+         verifyReceiveAll(10, 0);
+      }
    }
 
    @Test
