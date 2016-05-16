@@ -906,6 +906,11 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       synchronized (producers)
       {
          producers.remove(producer);
+
+         if (defaultAddress != null && defaultAddress.equals(producer.getAddress()))
+         {
+            defaultAddress = null;
+         }
       }
    }
 
