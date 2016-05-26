@@ -89,6 +89,8 @@ public final class JMSBridgeImpl implements JMSBridge
 
    private final Object lock = new Object();
 
+   private String bridgeName;
+
    private String sourceUsername;
 
    private String sourcePassword;
@@ -199,7 +201,8 @@ public final class JMSBridgeImpl implements JMSBridge
       executor = createExecutor();
    }
 
-   public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
+   public JMSBridgeImpl(final String bridgeName,
+                        final ConnectionFactoryFactory sourceCff,
                         final ConnectionFactoryFactory targetCff,
                         final DestinationFactory sourceDestinationFactory,
                         final DestinationFactory targetDestinationFactory,
@@ -218,7 +221,8 @@ public final class JMSBridgeImpl implements JMSBridge
                         final boolean addMessageIDInHeader)
    {
 
-      this(sourceCff,
+      this(bridgeName,
+           sourceCff,
            targetCff,
            sourceDestinationFactory,
            targetDestinationFactory,
@@ -239,7 +243,8 @@ public final class JMSBridgeImpl implements JMSBridge
            null);
    }
 
-   public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
+   public JMSBridgeImpl(final String bridgeName,
+                        final ConnectionFactoryFactory sourceCff,
                         final ConnectionFactoryFactory targetCff,
                         final DestinationFactory sourceDestinationFactory,
                         final DestinationFactory targetDestinationFactory,
@@ -259,7 +264,8 @@ public final class JMSBridgeImpl implements JMSBridge
                         final MBeanServer mbeanServer,
                         final String objectName)
    {
-      this(sourceCff,
+      this(bridgeName,
+           sourceCff,
            targetCff,
            sourceDestinationFactory,
            targetDestinationFactory,
@@ -281,7 +287,8 @@ public final class JMSBridgeImpl implements JMSBridge
            DEFAULT_FAILOVER_TIMEOUT);
    }
 
-   public JMSBridgeImpl(final ConnectionFactoryFactory sourceCff,
+   public JMSBridgeImpl(final String bridgeName,
+                        final ConnectionFactoryFactory sourceCff,
                         final ConnectionFactoryFactory targetCff,
                         final DestinationFactory sourceDestinationFactory,
                         final DestinationFactory targetDestinationFactory,
@@ -340,6 +347,8 @@ public final class JMSBridgeImpl implements JMSBridge
 
       this.failoverTimeout = failoverTimeout;
 
+      this.bridgeName = bridgeName;
+
       checkParams();
 
       if (mbeanServer != null)
@@ -394,7 +403,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
       if (started)
       {
-         HornetQJMSServerLogger.LOGGER.errorBridgeAlreadyStarted();
+         HornetQJMSServerLogger.LOGGER.errorBridgeAlreadyStarted(bridgeName);
          return;
       }
 
@@ -442,7 +451,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       else
       {
-         HornetQJMSServerLogger.LOGGER.errorStartingBridge();
+         HornetQJMSServerLogger.LOGGER.errorStartingBridge(bridgeName);
          handleFailureOnStartup();
       }
 
@@ -624,7 +633,7 @@ public final class JMSBridgeImpl implements JMSBridge
          }
          catch (Exception e)
          {
-            HornetQJMSServerLogger.LOGGER.errorUnregisteringBridge(objectName);
+            HornetQJMSServerLogger.LOGGER.errorUnregisteringBridge(objectName,bridgeName);
          }
       }
    }
@@ -669,6 +678,16 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          HornetQJMSServerLogger.LOGGER.trace("Resumed " + this);
       }
+   }
+
+   public synchronized String getBridgeName()
+   {
+      return this.bridgeName;
+   }
+
+   public synchronized void setBridgeName(String bridgeName)
+   {
+      this.bridgeName = bridgeName;
    }
 
    public DestinationFactory getSourceDestinationFactory()
@@ -1378,7 +1397,7 @@ public final class JMSBridgeImpl implements JMSBridge
          // If this fails we should attempt to cleanup or we might end up in some weird state
 
          // Adding a log.warn, so the use may see the cause of the failure and take actions
-         HornetQJMSServerLogger.LOGGER.bridgeConnectError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeConnectError(e,bridgeName);
 
          cleanup();
 
@@ -1496,7 +1515,7 @@ public final class JMSBridgeImpl implements JMSBridge
             break;
          }
 
-         HornetQJMSServerLogger.LOGGER.failedToSetUpBridge(failureRetryInterval);
+         HornetQJMSServerLogger.LOGGER.failedToSetUpBridge(failureRetryInterval,bridgeName);
 
          pause(failureRetryInterval);
       }
@@ -1617,7 +1636,7 @@ public final class JMSBridgeImpl implements JMSBridge
       {
          if (!stopping)
          {
-            HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+            HornetQJMSServerLogger.LOGGER.bridgeAckError(e,bridgeName);
          }
 
          // We don't call failure otherwise failover would be broken with HornetQ
@@ -1675,7 +1694,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
          }
 
-         HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeAckError(e,bridgeName);
 
          //we don't do handle failure here because the tx
          //may be rolledback due to failover. All failure handling
@@ -1696,7 +1715,7 @@ public final class JMSBridgeImpl implements JMSBridge
          }
          catch (Exception e)
          {
-            HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+            HornetQJMSServerLogger.LOGGER.bridgeAckError(e,bridgeName);
 
             handleFailureOnSend();
          }
@@ -1724,7 +1743,7 @@ public final class JMSBridgeImpl implements JMSBridge
       }
       catch (Exception e)
       {
-         HornetQJMSServerLogger.LOGGER.bridgeAckError(e);
+         HornetQJMSServerLogger.LOGGER.bridgeAckError(e,bridgeName);
 
          try
          {
@@ -2058,13 +2077,13 @@ public final class JMSBridgeImpl implements JMSBridge
          }
          catch (JMSException e)
          {
-            HornetQJMSServerLogger.LOGGER.jmsBridgeSrcConnectError(e);
+            HornetQJMSServerLogger.LOGGER.jmsBridgeSrcConnectError(e,bridgeName);
          }
       }
 
       protected void succeeded()
       {
-         HornetQJMSServerLogger.LOGGER.bridgeReconnected();
+         HornetQJMSServerLogger.LOGGER.bridgeReconnected(bridgeName);
          connectedSource = true;
          connectedTarget = true;
          synchronized (lock)
@@ -2078,7 +2097,7 @@ public final class JMSBridgeImpl implements JMSBridge
       protected void failed()
       {
          // We haven't managed to recreate connections or maxRetries = 0
-         HornetQJMSServerLogger.LOGGER.errorConnectingBridge();
+         HornetQJMSServerLogger.LOGGER.errorConnectingBridge(bridgeName);
 
          try
          {
@@ -2105,7 +2124,7 @@ public final class JMSBridgeImpl implements JMSBridge
 
          if (maxRetries > 0 || maxRetries == -1)
          {
-            HornetQJMSServerLogger.LOGGER.bridgeRetry(failureRetryInterval);
+            HornetQJMSServerLogger.LOGGER.bridgeRetry(failureRetryInterval,bridgeName);
 
             pause(failureRetryInterval);
 
@@ -2130,14 +2149,14 @@ public final class JMSBridgeImpl implements JMSBridge
       protected void failed()
       {
          // Don't call super
-         HornetQJMSServerLogger.LOGGER.bridgeNotStarted();
+         HornetQJMSServerLogger.LOGGER.bridgeNotStarted(bridgeName);
       }
 
       @Override
       protected void succeeded()
       {
          // Don't call super - a bit ugly in this case but better than taking the lock twice.
-         HornetQJMSServerLogger.LOGGER.bridgeConnected();
+         HornetQJMSServerLogger.LOGGER.bridgeConnected(bridgeName);
 
          synchronized (lock)
          {
@@ -2156,7 +2175,7 @@ public final class JMSBridgeImpl implements JMSBridge
             }
             catch (JMSException e)
             {
-               HornetQJMSServerLogger.LOGGER.jmsBridgeSrcConnectError(e);
+               HornetQJMSServerLogger.LOGGER.jmsBridgeSrcConnectError(e,bridgeName);
             }
          }
       }
@@ -2258,7 +2277,7 @@ public final class JMSBridgeImpl implements JMSBridge
          {
             return;
          }
-         HornetQJMSServerLogger.LOGGER.bridgeFailure(e);
+         HornetQJMSServerLogger.LOGGER.bridgeFailure(e,bridgeName);
          if (isSource)
          {
             connectedSource = false;

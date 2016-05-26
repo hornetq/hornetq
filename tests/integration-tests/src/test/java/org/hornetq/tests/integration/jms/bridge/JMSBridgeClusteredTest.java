@@ -100,7 +100,8 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
 
          //even number
          final int batchSize = 4;
-         bridge = new JMSBridgeImpl(sourceCFF,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    sourceCFF,
                                     targetCFF,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -179,7 +180,8 @@ public class JMSBridgeClusteredTest extends ClusteredBridgeTestBase
          DestinationFactory sourceQueueFactory = sourceServer.getDestinationFactory(sourceQueueName);
          DestinationFactory targetQueueFactory = targetServer.getDestinationFactory(targetQueueName);
 
-         bridge = new JMSBridgeImpl(sourceCFF,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    sourceCFF,
                                     targetCFF,
                                     sourceQueueFactory,
                                     targetQueueFactory,

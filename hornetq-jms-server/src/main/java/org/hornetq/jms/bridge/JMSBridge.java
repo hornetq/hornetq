@@ -27,6 +27,10 @@ public interface JMSBridge extends HornetQComponent
 
    void resume() throws Exception;
 
+   String getBridgeName();
+
+   void setBridgeName(String bridgeName);
+
    DestinationFactory getSourceDestinationFactory();
 
    void setSourceDestinationFactory(DestinationFactory dest);

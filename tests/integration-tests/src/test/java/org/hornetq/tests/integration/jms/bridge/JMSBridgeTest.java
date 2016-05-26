@@ -386,7 +386,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -486,7 +487,8 @@ public class JMSBridgeTest extends BridgeTestBase
       try
       {
          bridge =
-            new JMSBridgeImpl(null,
+            new JMSBridgeImpl("test-bridge",
+                              null,
                               cff1,
                               sourceQueueFactory,
                               targetQueueFactory,
@@ -516,7 +518,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     null,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -546,7 +549,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     null,
                                     targetQueueFactory,
@@ -576,7 +580,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     null,
@@ -606,7 +611,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -636,7 +642,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -666,7 +673,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     null,
@@ -696,7 +704,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     null,
@@ -738,7 +747,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -827,7 +837,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
          String selector = "vegetable='radish'";
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -929,7 +940,7 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory,
+         bridge = new JMSBridgeImpl("test-bridge",cff0, cff1, sourceQueueFactory,
                                     targetQueueFactory, "guest", mask, "guest", mask, null, 5000,
                                     10, QualityOfServiceMode.AT_MOST_ONCE, 1, -1, null, null, false);
          bridge.setTransactionManager(newTransactionManager());
@@ -1016,7 +1027,7 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory,
+         bridge = new JMSBridgeImpl("test-bridge",cff0, cff1, sourceQueueFactory,
                                     targetQueueFactory, "guest", mask, "guest", mask, null, 5000,
                                     10, QualityOfServiceMode.AT_MOST_ONCE, 1, -1, null, null, false);
          bridge.setTransactionManager(newTransactionManager());
@@ -1117,7 +1128,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceTopicFactory,
                                     targetQueueFactory,
@@ -1193,7 +1205,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceTopicFactory,
                                     targetQueueFactory,
@@ -1247,7 +1260,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceTopicFactory,
                                     targetQueueFactory,
@@ -1312,7 +1326,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -1520,7 +1535,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -1695,7 +1711,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -1802,7 +1819,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -1896,7 +1914,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -1989,7 +2008,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
@@ -2080,7 +2100,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -2157,7 +2178,8 @@ public class JMSBridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
@@ -2237,7 +2259,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
 
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
@@ -2297,7 +2320,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
 
-         bridge = new JMSBridgeImpl(factInUse0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    factInUse0,
                                     factInUse0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
@@ -2350,7 +2374,8 @@ public class JMSBridgeTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
+         bridge = new JMSBridgeImpl("test-bridge",
+                                    cff0,
                                     cff0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
@@ -2387,7 +2412,8 @@ public class JMSBridgeTest extends BridgeTestBase
       MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
       ObjectName objectName = new ObjectName("example.jmsbridge:service=JMSBridge");
 
-      JMSBridgeImpl bridge = new JMSBridgeImpl(cff0,
+      JMSBridgeImpl bridge = new JMSBridgeImpl("test-bridge",
+                                               cff0,
                                                cff0,
                                                sourceQueueFactory,
                                                localTargetQueueFactory,
