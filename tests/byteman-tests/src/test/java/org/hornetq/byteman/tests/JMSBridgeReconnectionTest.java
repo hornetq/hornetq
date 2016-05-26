@@ -64,7 +64,9 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       ConnectionFactoryFactory factInUse0 = cff0;
       ConnectionFactoryFactory factInUse1 = cff1;
       final JMSBridgeImpl bridge =
-            new JMSBridgeImpl(factInUse0,
+            new JMSBridgeImpl(
+                  "test-bridge",
+                  factInUse0,
                   factInUse1,
                   sourceQueueFactory,
                   targetQueueFactory,

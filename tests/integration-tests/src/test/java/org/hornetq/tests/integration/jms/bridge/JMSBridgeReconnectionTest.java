@@ -116,7 +116,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    {
       jmsServer1.stop();
 
-      JMSBridgeImpl bridge = new JMSBridgeImpl(cff0,
+      JMSBridgeImpl bridge = new JMSBridgeImpl("test-bridge",
+                                               cff0,
                                                cff1,
                                                sourceQueueFactory,
                                                targetQueueFactory,
@@ -159,7 +160,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    {
       jmsServer1.stop();
 
-      JMSBridgeImpl bridge = new JMSBridgeImpl(cff0,
+      JMSBridgeImpl bridge = new JMSBridgeImpl("test-bridge",
+                                               cff0,
                                                cff1,
                                                sourceQueueFactory,
                                                targetQueueFactory,
@@ -213,7 +215,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       }
 
       bridge =
-         new JMSBridgeImpl(factInUse0,
+         new JMSBridgeImpl("test-bridge",
+                           factInUse0,
                            factInUse1,
                            sourceQueueFactory,
                            targetQueueFactory,
@@ -286,7 +289,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       ConnectionFactoryFactory factInUse0 = cff0;
       ConnectionFactoryFactory factInUse1 = cff1;
       final JMSBridgeImpl bridge =
-            new JMSBridgeImpl(factInUse0,
+            new JMSBridgeImpl("test-bridge",factInUse0,
                   factInUse1,
                   sourceQueueFactory,
                   targetQueueFactory,
@@ -388,7 +391,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
       tm.tx = tx;
 
       JMSBridgeImpl bridge =
-            new JMSBridgeImpl(cff0xa,
+            new JMSBridgeImpl("test-bridge",cff0xa,
                   cff1xa,
                   sourceQueueFactory,
                   targetQueueFactory,
@@ -499,7 +502,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    private void performCrashAndReconnectDestCrashBeforePrepare(final boolean persistent) throws Exception
    {
       JMSBridgeImpl bridge =
-         new JMSBridgeImpl(cff0xa,
+         new JMSBridgeImpl("test-bridge",
+                           cff0xa,
                            cff1xa,
                            sourceQueueFactory,
                            targetQueueFactory,
