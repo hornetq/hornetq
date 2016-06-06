@@ -13,12 +13,18 @@
 
 package org.hornetq.tests.unit.core.config.impl;
 
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.junit.Test;
 
 import org.junit.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.tests.util.UnitTestCase;
+
+import java.util.HashMap;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 
 /**
  * A TransportConfigurationTest
@@ -71,6 +77,18 @@ public class TransportConfigurationTest extends UnitTestCase
       Assert.assertEquals("localhost", addresses[0]);
       Assert.assertEquals("127.0.0.1", addresses[1]);
       Assert.assertEquals("192.168.0.10", addresses[2]);
+   }
+
+   @Test
+   public void testToStringObfuscatesPasswords()
+   {
+      HashMap<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME, "secret_password");
+      params.put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "secret_password");
+
+      TransportConfiguration configuration = new TransportConfiguration("SomeClass", params, null);
+
+      Assert.assertThat(configuration.toString(), not(containsString("secret_password")));
    }
 
    // Package protected ---------------------------------------------
