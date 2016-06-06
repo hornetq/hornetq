@@ -1353,7 +1353,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       SimpleString address = message.getAddress();
 
-      checkDefaultAddress(address);
+      if (defaultAddress == null && address != null)
+      {
+         defaultAddress = address;
+      }
 
       if (address == null)
       {
@@ -1393,14 +1396,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void checkDefaultAddress(SimpleString address)
-   {
-      if (defaultAddress == null && address != null)
-      {
-         defaultAddress = address;
-      }
-   }
-
    public void sendContinuations(final int packetSize,
                                  final long messageBodySize,
                                  final byte[] body,
@@ -1433,11 +1428,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void requestProducerCredits(final SimpleString address, final int credits) throws Exception
    {
-      // When the client gets the producer credits it already has the intention of sending messages
-      // and it will already register the default address on the core protocol
-      // hence we need to set it here when we request credits as well
-      checkDefaultAddress(address);
-
       PagingStore store = server.getPagingManager().getPageStore(address);
 
       if (!store.checkMemory(new Runnable()

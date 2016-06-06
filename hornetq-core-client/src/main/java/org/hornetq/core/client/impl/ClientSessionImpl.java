@@ -1265,19 +1265,15 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
       return sessionFactory;
    }
 
-   @Override
    public void setAddress(final Message message, final SimpleString address)
    {
       if (defaultAddress == null)
       {
          defaultAddress = address;
 
-         if (message != null)
-         {
-            message.setAddress(address);
-         }
+         message.setAddress(address);
       }
-      else if (message != null)
+      else
       {
          if (!address.equals(defaultAddress))
          {
@@ -1326,7 +1322,6 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
 
    public synchronized ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
-      setAddress(null, address);
       return producerCreditManager.getCredits(address, anon);
    }
 
