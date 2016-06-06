@@ -93,6 +93,12 @@ public class DelegatingSession implements ClientSessionInternal
       }
    }
 
+   @Override
+   public void checkDefaultAddress(SimpleString address)
+   {
+      session.checkDefaultAddress(address);
+   }
+
    public void acknowledge(final long consumerID, final long messageID) throws HornetQException
    {
       session.acknowledge(consumerID, messageID);
