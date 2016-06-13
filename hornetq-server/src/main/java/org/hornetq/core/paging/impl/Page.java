@@ -238,9 +238,16 @@ public final class Page implements Comparable<Page>
       file.position(0);
    }
 
-   public synchronized void close() throws Exception
+   public void close() throws Exception
    {
-      if (storageManager != null)
+      close(false);
+   }
+
+   /** sendEvent means it's a close happening from a major event such moveNext.
+    *  While reading the cache we don't need (and shouldn't inform the backup */
+   public synchronized void close(final boolean sendEvent) throws Exception
+   {
+      if (sendEvent && storageManager != null)
       {
          storageManager.pageClosed(storeName, pageId);
       }

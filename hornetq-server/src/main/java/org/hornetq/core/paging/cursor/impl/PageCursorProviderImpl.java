@@ -191,7 +191,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          {
             if (page != null)
             {
-               page.close();
+               page.close(false);
             }
          }
          catch (Throwable ignored)
@@ -518,7 +518,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                {
                   try
                   {
-                     depagedPage.close();
+                     depagedPage.close(false);
                   }
                   catch (Exception e)
                   {

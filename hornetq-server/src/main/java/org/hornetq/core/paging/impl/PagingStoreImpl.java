@@ -429,7 +429,7 @@ public class PagingStoreImpl implements PagingStore
                currentPageId = 0;
                if (currentPage != null)
                {
-                  currentPage.close();
+                  currentPage.close(true);
                }
                currentPage = null;
 
