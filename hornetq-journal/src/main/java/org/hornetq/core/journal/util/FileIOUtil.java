@@ -1,0 +1,92 @@
+/*
+ * Copyright 2009 Red Hat, Inc.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+package org.hornetq.core.journal.util;
+
+import org.hornetq.core.journal.SequentialFile;
+import org.jboss.logging.Logger;
+
+import java.nio.ByteBuffer;
+
+public class FileIOUtil
+{
+
+   private static final Logger logger = Logger.getLogger(FileIOUtil.class);
+
+   public static void copyData(SequentialFile from, SequentialFile to, ByteBuffer buffer) throws Exception
+   {
+
+      boolean fromIsOpen = from.isOpen();
+      boolean toIsOpen = to.isOpen();
+
+      from.close();
+      from.open();
+
+      if (!toIsOpen)
+      {
+         to.open();
+      }
+
+      to.position(to.size());
+
+      from.position(0);
+
+      try
+      {
+         for (;;)
+         {
+            // The buffer is reused...
+            // We need to make sure we clear the limits and the buffer before reusing it
+            buffer.clear();
+            int bytesRead = from.read(buffer);
+
+            if (logger.isTraceEnabled())
+            {
+               logger.trace("appending " + bytesRead + " bytes on " + to.getFileName());
+            }
+
+            if (bytesRead > 0)
+            {
+               to.writeDirect(buffer, false);
+            }
+
+            if (bytesRead < buffer.capacity())
+            {
+               logger.trace("Interrupting reading as the whole thing was sent on " + to.getFileName());
+               break;
+            }
+         }
+      }
+      finally
+      {
+         if (!fromIsOpen)
+         {
+            from.close();
+         }
+         else
+         {
+            from.position(from.size());
+         }
+         if (!toIsOpen)
+         {
+            to.close();
+         }
+         else
+         {
+            to.position(to.size());
+         }
+      }
+
+   }
+
+}

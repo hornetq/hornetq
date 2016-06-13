@@ -3,8 +3,6 @@
  */
 package org.hornetq.core.persistence.impl.journal;
 
-import java.nio.ByteBuffer;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.persistence.StorageManager;
@@ -12,9 +10,15 @@ import org.hornetq.core.persistence.StorageManager.LargeMessageExtension;
 import org.hornetq.core.replication.ReplicatedLargeMessage;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.journal.util.FileIOUtil;
+import org.jboss.logging.Logger;
+
+import java.nio.ByteBuffer;
 
 public final class LargeServerMessageInSync implements ReplicatedLargeMessage
 {
+   private static final Logger logger = Logger.getLogger(LargeServerMessageInSync.class);
+
    private final LargeServerMessage mainLM;
    private final StorageManager storageManager;
    private SequentialFile appendFile;
@@ -39,23 +43,39 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
       {
          mainSeqFile.open();
       }
-      if (appendFile != null)
+
+      try
       {
-         appendFile.close();
-         appendFile.open();
-         for (;;)
+         if (appendFile != null)
          {
-            buffer.rewind();
-            int bytesRead = appendFile.read(buffer);
-            if (bytesRead > 0)
-               mainSeqFile.writeInternal(buffer);
-            if (bytesRead < buffer.capacity())
+            if (logger.isTraceEnabled())
             {
-               break;
+               logger.trace("joinSyncedData on " + mainLM + ", currentSize on mainMessage=" + mainSeqFile.size() + ", appendFile size = " + appendFile.size());
+            }
+
+            FileIOUtil.copyData(appendFile, mainSeqFile, buffer);
+            deleteAppendFile();
+         }
+         else
+         {
+            if (logger.isTraceEnabled())
+            {
+               logger.trace("joinSyncedData, appendFile is null, ignoring joinSyncedData on " + mainLM);
             }
          }
-         deleteAppendFile();
       }
+      catch (Throwable e)
+      {
+         logger.warn("Error while sincing data on largeMessageInSync::" + mainLM);
+      }
+
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("joinedSyncData on " + mainLM + " finished with " + mainSeqFile.size());
+      }
+
+
+
       syncDone = true;
    }
 
@@ -127,8 +147,17 @@ public final class LargeServerMessageInSync implements ReplicatedLargeMessage
          return;
       if (syncDone)
       {
+         if (logger.isTraceEnabled())
+         {
+            logger.trace("Adding " + bytes.length + " towards sync message::" + mainLM);
+         }
          mainLM.addBytes(bytes);
          return;
+      }
+
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("addBytes(bytes.length=" + bytes.length + ") on message=" + mainLM);
       }
 
       if (appendFile == null)
