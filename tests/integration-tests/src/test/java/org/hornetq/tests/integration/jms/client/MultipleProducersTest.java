@@ -17,27 +17,30 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import javax.jms.Connection;
-
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-
 import org.hornetq.api.core.SimpleString;
-
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
+import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.SlowConsumerPolicy;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.util.JMSTestBase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSSecurityException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MultipleProducersTest extends JMSTestBase
 {
@@ -58,6 +61,11 @@ public class MultipleProducersTest extends JMSTestBase
    public JMSQueueControl control = null;
    public long queueOneMsgCount = 0;
    public long queueTwoMsgCount = 0;
+
+   protected boolean useSecurity()
+   {
+      return true;
+   }
 
    @Before
    public void iniTest() throws Exception
@@ -85,8 +93,16 @@ public class MultipleProducersTest extends JMSTestBase
    @Test
    public void wrongQueue() throws Exception
    {
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+      HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
+      Set<Role> permitRole = new HashSet<Role>();
+      permitRole.add(new Role("guest", true, true, true, true, true, true, true));
+      repository.addMatch("#", permitRole);
 
-      conn = cf.createConnection();
+      conn = cf.createConnection("guest", "guest");
 
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -116,7 +132,7 @@ public class MultipleProducersTest extends JMSTestBase
       session = null;
       conn = null;
 
-      conn = cf.createConnection();
+      conn = cf.createConnection("guest", "guest");
       session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       // send a message to a queue which is already full
@@ -176,6 +192,63 @@ public class MultipleProducersTest extends JMSTestBase
 
    }
 
+   @Test
+   public void wrongQueue2() throws Exception
+   {
+      HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
+      repos.setDefault(addressSettings);
+
+
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+
+      HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
+      Set<Role> forbidRole = new HashSet<Role>();
+      forbidRole.add(new Role("guest", false, false, false, false, false, false, false));
+      Set<Role> permitRole = new HashSet<Role>();
+      permitRole.add(new Role("guest", true, true, true, true, true, true, true));
+      repository.addMatch("jms.queue.queueOne", forbidRole);
+      repository.addMatch("jms.queue.queueTwo", permitRole);
+
+      Queue queueOne = createQueue("queueOne");
+      Queue queueTwo = createQueue("queueTwo");
+
+      conn = cf.createConnection("guest", "guest");
+
+      session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try
+      {
+         sendMessage(queueOne, session);
+         Assert.fail("Exception expected");
+      }
+      catch (JMSSecurityException e)
+      {
+      }
+
+      assertEquals(0, server.locateQueue(queueOneName).getMessageCount());
+
+      try
+      {
+         sendMessage(queueTwo, session);
+         sendMessage(queueTwo, session);
+      }
+      catch (Throwable e)
+      {
+         Assert.fail("Unexpected exception " + e);
+      }
+
+
+      session.close();
+
+      conn.close();
+
+      assertEquals(0, server.locateQueue(queueOneName).getMessageCount());
+      assertEquals(2, server.locateQueue(queueTwoName).getMessageCount());
+   }
+
    //@After
    public void cleanUp() throws Exception
    {
@@ -195,7 +268,7 @@ public class MultipleProducersTest extends JMSTestBase
       try
       {
          mp.setDisableMessageID(true);
-         mp.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         mp.setDeliveryMode(DeliveryMode.PERSISTENT);
          mp.setPriority(Message.DEFAULT_PRIORITY);
          mp.setTimeToLive(Message.DEFAULT_TIME_TO_LIVE);
 
