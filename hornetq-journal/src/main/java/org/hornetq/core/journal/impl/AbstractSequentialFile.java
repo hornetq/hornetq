@@ -30,6 +30,7 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.util.FileIOUtil;
 import org.hornetq.journal.HornetQJournalBundle;
 import org.hornetq.journal.HornetQJournalLogger;
 
@@ -123,16 +124,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
          ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
 
-         for (;;)
-         {
-            buffer.rewind();
-            int size = this.read(buffer);
-            newFileName.writeDirect(buffer, false);
-            if (size < 10 * 1024)
-            {
-               break;
-            }
-         }
+         FileIOUtil.copyData(this, newFileName, buffer);
          newFileName.close();
          this.close();
       }
