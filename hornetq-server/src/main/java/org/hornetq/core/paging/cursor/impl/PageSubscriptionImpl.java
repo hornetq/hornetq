@@ -54,6 +54,7 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
+import org.jboss.logging.Logger;
 
 /**
  * A PageCursorImpl
@@ -62,7 +63,8 @@ import org.hornetq.utils.LinkedListIterator;
  */
 final class PageSubscriptionImpl implements PageSubscription
 {
-   private final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+
+   private static final Logger logger = Logger.getLogger(PageSubscriptionImpl.class);
 
    private boolean empty = true;
 
@@ -200,8 +202,13 @@ final class PageSubscriptionImpl implements PageSubscription
     * TX) we may have big holes on the page streaming, and we will need to ignore such pages on the
     * cursor/subscription.
     */
-   public void reloadPageCompletion(PagePosition position)
+   public void reloadPageCompletion(PagePosition position) throws Exception
    {
+      // if the current page is complete, we must move it out of the way
+      if (pageStore.getCurrentPage().getPageId() == position.getPageNr())
+      {
+         pageStore.forceAnotherPage();
+      }
       PageCursorInfo info = new PageCursorInfo(position.getPageNr(), position.getMessageNr(), null);
       info.setCompleteInfo(position);
       synchronized (consumedPages)
@@ -214,6 +221,10 @@ final class PageSubscriptionImpl implements PageSubscription
    {
       if (autoCleanup)
       {
+         if (logger.isTraceEnabled())
+         {
+            logger.trace("Scheduling cleanup", new Exception("trace"));
+         }
          if (scheduledCleanupCount.get() > 2)
          {
             return;
@@ -223,11 +234,15 @@ final class PageSubscriptionImpl implements PageSubscription
          executor.execute(new Runnable()
          {
 
+
             public void run()
             {
                try
                {
-                  cleanupEntries(false);
+                  if (autoCleanup)
+                  {
+                     cleanupEntries(false);
+                  }
                }
                catch (Exception e)
                {
@@ -261,6 +276,10 @@ final class PageSubscriptionImpl implements PageSubscription
       {
          counter.delete();
       }
+      if (logger.isTraceEnabled())
+      {
+         logger.trace("cleanupEntries", new Exception("trace"));
+      }
       Transaction tx = new TransactionImpl(store);
 
       boolean persist = false;
@@ -287,8 +306,8 @@ final class PageSubscriptionImpl implements PageSubscription
                if (currentPage != null && entry.getKey() == pageStore.getCurrentPage().getPageId() &&
                   currentPage.isLive())
                {
-                  HornetQServerLogger.LOGGER.trace("We can't clear page " + entry.getKey() +
-                                                      " now since it's the current page");
+                  logger.trace("We can't clear page " + entry.getKey() +
+                      " now since it's the current page");
                }
                else
                {
@@ -551,6 +570,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
    }
 
+   @Override
    public void addPendingDelivery(final PagePosition position)
    {
       PageCursorInfo info = getPageInfo(position);
@@ -592,6 +612,7 @@ final class PageSubscriptionImpl implements PageSubscription
    /**
     * Theres no need to synchronize this method as it's only called from journal load on startup
     */
+   @Override
    public void reloadACK(final PagePosition position)
    {
       if (recoveredACK == null)
@@ -624,10 +645,15 @@ final class PageSubscriptionImpl implements PageSubscription
    @Override
    public boolean isComplete(long page)
    {
+      logger.tracef("%s isComplete %d", this, page);
       synchronized (consumedPages)
       {
          if (empty && consumedPages.isEmpty())
          {
+            if (logger.isTraceEnabled())
+            {
+               logger.tracef("isComplete(%d)::Subscription %s has empty=%s, consumedPages.isEmpty=%s", page, this, empty, consumedPages.isEmpty());
+            }
             return true;
          }
 
@@ -635,11 +661,17 @@ final class PageSubscriptionImpl implements PageSubscription
 
          if (info == null && empty)
          {
+            logger.tracef("isComplete(%d)::::Couldn't find info and it is empty", page);
             return true;
          }
          else
          {
-            return info != null && info.isDone();
+            boolean isDone = info != null && info.isDone();
+            if (logger.isTraceEnabled())
+            {
+               logger.tracef("isComplete(%d):: found info=%s, isDone=%s", (Object) page, info, isDone);
+            }
+            return isDone;
          }
       }
    }
@@ -711,9 +743,9 @@ final class PageSubscriptionImpl implements PageSubscription
    {
       if (recoveredACK != null)
       {
-         if (isTrace)
+         if (logger.isTraceEnabled())
          {
-            HornetQServerLogger.LOGGER.trace("********** processing reload!!!!!!!");
+            logger.trace("********** processing reload!!!!!!!");
          }
          Collections.sort(recoveredACK);
 
@@ -827,21 +859,21 @@ final class PageSubscriptionImpl implements PageSubscription
 
    public void reloadPageInfo(long pageNr)
    {
-      getPageInfo(pageNr, true);
+      getPageInfo(pageNr);
    }
 
    private PageCursorInfo getPageInfo(final PagePosition pos)
    {
-      return getPageInfo(pos.getPageNr(), true);
+      return getPageInfo(pos.getPageNr());
    }
 
-   private PageCursorInfo getPageInfo(final long pageNr, boolean create)
+   private PageCursorInfo getPageInfo(final long pageNr)
    {
       synchronized (consumedPages)
       {
          PageCursorInfo pageInfo = consumedPages.get(pageNr);
 
-         if (create && pageInfo == null)
+         if (pageInfo == null)
          {
             PageCache cache = cursorProvider.getPageCache(pageNr);
             if (cache == null)
@@ -880,15 +912,15 @@ final class PageSubscriptionImpl implements PageSubscription
    {
       if (lastAckedPosition == null || pos.compareTo(lastAckedPosition) > 0)
       {
-         if (isTrace)
+         if (logger.isTraceEnabled())
          {
-            HornetQServerLogger.LOGGER.trace("a new position is being processed as ACK");
+            logger.trace("a new position is being processed as ACK");
          }
          if (lastAckedPosition != null && lastAckedPosition.getPageNr() != pos.getPageNr())
          {
-            if (isTrace)
+            if (logger.isTraceEnabled())
             {
-               HornetQServerLogger.LOGGER.trace("Scheduling cleanup on pageSubscription for address = " + pageStore.getAddress() + " queue = " + this.getQueue().getName());
+               logger.trace("Scheduling cleanup on pageSubscription for address = " + pageStore.getAddress() + " queue = " + this.getQueue().getName());
             }
 
             // there's a different page being acked, we will do the check right away
@@ -928,9 +960,13 @@ final class PageSubscriptionImpl implements PageSubscription
          tx.setContainsPersistent();
       }
 
-      getPageInfo(position).remove(position);
+      PageCursorInfo info = getPageInfo(position);
 
-      PageCursorTX cursorTX = (PageCursorTX)tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
+      logger.tracef("InstallTXCallback looking up pagePosition %s, result=%s", position, info);
+
+      info.remove(position);
+
+      PageCursorTX cursorTX = (PageCursorTX) tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
 
       if (cursorTX == null)
       {
@@ -972,7 +1008,7 @@ final class PageSubscriptionImpl implements PageSubscription
 
    /**
     * This will hold information about the pending ACKs towards a page.
-    * <p/>
+    * <p>
     * This instance will be released as soon as the entire page is consumed, releasing the memory at
     * that point The ref counts are increased also when a message is ignored for any reason.
     */
@@ -1015,28 +1051,30 @@ final class PageSubscriptionImpl implements PageSubscription
       {
          try
          {
-            return "PageCursorInfo::PageID=" + pageId +
-               " numberOfMessage = " +
-               numberOfMessages +
-               ", confirmed = " +
-               confirmed +
-               ", isDone=" +
-               this.isDone();
+            return "PageCursorInfo::pageNr=" + pageId +
+                " numberOfMessage = " +
+                numberOfMessages +
+                ", confirmed = " +
+                confirmed +
+                ", isDone=" +
+                this.isDone() +
+                " wasLive = " + wasLive;
          }
          catch (Exception e)
          {
-            return "PageCursorInfo::PageID=" + pageId +
-               " numberOfMessage = " +
-               numberOfMessages +
-               ", confirmed = " +
-               confirmed +
-               ", isDone=" +
-               e.toString();
+            return "PageCursorInfo::pageNr=" + pageId +
+                " numberOfMessage = " +
+                numberOfMessages +
+                ", confirmed = " +
+                confirmed +
+                ", isDone=" +
+                e.toString();
          }
       }
 
       public PageCursorInfo(final long pageId, final int numberOfMessages, final PageCache cache)
       {
+         logger.tracef("Created PageCursorInfo for pageNr=%d, numberOfMessages=%d,  cache=%s", pageId, numberOfMessages, cache);
          this.pageId = pageId;
          this.numberOfMessages = numberOfMessages;
          if (cache != null)
@@ -1055,6 +1093,7 @@ final class PageSubscriptionImpl implements PageSubscription
        */
       public void setCompleteInfo(final PagePosition completePage)
       {
+         logger.tracef("Setting up complete page %s on cursor %s on subscription %s", completePage, this, PageSubscriptionImpl.this);
          this.completePage = completePage;
       }
 
@@ -1065,6 +1104,11 @@ final class PageSubscriptionImpl implements PageSubscription
 
       public boolean isDone()
       {
+         if (logger.isTraceEnabled())
+         {
+            logger.trace(PageSubscriptionImpl.this + "::PageCursorInfo(" + pageId + ")::isDone checking with completePage!=null->" + (completePage != null) + " getNumberOfMessages=" + getNumberOfMessages() + ", confirmed=" + confirmed.get() + " and pendingTX=" + pendingTX.get());
+
+         }
          return completePage != null || (getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0);
       }
 
@@ -1110,19 +1154,20 @@ final class PageSubscriptionImpl implements PageSubscription
       public void addACK(final PagePosition posACK)
       {
 
-         if (isTrace)
+         if (logger.isTraceEnabled())
          {
             try
             {
-               HornetQServerLogger.LOGGER.trace("numberOfMessages =  " + getNumberOfMessages() +
-                                                   " confirmed =  " +
-                                                   (confirmed.get() + 1) +
-                                                   " pendingTX = " + pendingTX +
-                                                   ", page = " +
-                                                   pageId + " posACK = " + posACK);
+               logger.trace("numberOfMessages =  " + getNumberOfMessages() +
+                   " confirmed =  " +
+                   (confirmed.get() + 1) +
+                   " pendingTX = " + pendingTX +
+                   ", pageNr = " +
+                   pageId + " posACK = " + posACK);
             }
             catch (Throwable ignored)
             {
+               logger.debug(ignored.getMessage(), ignored);
             }
          }
 
@@ -1348,7 +1393,7 @@ final class PageSubscriptionImpl implements PageSubscription
                   ignored = true;
                }
 
-               PageCursorInfo info = getPageInfo(message.getPosition().getPageNr(), false);
+               PageCursorInfo info = getPageInfo(message.getPosition().getPageNr());
 
                if (info != null && (info.isRemoved(message.getPosition()) || info.getCompleteInfo() != null))
                {
@@ -1358,8 +1403,7 @@ final class PageSubscriptionImpl implements PageSubscription
                // 2nd ... if TX, is it committed?
                if (valid && message.getPagedMessage().getTransactionID() >= 0)
                {
-                  PageTransactionInfo tx = pageStore.getPagingManager().getTransaction(message.getPagedMessage()
-                                                                                          .getTransactionID());
+                  PageTransactionInfo tx = pageStore.getPagingManager().getTransaction(message.getPagedMessage().getTransactionID());
                   if (tx == null)
                   {
                      HornetQServerLogger.LOGGER.pageSubscriptionCouldntLoad(message.getPagedMessage().getTransactionID(),

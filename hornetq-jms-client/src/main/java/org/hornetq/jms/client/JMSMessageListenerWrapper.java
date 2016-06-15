@@ -21,6 +21,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.jms.HornetQJMSConstants;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 
 /**
  *
@@ -89,6 +90,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
+            ((ClientSessionInternal)session.getCoreSession()).markRollbackOnly();
             HornetQJMSClientLogger.LOGGER.errorProcessingMessage(e);
          }
       }
@@ -135,6 +137,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          }
          catch (HornetQException e)
          {
+            ((ClientSessionInternal)session.getCoreSession()).markRollbackOnly();
             HornetQJMSClientLogger.LOGGER.errorProcessingMessage(e);
          }
       }

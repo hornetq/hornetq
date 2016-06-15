@@ -254,6 +254,12 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                      }
                   }
 
+                  if ( m != null)
+                  {
+                     session.workDone();
+                  }
+
+
                   try
                   {
                      wait(toWait);

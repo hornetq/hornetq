@@ -3532,6 +3532,99 @@ public class PagingTest extends ServiceTestBase
    }
 
    @Test
+   public void testRollbackOnSendThenSendMore() throws Exception
+   {
+      clearDataRecreateServerDirs();
+
+      Configuration config = createDefaultConfig();
+
+      server = createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX, new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      sf = createSessionFactory(locator);
+      ClientSession session = sf.createSession(null, null, false, false, true, false, 0);
+
+      session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+      Queue queue = server.locateQueue(ADDRESS);
+
+      queue.getPageSubscription().getPagingStore().startPaging();
+
+      ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+      ClientMessage message;
+
+      for (int i = 0; i < 20; i++)
+      {
+         message = session.createMessage(true);
+
+         HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+         bodyLocal.writeBytes(new byte[100 * 4]);
+
+         message.putIntProperty(new SimpleString("id"), i);
+
+         producer.send(message);
+         session.commit();
+         queue.getPageSubscription().getPagingStore().forceAnotherPage();
+
+      }
+
+      for (int i = 20; i < 24; i++)
+      {
+         message = session.createMessage(true);
+
+         HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+         bodyLocal.writeBytes(new byte[100 * 4]);
+
+         message.putIntProperty(new SimpleString("id"), i);
+
+         producer.send(message);
+      }
+
+      session.rollback();
+
+      ClientSession consumerSession = sf.createSession(false, false);
+
+
+      queue.getPageSubscription().getPagingStore().disableCleanup();
+
+      queue.getPageSubscription().getPagingStore().getCursorProvider().cleanup();
+
+      consumerSession.start();
+      ClientConsumer consumer = consumerSession.createConsumer(ADDRESS, SimpleString.toSimpleString("id > 0"));
+      for (int i = 0; i < 19; i++)
+      {
+         ClientMessage messageRec = consumer.receive(5000);
+         System.err.println("msg::" + messageRec);
+         Assert.assertNotNull(messageRec);
+         messageRec.acknowledge();
+         consumerSession.commit();
+
+         // The only reason I'm calling cleanup directly is that it would be easy to debug in case of bugs
+         // if you see an issue with cleanup here, enjoy debugging this method
+         queue.getPageSubscription().getPagingStore().getCursorProvider().cleanup();
+      }
+      queue.getPageSubscription().getPagingStore().enableCleanup();
+
+      consumerSession.close();
+
+
+      session.close();
+      sf.close();
+
+
+      server.stop();
+   }
+
+
+   @Test
    public void testCommitOnSend() throws Exception
    {
       clearDataRecreateServerDirs();

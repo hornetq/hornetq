@@ -95,7 +95,7 @@ public interface PageSubscription
     */
    void reloadACK(PagePosition position);
 
-   void reloadPageCompletion(PagePosition position);
+   void reloadPageCompletion(PagePosition position) throws Exception;
 
    void reloadPageInfo(long pageNr);
 
