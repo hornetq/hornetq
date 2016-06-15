@@ -390,7 +390,7 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    // Private -------------------------------------------------------
 
-   private synchronized void validateFile() throws HornetQException
+   public synchronized void validateFile() throws HornetQException
    {
       try
       {
