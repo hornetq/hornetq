@@ -16,6 +16,7 @@ package org.hornetq.core.transaction.impl;
 import javax.transaction.xa.Xid;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQException;
@@ -25,6 +26,7 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.jboss.logging.Logger;
 
 /**
  * A TransactionImpl
@@ -34,9 +36,12 @@ import org.hornetq.core.transaction.TransactionOperation;
  */
 public class TransactionImpl implements Transaction
 {
-   private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+
+   private static final Logger logger = Logger.getLogger(TransactionImpl.class);
 
    private List<TransactionOperation> operations;
+
+   private List<TransactionOperation> storeOperations;
 
    private static final int INITIAL_NUM_PROPERTIES = 10;
 
@@ -47,7 +52,6 @@ public class TransactionImpl implements Transaction
    private final Xid xid;
 
    private final long id;
-
 
    private volatile State state = State.ACTIVE;
 
@@ -112,22 +116,25 @@ public class TransactionImpl implements Transaction
    // Transaction implementation
    // -----------------------------------------------------------
 
+   @Override
    public boolean isEffective()
    {
       return state == State.PREPARED || state == State.COMMITTED || state == State.ROLLEDBACK;
-
    }
 
+   @Override
    public void setContainsPersistent()
    {
       containsPersistent = true;
    }
 
+   @Override
    public boolean isContainsPersistent()
    {
       return containsPersistent;
    }
 
+   @Override
    public void setTimeout(final int timeout)
    {
       this.timeoutSeconds = timeout;
@@ -138,11 +145,13 @@ public class TransactionImpl implements Transaction
       return id;
    }
 
+   @Override
    public long getCreateTime()
    {
       return createTime;
    }
 
+   @Override
    public boolean hasTimedOut(final long currentTime, final int defaultTimeout)
    {
       synchronized (timeoutLock)
@@ -166,11 +175,12 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   @Override
    public void prepare() throws Exception
    {
-      if (isTrace)
+      if (logger.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("TransactionImpl::prepare::" + this);
+         logger.trace("TransactionImpl::prepare::" + this);
       }
       storageManager.readLock();
       try
@@ -179,14 +189,14 @@ public class TransactionImpl implements Transaction
          {
             if (isEffective())
             {
-               HornetQServerLogger.LOGGER.debug("TransactionImpl::prepare::" + this + " is being ignored");
+               logger.debug("TransactionImpl::prepare::" + this + " is being ignored");
                return;
             }
             if (state == State.ROLLBACK_ONLY)
             {
-               if (isTrace)
+               if (logger.isTraceEnabled())
                {
-                  HornetQServerLogger.LOGGER.trace("TransactionImpl::prepare::rollbackonly, rollingback " + this);
+                  logger.trace("TransactionImpl::prepare::rollbackonly, rollingback " + this);
                }
 
                internalRollback();
@@ -222,11 +232,13 @@ public class TransactionImpl implements Transaction
             storageManager.afterCompleteOperations(new IOAsyncTask()
             {
 
+               @Override
                public void onError(final int errorCode, final String errorMessage)
                {
                   HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
                }
 
+               @Override
                public void done()
                {
                   afterPrepare();
@@ -240,23 +252,25 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   @Override
    public void commit() throws Exception
    {
       commit(true);
    }
 
+   @Override
    public void commit(final boolean onePhase) throws Exception
    {
-      if (isTrace)
+      if (logger.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("TransactionImpl::commit::" + this);
+         logger.trace("TransactionImpl::commit::" + this);
       }
       synchronized (timeoutLock)
       {
          if (state == State.COMMITTED)
          {
             // I don't think this could happen, but just in case
-            HornetQServerLogger.LOGGER.debug("TransactionImpl::commit::" + this + " is being ignored");
+            logger.debug("TransactionImpl::commit::" + this + " is being ignored");
             return;
          }
          if (state == State.ROLLBACK_ONLY)
@@ -306,16 +320,40 @@ public class TransactionImpl implements Transaction
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {
 
+            @Override
             public void onError(final int errorCode, final String errorMessage)
             {
                HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
             }
 
+            @Override
             public void done()
             {
                afterCommit(operationsToComplete);
             }
          });
+
+         final List<TransactionOperation> storeOperationsToComplete = this.storeOperations;
+         this.storeOperations = null;
+
+         if (storeOperationsToComplete != null)
+         {
+            storageManager.afterStoreOperations(new IOAsyncTask()
+            {
+
+               @Override
+               public void onError(final int errorCode, final String errorMessage)
+               {
+                  HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
+               }
+
+               @Override
+               public void done()
+               {
+                  afterCommit(storeOperationsToComplete);
+               }
+            });
+         }
 
       }
    }
@@ -330,23 +368,25 @@ public class TransactionImpl implements Transaction
          // ^^ These are the scenarios where we require a storage.commit
          // for anything else we won't use the journal
          storageManager.commit(id);
-
-         state = State.COMMITTED;
-
       }
+
+      state = State.COMMITTED;
    }
 
+   @Override
    public void rollback() throws Exception
    {
-      if (isTrace)
+      if (logger.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("TransactionImpl::rollback::" + this);
+         logger.trace("TransactionImpl::rollback::" + this);
       }
+
       synchronized (timeoutLock)
       {
          if (state == State.ROLLEDBACK)
          {
-            HornetQServerLogger.LOGGER.debug("TransactionImpl::rollback::" + this + " is being ignored");
+            // I don't think this could happen, but just in case
+            logger.debug("TransactionImpl::rollback::" + this + " is being ignored");
             return;
          }
          if (xid != null)
@@ -370,9 +410,9 @@ public class TransactionImpl implements Transaction
 
    private void internalRollback() throws Exception
    {
-      if (isTrace)
+      if (logger.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("TransactionImpl::internalRollback " + this);
+         logger.trace("TransactionImpl::internalRollback " + this);
       }
 
       beforeRollback();
@@ -393,6 +433,8 @@ public class TransactionImpl implements Transaction
       final List<TransactionOperation> operationsToComplete = this.operations;
       this.operations = null;
 
+      final List<TransactionOperation> storeOperationsToComplete = this.storeOperations;
+      this.storeOperations = null;
 
       // We use the Callback even for non persistence
       // If we are using non-persistence with replication, the replication manager will have
@@ -400,18 +442,40 @@ public class TransactionImpl implements Transaction
       storageManager.afterCompleteOperations(new IOAsyncTask()
       {
 
+         @Override
          public void onError(final int errorCode, final String errorMessage)
          {
             HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
          }
 
+         @Override
          public void done()
          {
             afterRollback(operationsToComplete);
          }
       });
+
+      if (storeOperationsToComplete != null)
+      {
+         storageManager.afterStoreOperations(new IOAsyncTask()
+         {
+
+            @Override
+            public void onError(final int errorCode, final String errorMessage)
+            {
+               HornetQServerLogger.LOGGER.ioErrorOnTX(errorCode, errorMessage);
+            }
+
+            @Override
+            public void done()
+            {
+               afterRollback(storeOperationsToComplete);
+            }
+         });
+      }
    }
 
+   @Override
    public void suspend()
    {
       synchronized (timeoutLock)
@@ -424,6 +488,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   @Override
    public void resume()
    {
       synchronized (timeoutLock)
@@ -436,16 +501,19 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   @Override
    public Transaction.State getState()
    {
       return state;
    }
 
+   @Override
    public void setState(final State state)
    {
       this.state = state;
    }
 
+   @Override
    public Xid getXid()
    {
       return xid;
@@ -455,20 +523,20 @@ public class TransactionImpl implements Transaction
    {
       synchronized (timeoutLock)
       {
-         if (isTrace)
+         if (logger.isTraceEnabled())
          {
-            HornetQServerLogger.LOGGER.trace("TransactionImpl::" + this + " marking rollbackOnly for " + exception.toString() + ", msg=" + exception.getMessage());
+            logger.trace("TransactionImpl::" + this + " marking rollbackOnly for " + exception.toString() + ", msg=" + exception.getMessage());
          }
 
          if (isEffective())
          {
-            HornetQServerLogger.LOGGER.debug("Trying to mark transaction " + this.id + " xid=" + this.xid + " as rollbackOnly but it was already effective (prepared, committed or rolledback!)");
+            logger.debug("Trying to mark transaction " + this.id + " xid=" + this.xid + " as rollbackOnly but it was already effective (prepared, committed or rolledback!)");
             return;
          }
 
-         if (HornetQServerLogger.LOGGER.isDebugEnabled())
+         if (logger.isDebugEnabled())
          {
-            HornetQServerLogger.LOGGER.debug("Marking Transaction " + this.id + " as rollback only");
+            logger.debug("Marking Transaction " + this.id + " as rollback only");
          }
          state = State.ROLLBACK_ONLY;
 
@@ -476,11 +544,23 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   @Override
    public synchronized void addOperation(final TransactionOperation operation)
    {
       checkCreateOperations();
 
       operations.add(operation);
+   }
+
+
+   @Override
+   public synchronized void afterStore(TransactionOperation sync)
+   {
+      if (storeOperations == null)
+      {
+         storeOperations = new LinkedList<TransactionOperation>();
+      }
+      storeOperations.add(sync);
    }
 
    private int getOperationsCount()
@@ -490,9 +570,11 @@ public class TransactionImpl implements Transaction
       return operations.size();
    }
 
+   @Override
    public synchronized List<TransactionOperation> getAllOperations()
    {
-      if ( operations != null)
+
+      if (operations != null)
       {
          return new ArrayList<TransactionOperation>(operations);
       }
@@ -502,6 +584,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
+   @Override
    public void putProperty(final int index, final Object property)
    {
       if (index >= properties.length)
@@ -516,6 +599,7 @@ public class TransactionImpl implements Transaction
       properties[index] = property;
    }
 
+   @Override
    public Object getProperty(final int index)
    {
       return properties[index];
@@ -553,16 +637,16 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   private synchronized void afterRollback(List<TransactionOperation> oeprationsToComplete)
+   private synchronized void afterRollback(List<TransactionOperation> operationsToComplete)
    {
-      if (oeprationsToComplete != null)
+      if (operationsToComplete != null)
       {
-         for (TransactionOperation operation : oeprationsToComplete)
+         for (TransactionOperation operation : operationsToComplete)
          {
             operation.afterRollback(this);
          }
          // Help out GC here
-         oeprationsToComplete.clear();
+         operationsToComplete.clear();
       }
    }
 
@@ -571,6 +655,13 @@ public class TransactionImpl implements Transaction
       if (operations != null)
       {
          for (TransactionOperation operation : operations)
+         {
+            operation.beforeCommit(this);
+         }
+      }
+      if (storeOperations != null)
+      {
+         for (TransactionOperation operation : storeOperations)
          {
             operation.beforeCommit(this);
          }
@@ -586,6 +677,13 @@ public class TransactionImpl implements Transaction
             operation.beforePrepare(this);
          }
       }
+      if (storeOperations != null)
+      {
+         for (TransactionOperation operation : storeOperations)
+         {
+            operation.beforePrepare(this);
+         }
+      }
    }
 
    private synchronized void beforeRollback() throws Exception
@@ -593,6 +691,13 @@ public class TransactionImpl implements Transaction
       if (operations != null)
       {
          for (TransactionOperation operation : operations)
+         {
+            operation.beforeRollback(this);
+         }
+      }
+      if (storeOperations != null)
+      {
+         for (TransactionOperation operation : storeOperations)
          {
             operation.beforeRollback(this);
          }
@@ -608,6 +713,13 @@ public class TransactionImpl implements Transaction
             operation.afterPrepare(this);
          }
       }
+      if (storeOperations != null)
+      {
+         for (TransactionOperation operation : storeOperations)
+         {
+            operation.afterPrepare(this);
+         }
+      }
    }
 
    @Override
@@ -615,17 +727,17 @@ public class TransactionImpl implements Transaction
    {
       Date dt = new Date(this.createTime);
       return "TransactionImpl [xid=" + xid +
-         ", id=" +
-         id +
-         ", xid=" + xid +
-         ", state=" +
-         state +
-         ", createTime=" +
-         createTime + "(" + dt + ")" +
-         ", timeoutSeconds=" +
-         timeoutSeconds +
-         ", nr operations = " + getOperationsCount() +
-         "]@" +
-         Integer.toHexString(hashCode());
+          ", id=" +
+          id +
+          ", xid=" + xid +
+          ", state=" +
+          state +
+          ", createTime=" +
+          createTime + "(" + dt + ")" +
+          ", timeoutSeconds=" +
+          timeoutSeconds +
+          ", nr operations = " + getOperationsCount() +
+          "]@" +
+          Integer.toHexString(hashCode());
    }
 }

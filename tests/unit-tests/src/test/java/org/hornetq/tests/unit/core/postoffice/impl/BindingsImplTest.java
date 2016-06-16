@@ -129,6 +129,11 @@ public class BindingsImplTest extends UnitTestCase
       }
 
       @Override
+      public void afterStore(TransactionOperation sync)
+      {
+      }
+
+      @Override
       public boolean isEffective()
       {
          return false;

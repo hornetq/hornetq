@@ -106,6 +106,12 @@ public class NullStorageManager implements StorageManager
       }
 
       @Override
+      public void executeOnCompletion(IOAsyncTask runnable, boolean storeOnly)
+      {
+         runnable.done();
+      }
+
+      @Override
       public void storeLineUp()
       {
       }
@@ -391,6 +397,12 @@ public class NullStorageManager implements StorageManager
 
    @Override
    public void afterCompleteOperations(final IOAsyncTask run)
+   {
+      run.done();
+   }
+
+   @Override
+   public void afterStoreOperations(IOAsyncTask run)
    {
       run.done();
    }

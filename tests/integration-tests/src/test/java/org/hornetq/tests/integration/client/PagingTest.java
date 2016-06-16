@@ -6583,6 +6583,12 @@ public class PagingTest extends ServiceTestBase
          this.pageUp = pageUp;
       }
 
+      @Override
+      public void executeOnCompletion(IOAsyncTask runnable, boolean storeOnly)
+      {
+         runnable.done();
+      }
+
       public void onError(int errorCode, String errorMessage)
       {
       }
@@ -6627,7 +6633,7 @@ public class PagingTest extends ServiceTestBase
 
       public void executeOnCompletion(IOAsyncTask runnable)
       {
-
+         runnable.done();
       }
    }
 }
