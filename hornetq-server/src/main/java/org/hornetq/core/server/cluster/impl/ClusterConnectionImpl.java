@@ -965,6 +965,11 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
    {
       final int msgNumInFlight = windowSize / DEFAULT_JMS_MESSAGE_SIZE;
 
+      if (msgNumInFlight == 0)
+      {
+         return true;
+      }
+
       boolean sizeGood = false;
 
       if (idCacheSize >= msgNumInFlight)
