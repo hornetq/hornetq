@@ -939,4 +939,19 @@ public interface Configuration extends Serializable
     * @see #setMaxSavedReplicatedJournalSize(int)
     */
    int getMaxSavedReplicatedJournalsSize();
+
+
+   /**
+    * if true, the server will not start on failback when there are more than {@link #getMaxSavedReplicatedJournalsSize()}.
+    * Default = true
+    * @return
+    */
+   boolean isEnforceMaxReplica();
+
+   /**
+    * if true, the server will not start on failback when there are more than {@link #getMaxSavedReplicatedJournalsSize()}.
+    * Default = true
+    * @return
+    */
+   void setEnforceMaxReplica(boolean enforceMaxReplica);
 }

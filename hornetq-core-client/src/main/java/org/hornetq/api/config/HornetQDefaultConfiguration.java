@@ -2,12 +2,15 @@ package org.hornetq.api.config;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.impl.JournalConstants;
+import org.jboss.logging.Logger;
 
 /**
  * Default values of HornetQ configuration parameters.
  */
 public final class HornetQDefaultConfiguration
 {
+
+   private static final Logger logger = Logger.getLogger(HornetQDefaultConfiguration.class);
    /*
     * <p> In order to avoid compile time in-lining of constants, all access is done through methods
     * and all fields are PRIVATE STATIC but not FINAL. This is done following the recommendation at
@@ -431,6 +434,11 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE;
    }
 
+   public static boolean getDefaultEnforceMaxReplica()
+   {
+      return DEFAULT_ENFORCE_MAX_REPLICA;
+   }
+
    public static long getDefaultGroupTimeout()
    {
       return DEFAULT_GROUP_TIMEOUT;
@@ -514,6 +522,8 @@ public final class HornetQDefaultConfiguration
    private static String DEFAULT_CLUSTER_USER = "HORNETQ.CLUSTER.ADMIN.USER";
    private static String DEFAULT_CLUSTER_PASSWORD = "CHANGE ME!!";
    private static int DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE = 2;
+   private static boolean DEFAULT_ENFORCE_MAX_REPLICA = Boolean.parseBoolean(System.getProperty("hornetq.enforce.maxreplica", "true"));
+
    private static long DEFAULT_BROADCAST_PERIOD = 2000;
    private static long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
    private static long DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD = 30000;

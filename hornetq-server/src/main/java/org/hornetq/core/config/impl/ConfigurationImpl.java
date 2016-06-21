@@ -215,6 +215,8 @@ public class ConfigurationImpl implements Configuration
 
    private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
 
+   private boolean enforceMaxReplica = HornetQDefaultConfiguration.getDefaultEnforceMaxReplica();
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1046,6 +1048,18 @@ public class ConfigurationImpl implements Configuration
    public int getMaxSavedReplicatedJournalsSize()
    {
       return maxSavedReplicatedJournalsSize;
+   }
+
+   @Override
+   public boolean isEnforceMaxReplica()
+   {
+      return enforceMaxReplica;
+   }
+
+   @Override
+   public void setEnforceMaxReplica(boolean enforceMaxReplica)
+   {
+      this.enforceMaxReplica = enforceMaxReplica;
    }
 
    @Override

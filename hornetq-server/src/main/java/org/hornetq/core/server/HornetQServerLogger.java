@@ -980,7 +980,7 @@ public interface HornetQServerLogger extends BasicLogger
          format = Message.Format.MESSAGE_FORMAT)
    void groupHandlerSendTimeout();
 
-   @LogMessage(level = Logger.Level.WARN)
+   @LogMessage(level = Logger.Level.INFO)
    @Message(id = 222162, value = "Moving data directory {0} to {1}",
             format = Message.Format.MESSAGE_FORMAT)
    void backupMovingDataAway(String oldPath, String newPath);
@@ -1034,6 +1034,11 @@ public interface HornetQServerLogger extends BasicLogger
       value = "The size of duplicate cache detection (<id_cache-size/>) appears to be too large. It should be no greater than the number of messages that can be squeezed into conformation buffer (<confirmation-window-size/>).",
       format = Message.Format.MESSAGE_FORMAT)
    void duplicateCacheSizeWarning();
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 222193, value = "There were too many old replicated folders upon startup, removing {0}",
+      format = Message.Format.MESSAGE_FORMAT)
+   void removingBackupData(String path);
 
 
    @LogMessage(level = Logger.Level.ERROR)

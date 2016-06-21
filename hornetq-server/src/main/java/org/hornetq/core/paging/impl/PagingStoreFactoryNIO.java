@@ -34,6 +34,7 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.impl.FileMoveManager;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.ExecutorFactory;
@@ -158,14 +159,17 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
          for (File file : files)
          {
-
             final String guid = file.getName();
 
             final File addressFile = new File(file, PagingStoreFactoryNIO.ADDRESS_FILE);
 
             if (!addressFile.exists())
             {
-               HornetQServerLogger.LOGGER.pageStoreFactoryNoIdFile(file.toString(), PagingStoreFactoryNIO.ADDRESS_FILE);
+               // This means this folder is from a replication copy, nothing to worry about it, we just skip it
+               if (!file.getName().contains(FileMoveManager.PREFIX))
+               {
+                  HornetQServerLogger.LOGGER.pageStoreFactoryNoIdFile(file.toString(), PagingStoreFactoryNIO.ADDRESS_FILE);
+               }
                continue;
             }
 

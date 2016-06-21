@@ -25,10 +25,12 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.impl.journal.DescribeJournal;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.impl.FileMoveManager;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.utils.UUID;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -312,6 +314,66 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertTrue(liveServer.getServer().isStarted());
       receiveMsgsInRange(0, 2 * n_msgs);
       assertNoMoreMessages();
+   }
+
+   /**
+    * Basic fail-back test.
+    *
+    * @throws Exception
+    */
+   @Test
+   public void testFailBackNoEnforceMax() throws Exception
+   {
+      try
+      {
+         liveServer.getServer().getConfiguration().setEnforceMaxReplica(false);
+         backupServer.getServer().getConfiguration().setEnforceMaxReplica(false);
+         createProducerSendSomeMessages();
+         startBackupCrashLive();
+         receiveMsgsInRange(0, n_msgs);
+         assertNoMoreMessages();
+
+         sendMessages(session, producer, n_msgs);
+         receiveMsgsInRange(0, n_msgs);
+         assertNoMoreMessages();
+
+         sendMessages(session, producer, 2 * n_msgs);
+         assertFalse("must NOT be a backup", liveServer.getServer().getConfiguration().isBackup());
+         adaptLiveConfigForReplicatedFailBack(liveServer.getServer().getConfiguration());
+         liveServer.start();
+         waitForServer(liveServer.getServer());
+         assertTrue("must have become a backup", liveServer.getServer().getConfiguration().isBackup());
+
+         assertTrue("Fail-back must initialize live!", liveServer.getServer().waitForActivation(15, TimeUnit.SECONDS));
+         assertFalse("must be LIVE!", liveServer.getServer().getConfiguration().isBackup());
+
+         waitForBackup(sessionFactory, BACKUP_WAIT_TIME);
+
+         FileMoveManager manager = new FileMoveManager(new File(backupServer.getServer().getConfiguration().getJournalDirectory()), -1);
+         Assert.assertEquals(1, manager.getNumberOfFolders());
+
+         assertTrue(liveServer.getServer().isStarted());
+         receiveMsgsInRange(0, 2 * n_msgs);
+         assertNoMoreMessages();
+      }
+      finally
+      {
+         try
+         {
+            liveServer.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            backupServer.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
 
    @Test
