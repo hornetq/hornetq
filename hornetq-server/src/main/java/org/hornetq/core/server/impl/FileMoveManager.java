@@ -16,7 +16,6 @@ package org.hornetq.core.server.impl;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Arrays;
 
 import org.hornetq.core.server.HornetQServerLogger;
@@ -113,7 +112,7 @@ public class FileMoveManager
          File fileFrom = new File(folder, fileMove);
          File fileTo = new File(folderTo, fileMove);
          logger.tracef("doMove:: moving %s as %s", fileFrom, fileTo);
-         Files.move(fileFrom.toPath(), fileTo.toPath());
+         fileFrom.renameTo(fileTo);
       }
 
    }
