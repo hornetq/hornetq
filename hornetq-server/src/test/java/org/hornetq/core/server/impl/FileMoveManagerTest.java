@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.hornetq.api.core.SimpleString;
@@ -287,6 +288,7 @@ public class FileMoveManagerTest
    {
       AssertionLoggerHandler.startCapture();
 
+      ExecutorService threadPool = Executors.newCachedThreadPool();
       try
       {
          manager.setMaxFolders(3);
@@ -301,7 +303,7 @@ public class FileMoveManagerTest
 
             PagingStoreFactoryNIO storeFactory =
                new PagingStoreFactoryNIO(storageManager, dataLocation.getAbsolutePath(), 100, null,
-                                         new OrderedExecutorFactory(Executors.newCachedThreadPool()), true, null);
+                                         new OrderedExecutorFactory(threadPool), true, null);
 
             PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory, addressSettings);
 
@@ -325,6 +327,7 @@ public class FileMoveManagerTest
       finally
       {
          AssertionLoggerHandler.stopCapture();
+         threadPool.shutdown();
       }
 
 
