@@ -87,6 +87,8 @@ public class NettyAcceptor implements Acceptor
 {
    static final Logger log = Logger.getLogger(NettyAcceptor.class);
 
+   private static String SERVER_ENABLED_SSL_PROTOCOLS = System.getProperty("org.hornetq.ssl.server.enabled.protocols", "");
+
    private ClusterConnection clusterConnection;
 
    private ChannelFactory channelFactory;
@@ -377,19 +379,7 @@ public class NettyAcceptor implements Acceptor
                if (needClientAuth)
                   engine.setNeedClientAuth(true);
 
-               String[] protocols = engine.getEnabledProtocols();
-               Set<String> set = new HashSet<String>();
-               for (String s : protocols)
-               {
-                   if (s.equals("SSLv3") || s.equals("SSLv2Hello"))
-                   {
-                       NettyAcceptor.log.warn("Disallowing use of vulnerable protocol: See http://www.oracle.com/technetwork/topics/security/poodlecve-2014-3566-2339408.html for more details.");
-                       continue;
-                   }
-                   set.add(s);
-                }
-
-               engine.setEnabledProtocols(set.toArray(new String[0]));
+               SSLSupport.setEnabledProtocols(engine, SERVER_ENABLED_SSL_PROTOCOLS, NettyAcceptor.log);
 
                SslHandler handler = new SslHandler(engine);
 

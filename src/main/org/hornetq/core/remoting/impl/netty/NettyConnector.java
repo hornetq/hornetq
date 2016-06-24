@@ -98,6 +98,8 @@ public class NettyConnector extends AbstractConnector
 
    private static final Logger log = Logger.getLogger(NettyConnector.class);
 
+   private static String CLIENT_ENABLED_SSL_PROTOCOLS = System.getProperty("org.hornetq.ssl.client.enabled.protocols", "");
+
    // Attributes ----------------------------------------------------
 
    private ClientSocketChannelFactory channelFactory;
@@ -418,6 +420,8 @@ public class NettyConnector extends AbstractConnector
             if (sslEnabled && !useServlet)
             {
                SSLEngine engine = context.createSSLEngine();
+
+               SSLSupport.setEnabledProtocols(engine, CLIENT_ENABLED_SSL_PROTOCOLS, NettyConnector.log);
 
                engine.setUseClientMode(true);
 

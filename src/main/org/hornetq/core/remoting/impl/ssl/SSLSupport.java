@@ -22,12 +22,20 @@ import java.security.AccessController;
 import java.security.KeyStore;
 import java.security.PrivilegedAction;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+
+import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,6 +43,7 @@ import javax.net.ssl.TrustManagerFactory;
 public class SSLSupport
 {
    // Constants -----------------------------------------------------
+   private static String ENABLED_SSL_PROTOCOLS = System.getProperty("org.hornetq.ssl.enabled.protocols", "");
 
    // Attributes ----------------------------------------------------
 
@@ -51,6 +60,39 @@ public class SSLSupport
       TrustManager[] trustManagers = SSLSupport.loadTrustManager(trustStorePath, trustStorePassword);
       context.init(keyManagers, trustManagers, new SecureRandom());
       return context;
+   }
+
+   public static void setEnabledProtocols(SSLEngine engine, String enabledProtocols, Logger log)
+   {
+      List<String> protocols = new ArrayList<String>();
+      Set<String> set = new HashSet<String>();
+
+      if(enabledProtocols.isEmpty())
+      {
+         enabledProtocols = ENABLED_SSL_PROTOCOLS;
+      }
+
+      if(enabledProtocols.isEmpty())
+      {
+         protocols.addAll(Arrays.asList(engine.getEnabledProtocols()));
+      }
+      else
+      {
+         for(String s : enabledProtocols.trim().split(","))
+         {
+            protocols.add(s.trim());
+         }
+      }
+      for (String s : protocols)
+      {
+         if (s.equals("SSLv3") || s.equals("SSLv2Hello"))
+         {
+            log.warn("Disallowing use of vulnerable protocol: See http://www.oracle.com/technetwork/topics/security/poodlecve-2014-3566-2339408.html for more details.");
+            continue;
+         }
+         set.add(s);
+      }
+      engine.setEnabledProtocols(set.toArray(new String[0]));
    }
 
    // Package protected ---------------------------------------------
