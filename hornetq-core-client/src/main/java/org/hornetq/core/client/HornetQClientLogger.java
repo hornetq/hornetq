@@ -421,4 +421,10 @@ public interface HornetQClientLogger extends BasicLogger
                value = "Couldn't reattach session {0}, performing as a failover operation now and recreating objects",
                format = Message.Format.MESSAGE_FORMAT)
    void creatingNewSession(long id);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 214028,
+         value = "Disallowing use of vulnerable protocol: {0}. See http://www.oracle.com/technetwork/topics/security/poodlecve-2014-3566-2339408.html for more details.",
+         format = Message.Format.MESSAGE_FORMAT)
+   void disallowedProtocol(String protocol);
 }
