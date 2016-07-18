@@ -1144,21 +1144,69 @@ public class QueueImpl implements Queue
 
    public void expire(final MessageReference ref) throws Exception
    {
-      if (expiryAddress != null)
+      SimpleString messageExpiryAddress = expiryAddressFromMessageAddress(ref);
+      if (messageExpiryAddress == null)
+      {
+         messageExpiryAddress = expiryAddressFromAddressSettings(ref);
+      }
+
+      if (messageExpiryAddress != null)
       {
          if (isTrace)
          {
-            HornetQServerLogger.LOGGER.trace("moving expired reference " + ref + " to address = " + expiryAddress + " from queue=" + this.getName());
+            HornetQServerLogger.LOGGER.trace("moving expired reference " + ref + " to address = " + messageExpiryAddress
+                  + " from queue=" + this.getName());
          }
-         move(expiryAddress, ref, true, false);
+         move(messageExpiryAddress, ref, true, false);
       }
       else
       {
          if (isTrace)
          {
-            HornetQServerLogger.LOGGER.trace("expiry is null, just acking expired message for reference " + ref + " from queue=" + this.getName());
+            HornetQServerLogger.LOGGER
+                  .trace("expiry is null, just acking expired message for reference " + ref + " from queue=" + this.getName());
          }
          acknowledge(ref);
+      }
+   }
+
+   private SimpleString expiryAddressFromMessageAddress(MessageReference ref)
+   {
+      SimpleString messageAddress = extractAddress(ref.getMessage());
+      SimpleString expiryAddress = null;
+
+      if (messageAddress == null || messageAddress.equals(getAddress()))
+      {
+         expiryAddress = getExpiryAddress();
+      }
+
+      return expiryAddress;
+   }
+
+   private SimpleString expiryAddressFromAddressSettings(MessageReference ref)
+   {
+      SimpleString messageAddress = extractAddress(ref.getMessage());
+      SimpleString expiryAddress = null;
+
+      if (messageAddress != null)
+      {
+         AddressSettings addressSettings = addressSettingsRepository.getMatch(messageAddress.toString());
+
+         expiryAddress = addressSettings.getExpiryAddress();
+      }
+
+      return expiryAddress;
+   }
+
+   private SimpleString extractAddress(ServerMessage message)
+   {
+      if (message.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
+      {
+         return message.getSimpleStringProperty(Message.HDR_ORIGINAL_ADDRESS);
+      }
+      else
+      {
+         return message.getAddress();
       }
    }
 
