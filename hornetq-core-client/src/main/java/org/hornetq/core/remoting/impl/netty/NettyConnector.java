@@ -107,8 +107,6 @@ public class NettyConnector extends AbstractConnector
    public static final String HORNETQ_TRUSTSTORE_PATH_PROP_NAME = "org.hornetq.ssl.trustStore";
    public static final String HORNETQ_TRUSTSTORE_PASSWORD_PROP_NAME = "org.hornetq.ssl.trustStorePassword";
 
-   private static String CLIENT_ENABLED_SSL_PROTOCOLS = System.getProperty("org.hornetq.ssl.client.enabled.protocols", "");
-
    // Attributes ----------------------------------------------------
 
    private ClientSocketChannelFactory channelFactory;
@@ -524,13 +522,6 @@ public class NettyConnector extends AbstractConnector
             if (sslEnabled && !useServlet)
             {
                SSLEngine engine = context.createSSLEngine();
-
-               List<String> disallowedProtocols = SSLSupport.setEnabledProtocols(engine, CLIENT_ENABLED_SSL_PROTOCOLS);
-
-               for (String disallowedProtocol : disallowedProtocols)
-               {
-                  HornetQClientLogger.LOGGER.disallowedProtocol(disallowedProtocol);
-               }
 
                engine.setUseClientMode(true);
 
