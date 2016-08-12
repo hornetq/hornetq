@@ -16,6 +16,7 @@ package org.hornetq.core.server.impl;
 import javax.management.MBeanServer;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -3073,18 +3074,28 @@ public class HornetQServerImpl implements HornetQServer
                            //
                         }
 
-                        FileMoveManager journalMoveManager = new FileMoveManager(new File(getConfiguration().getJournalDirectory()), -1);
 
-                        //if we have to many backups kept just stop, other wise restart as a backup
-                        if (configuration.isEnforceMaxReplica() &&
-                            journalMoveManager.getNumberOfFolders() >= configuration.getMaxSavedReplicatedJournalsSize() &&
-                            configuration.getMaxSavedReplicatedJournalsSize() >= 0)
+                        if (configuration.isEnforceMaxReplica())
                         {
-                           stop(true);
-                           HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
+                           //if we have to many backups kept just stop, other wise restart as a backup
+                           if (countNumberOfCopiedJournals() >= configuration.getMaxSavedReplicatedJournalsSize() && configuration.getMaxSavedReplicatedJournalsSize() >= 0)
+                           {
+                              stop(true);
+                              HornetQServerLogger.LOGGER.stopReplicatedBackupAfterFailback();
+                           }
+                           else
+                           {
+                              stop(true);
+                              HornetQServerLogger.LOGGER.restartingReplicatedBackupAfterFailback();
+                              configuration.setBackup(true);
+                              start();
+                           }
                         }
                         else
                         {
+                           // new logic using FileMover
+                           FileMoveManager journalMoveManager = new FileMoveManager(new File(getConfiguration().getJournalDirectory()), -1);
+
                            stop(true);
                            HornetQServerLogger.LOGGER.restartingReplicatedBackupAfterFailback();
                            configuration.setBackup(true);
@@ -3151,6 +3162,30 @@ public class HornetQServerImpl implements HornetQServer
       clusterManager.announceBackup();
       backupUpToDate = true;
       backupSyncLatch.countDown();
+   }
+
+   // this is the old logic in place
+   private int countNumberOfCopiedJournals()
+   {
+      //will use the main journal to check for how many backups have been kept
+      File journalDir = new File(configuration.getJournalDirectory());
+      final String fileName = journalDir.getName();
+      int numberOfbackupsSaved = 0;
+      //fine if it doesn't exist, we aren't using file based persistence so it's no issue
+      if (journalDir.exists())
+      {
+         File parentFile = new File(journalDir.getParent());
+         String[] backupJournals = parentFile.list(new FilenameFilter()
+         {
+            @Override
+            public boolean accept(File dir, String name)
+            {
+               return name.startsWith(fileName) && !name.matches(fileName);
+            }
+         });
+         numberOfbackupsSaved = backupJournals != null ? backupJournals.length : 0;
+      }
+      return numberOfbackupsSaved;
    }
 
    private final class ReplicationFailureListener implements FailureListener, CloseListener
@@ -3239,6 +3274,97 @@ public class HornetQServerImpl implements HornetQServer
     * move any older data away and log a warning about it.
     */
    private void moveServerData() throws IOException
+   {
+
+      if (!configuration.isEnforceMaxReplica())
+      {
+         // use new logic on that case
+         newMoveServerData();
+         return;
+      }
+
+      String[] dataDirs =
+         new String[]{configuration.getBindingsDirectory(),
+            configuration.getJournalDirectory(),
+            configuration.getPagingDirectory(),
+            configuration.getLargeMessagesDirectory()};
+      boolean allEmpty = true;
+      int lowestSuffixForMovedData = 1;
+      boolean redo = true;
+
+      while (redo)
+      {
+         redo = false;
+         for (String dir : dataDirs)
+         {
+            File fDir = new File(dir);
+            if (fDir.exists())
+            {
+               if (!fDir.isDirectory())
+               {
+                  throw HornetQMessageBundle.BUNDLE.journalDirIsFile(fDir);
+               }
+
+               if (fDir.list().length > 0)
+                  allEmpty = false;
+            }
+
+            String sanitizedPath = fDir.getPath();
+            while (new File(sanitizedPath + lowestSuffixForMovedData).exists())
+            {
+               lowestSuffixForMovedData++;
+               redo = true;
+            }
+         }
+      }
+      if (allEmpty)
+         return;
+
+      for (String dir0 : dataDirs)
+      {
+         File dir = new File(dir0);
+         File newPath = new File(dir.getPath() + lowestSuffixForMovedData);
+         if (dir.exists())
+         {
+            if (!dir.renameTo(newPath))
+            {
+               throw HornetQMessageBundle.BUNDLE.couldNotMoveJournal(dir);
+            }
+
+            HornetQServerLogger.LOGGER.backupMovingDataAway(dir0, newPath.getPath());
+         }
+         /*
+         * sometimes OS's can hold on to file handles for a while so we need to check this actually qorks and then wait
+         * a while and try again if it doesn't
+         * */
+
+         File dirToRecreate = new File(dir0);
+         int count = 0;
+         while (!dirToRecreate.exists() && !dirToRecreate.mkdir())
+         {
+            try
+            {
+               Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+            }
+            count++;
+            if (count == 5)
+            {
+               throw HornetQMessageBundle.BUNDLE.cannotCreateDir(dir.getPath());
+            }
+         }
+      }
+   }
+
+   /**
+    * Move data away before starting data synchronization for fail-back.
+    * <p/>
+    * Use case is a server, upon restarting, finding a former backup running in its place. It will
+    * move any older data away and log a warning about it.
+    */
+   private void newMoveServerData() throws IOException
    {
       String[] dataDirs =
          new String[]{configuration.getBindingsDirectory(),
