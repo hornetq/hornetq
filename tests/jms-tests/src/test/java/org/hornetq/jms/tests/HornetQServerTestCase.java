@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
@@ -435,7 +438,13 @@ public abstract class HornetQServerTestCase extends ProxyAssertSupport
 
    protected boolean assertRemainingMessages(final int expected) throws Exception
    {
-      Long messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue("Queue1");
+      String queueName = "Queue1";
+      Binding binding = servers.get(0).getHornetQServer().getPostOffice().getBinding(SimpleString.toSimpleString("jms.queue." + queueName));
+      if (binding != null && binding instanceof LocalQueueBinding)
+      {
+         ((LocalQueueBinding)binding).getQueue().flushExecutor();
+      }
+      Long messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue(queueName);
 
       ProxyAssertSupport.assertEquals(expected, messageCount.intValue());
       return expected == messageCount.intValue();

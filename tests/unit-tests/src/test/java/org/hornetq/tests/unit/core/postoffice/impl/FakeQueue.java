@@ -301,12 +301,6 @@ public class FakeQueue implements Queue
    }
 
    @Override
-   public long getMessageCount(long timeout)
-   {
-      return 0;
-   }
-
-   @Override
    public long getMessagesAdded()
    {
       // no-op
@@ -314,11 +308,41 @@ public class FakeQueue implements Queue
    }
 
    @Override
-   public long getMessagesAdded(long timeout)
+   public long getMessagesAcknowledged()
    {
+      // no-op
       return 0;
    }
 
+
+   @Override
+   public void resetMessagesAdded()
+   {
+      // no-op
+
+   }
+
+   /*@Override
+   public void resetMessagesAcknowledged()
+   {
+      // no-op
+
+   }
+*/
+   /*
+   @Override
+   public void incrementMesssagesAdded()
+   {
+
+   }
+*/
+   /*
+   @Override
+   public List<MessageReference> cancelScheduledMessages()
+   {
+      return null;
+   }
+*/
    @Override
    public SimpleString getName()
    {
@@ -522,20 +546,6 @@ public class FakeQueue implements Queue
    public void deleteQueue() throws Exception
    {
       // no-op
-   }
-
-   @Override
-   public long getInstantMessageCount()
-   {
-      // no-op
-      return 0;
-   }
-
-   @Override
-   public long getInstantMessagesAdded()
-   {
-      // no-op
-      return 0;
    }
 
    /* (non-Javadoc)
