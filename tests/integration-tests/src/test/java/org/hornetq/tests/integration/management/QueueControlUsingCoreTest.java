@@ -43,6 +43,19 @@ public class QueueControlUsingCoreTest extends QueueControlTest
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_QUEUE + queue);
 
+         @Override
+         public void flushExecutor()
+         {
+            try
+            {
+               proxy.invokeOperation("flushExecutor");
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException(e.getMessage(), e);
+            }
+         }
+
          public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
          {
             return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);

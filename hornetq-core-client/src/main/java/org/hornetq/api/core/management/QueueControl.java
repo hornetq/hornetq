@@ -329,4 +329,12 @@ public interface QueueControl
     */
    @Operation(desc = "Inspects if the queue is paused", impact = MBeanOperationInfo.INFO)
    boolean isPaused() throws Exception;
+
+   /**
+    * it will flush one cycle on internal executors, so you would be sure that any pending tasks are done before you call
+    * any other measure.
+    * It is useful if you need the exact number of counts on a message
+    * @throws Exception
+    */
+   void flushExecutor();
 }

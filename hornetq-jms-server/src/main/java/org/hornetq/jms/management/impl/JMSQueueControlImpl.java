@@ -415,6 +415,10 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return coreQueueControl.getFilter();
    }
 
+   public void flushExecutor()
+   {
+      coreQueueControl.flushExecutor();
+   }
    @Override
    public MBeanInfo getMBeanInfo()
    {
