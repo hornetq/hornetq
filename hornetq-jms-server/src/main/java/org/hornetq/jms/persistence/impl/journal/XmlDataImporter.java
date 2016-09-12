@@ -370,7 +370,7 @@ public final class XmlDataImporter
       for (String queue : queues)
       {
          long queueID = 0;
-
+         Object obj = null;
          if (queueIDs.containsKey(queue))
          {
             queueID = queueIDs.get(queue);
@@ -386,7 +386,24 @@ public final class XmlDataImporter
             managementSession.start();
             HornetQServerLogger.LOGGER.debug("Requesting ID for: " + queue);
             ClientMessage reply = requestor.request(managementMessage);
-            queueID = (Integer)ManagementHelper.getResult(reply);
+            //queueID = (Integer)ManagementHelper.getResult(reply);
+            obj = ManagementHelper.getResult(reply);
+
+            if ( obj != null)
+            {
+               if (obj instanceof Long)
+               {
+                  queueID = ((Long) obj).longValue();
+               }
+               else if (obj instanceof Integer)
+               {
+                  queueID = ((Integer) obj).intValue();
+               }
+            }
+            else
+            {
+               HornetQServerLogger.LOGGER.warn("Null result returned.");
+            }
             requestor.close();
             HornetQServerLogger.LOGGER.debug("ID for " + queue + " is: " + queueID);
             queueIDs.put(queue, queueID);  // store it so we don't have to look it up every time
