@@ -31,7 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ExpireWhileLoadBalance extends ClusterTestBase
+public class ExpireWhileLoadBalanceTest extends ClusterTestBase
 {
 
    @Before
