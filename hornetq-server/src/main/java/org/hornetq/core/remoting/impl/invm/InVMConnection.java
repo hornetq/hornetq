@@ -143,10 +143,6 @@ public class InVMConnection implements Connection
 
    public void write(final HornetQBuffer buffer, final boolean flush, final boolean batch)
    {
-      final HornetQBuffer copied = buffer.copy(0, buffer.capacity());
-
-      copied.setIndex(buffer.readerIndex(), buffer.writerIndex());
-
       try
       {
          executor.execute(new Runnable()
@@ -157,12 +153,12 @@ public class InVMConnection implements Connection
                {
                   if (!closed)
                   {
-                     copied.readInt(); // read and discard
+                     buffer.readInt(); // read and discard
                      if (isTrace)
                      {
                         HornetQServerLogger.LOGGER.trace(InVMConnection.this + "::Sending inVM packet");
                      }
-                     handler.bufferReceived(id, copied);
+                     handler.bufferReceived(id, buffer);
                   }
                }
                catch (Exception e)
