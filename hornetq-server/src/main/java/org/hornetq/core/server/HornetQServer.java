@@ -87,6 +87,8 @@ public interface HornetQServer extends HornetQComponent
 
    HornetQSecurityManager getSecurityManager();
 
+   NetworkHealthCheck getNetworkHealthCheck();
+
    Version getVersion();
 
    NodeManager getNodeManager();

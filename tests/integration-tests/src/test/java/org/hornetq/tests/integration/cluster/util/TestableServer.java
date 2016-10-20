@@ -37,6 +37,8 @@ public interface TestableServer extends HornetQComponent
 
    CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception;
 
+   CountDownLatch crash(boolean failover, boolean waitFailure, ClientSession... sessions) throws Exception;
+
    boolean isActive();
 
    void addInterceptor(Interceptor interceptor);

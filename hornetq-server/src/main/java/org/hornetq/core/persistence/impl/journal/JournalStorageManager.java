@@ -2351,7 +2351,7 @@ public class JournalStorageManager implements StorageManager
 
    public void stop() throws Exception
    {
-      stop(false);
+      stop(false, true);
    }
 
    @Override
@@ -2364,7 +2364,8 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public synchronized void stop(boolean ioCriticalError) throws Exception
+   @Override
+   public synchronized void stop(boolean ioCriticalError, boolean sendFailover) throws Exception
    {
       if (!started)
       {
@@ -2398,16 +2399,19 @@ public class JournalStorageManager implements StorageManager
       ReplicationManager replicatorInUse = replicator;
       if (replicatorInUse != null)
       {
-         final OperationContext token = replicator.sendLiveIsStopping(LiveStopping.FAIL_OVER);
-         if (token != null)
+         if (sendFailover)
          {
-            try
+            final OperationContext token = replicator.sendLiveIsStopping(LiveStopping.FAIL_OVER);
+            if (token != null)
             {
-               token.waitCompletion(5000);
-            }
-            catch (Exception e)
-            {
-               // ignore it
+               try
+               {
+                  token.waitCompletion(5000);
+               }
+               catch (Exception e)
+               {
+                  // ignore it
+               }
             }
          }
          replicatorInUse.stop();
