@@ -26,6 +26,7 @@ import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLiveIsStoppingMessage.LiveStopping;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.NetworkHealthCheck;
 import org.hornetq.core.server.NodeManager;
 
 /**
@@ -73,6 +74,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    private final NodeManager nodeManager;
    private final ServerLocator serverLocator;
    private final ScheduledExecutorService scheduledPool;
+   private final NetworkHealthCheck networkHealthCheck;
 
    /**
     * This is a safety net in case the live sends the first {@link ReplicationLiveIsStoppingMessage}
@@ -84,7 +86,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
    public static final int WAIT_TIME_AFTER_FIRST_LIVE_STOPPING_MSG = 60;
 
    public QuorumManager(ServerLocator serverLocator, ExecutorService executor, ScheduledExecutorService scheduledPool,
-                        String identity, NodeManager nodeManager)
+                        String identity, NodeManager nodeManager, NetworkHealthCheck networkHealthCheck)
    {
       this.serverIdentity = identity;
       this.executor = executor;
@@ -93,6 +95,7 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
       this.nodeManager = nodeManager;
       this.serverLocator = serverLocator;
       topology = serverLocator.getTopology();
+      this.networkHealthCheck = networkHealthCheck;
    }
 
    @Override
@@ -296,6 +299,10 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
       {
          if (signal == BACKUP_ACTIVATION.FAIL_OVER)
          {
+            if (networkHealthCheck != null && !networkHealthCheck.check())
+            {
+               signal = BACKUP_ACTIVATION.FAILURE_REPLICATING;
+            }
             return;
          }
          if (!isLiveDown())
@@ -312,8 +319,17 @@ public final class QuorumManager implements SessionFailureListener, ClusterTopol
                   HornetQServerLogger.LOGGER.errorReConnecting(e);
             }
          }
-         // live is assumed to be down, backup fails-over
-         signal = BACKUP_ACTIVATION.FAIL_OVER;
+
+         if (networkHealthCheck != null && networkHealthCheck.check())
+         {
+            // live is assumed to be down, backup fails-over
+            signal = BACKUP_ACTIVATION.FAIL_OVER;
+         }
+         else
+         {
+            HornetQServerLogger.LOGGER.serverIsolatedOnNetwork();
+            signal = BACKUP_ACTIVATION.FAILURE_REPLICATING;
+         }
       }
       latch.countDown();
    }

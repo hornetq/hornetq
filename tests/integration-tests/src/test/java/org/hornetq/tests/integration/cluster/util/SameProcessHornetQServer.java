@@ -80,6 +80,11 @@ public class SameProcessHornetQServer implements TestableServer
 
    public CountDownLatch crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
+      return crash(true, waitFailure, sessions);
+   }
+
+   public CountDownLatch crash(boolean failover, boolean waitFailure, ClientSession... sessions) throws Exception
+   {
       CountDownLatch latch = new CountDownLatch(sessions.length);
       CountDownSessionFailureListener[] listeners = new CountDownSessionFailureListener[sessions.length];
       for (int i = 0; i < sessions.length; i++)
@@ -92,7 +97,7 @@ public class SameProcessHornetQServer implements TestableServer
       clusterManager.flushExecutor();
       clusterManager.clear();
       Assert.assertTrue("server should be running!", server.isStarted());
-      server.stop(true);
+      server.stop(failover);
 
       if (waitFailure)
       {

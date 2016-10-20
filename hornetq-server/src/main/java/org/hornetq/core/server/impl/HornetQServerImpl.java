@@ -132,6 +132,7 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.LiveNodeLocator;
 import org.hornetq.core.server.MemoryManager;
+import org.hornetq.core.server.NetworkHealthCheck;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
@@ -242,6 +243,8 @@ public class HornetQServerImpl implements HornetQServer
    private volatile ScheduledExecutorService scheduledPool;
 
    private volatile ExecutorFactory executorFactory;
+
+   private volatile NetworkHealthCheck networkHealthCheck;
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -368,6 +371,11 @@ public class HornetQServerImpl implements HornetQServer
 
       securityRepository.setDefault(new HashSet<Role>());
 
+   }
+
+   public NetworkHealthCheck getNetworkHealthCheck()
+   {
+      return networkHealthCheck;
    }
 
    // life-cycle methods
@@ -599,7 +607,11 @@ public class HornetQServerImpl implements HornetQServer
 
          if (localReplicationManager != null)
          {
-            replicationManager.sendLiveIsStopping(LiveStopping.STOP_CALLED);
+            if (failoverOnServerShutdown)
+            {
+               replicationManager.sendLiveIsStopping(LiveStopping.STOP_CALLED);
+            }
+
             // Schedule for 10 seconds
             // this pool gets a 'hard' shutdown, no need to manage the Future of this Runnable.
             scheduledPool.schedule(new Runnable()
@@ -658,7 +670,7 @@ public class HornetQServerImpl implements HornetQServer
       stopComponent(pagingManager);
 
       if (storageManager != null)
-         storageManager.stop(criticalIOError);
+         storageManager.stop(criticalIOError, failoverOnServerShutdown);
 
       // We stop remotingService before otherwise we may lock the system in case of a critical IO
       // error shutdown
@@ -680,6 +692,12 @@ public class HornetQServerImpl implements HornetQServer
 
       if (threadPool != null)
       {
+         if (networkHealthCheck != null)
+         {
+            networkHealthCheck.stop();
+            networkHealthCheck = null;
+         }
+
          threadPool.shutdown();
          try
          {
@@ -704,9 +722,6 @@ public class HornetQServerImpl implements HornetQServer
       if (securityStore != null)
          securityStore.stop();
 
-      threadPool = null;
-
-      scheduledPool = null;
 
       pagingManager = null;
       securityStore = null;
@@ -1468,6 +1483,9 @@ public class HornetQServerImpl implements HornetQServer
                                                       new HornetQThreadFactory("HornetQ-scheduled-threads",
                                                                                false,
                                                                                getThisClassLoader()));
+
+      this.networkHealthCheck = new NetworkHealthCheck(scheduledPool,
+                                                       threadPool);
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
@@ -2556,7 +2574,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                if (closed)
                   return;
-               quorumManager = new QuorumManager(serverLocator0, threadPool, scheduledPool, getIdentity(), nodeManager);
+               quorumManager = new QuorumManager(serverLocator0, threadPool, scheduledPool, getIdentity(), nodeManager, networkHealthCheck);
                serverLocator0.addClusterTopologyListener(quorumManager);
             }
 
@@ -2579,6 +2597,12 @@ public class HornetQServerImpl implements HornetQServer
                   Thread.sleep(serverLocator0.getRetryInterval());
                }
             } while (true);
+
+            if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPED)
+            {
+               // This will avoid a few NPEs after the server is stopped
+               return;
+            }
 
             serverLocator0.addIncomingInterceptor(new ReplicationError(HornetQServerImpl.this, nodeLocator));
 
@@ -2672,6 +2696,7 @@ public class HornetQServerImpl implements HornetQServer
                         try
                         {
                            stop();
+                           start();
                         }
                         catch (Exception e)
                         {

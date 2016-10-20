@@ -269,7 +269,7 @@ public class TransactionImplTest extends ServiceTestBase
       }
 
       @Override
-      public void stop(boolean ioCriticalError) throws Exception
+      public void stop(boolean ioCriticalError, boolean sendFail) throws Exception
       {
 
       }

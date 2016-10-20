@@ -1040,6 +1040,12 @@ public interface HornetQServerLogger extends BasicLogger
       format = Message.Format.MESSAGE_FORMAT)
    void removingBackupData(String path);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 222194,
+      value = "There was an issue on the network, server is isolated!",
+      format = Message.Format.MESSAGE_FORMAT)
+   void serverIsolatedOnNetwork();
+
 
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224000, value = "Failure in initialisation", format = Message.Format.MESSAGE_FORMAT)
