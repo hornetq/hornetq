@@ -511,7 +511,10 @@ public class QueueImpl implements Queue
 
       directDeliver = false;
 
-      messagesAdded++;
+      if (!ref.isPaged())
+      {
+         messagesAdded++;
+      }
    }
 
    public void addTail(final MessageReference ref)
@@ -525,7 +528,10 @@ public class QueueImpl implements Queue
       {
          synchronized (this)
          {
-            messagesAdded++;
+            if (!ref.isPaged())
+            {
+               messagesAdded++;
+            }
          }
 
          return;
@@ -1211,7 +1217,7 @@ public class QueueImpl implements Queue
    {
       if (pageSubscription != null)
       {
-         return messagesAdded + pageSubscription.getCounter().getValue() - pagedReferences.get();
+         return messagesAdded + pageSubscription.getCounter().getValueAdded();
       }
       else
       {
@@ -1932,7 +1938,10 @@ public class QueueImpl implements Queue
       {
          internalAddTail(ref);
 
-         messagesAdded++;
+         if (!ref.isPaged())
+         {
+            messagesAdded++;
+         }
          if (added++ > MAX_DELIVERIES_IN_LOOP)
          {
             // if we just keep polling from the intermediate we could starve in case there's a sustained load

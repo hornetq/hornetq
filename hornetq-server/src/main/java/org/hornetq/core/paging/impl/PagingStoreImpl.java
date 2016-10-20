@@ -981,7 +981,6 @@ public class PagingStoreImpl implements PagingStore
 
       for (org.hornetq.core.server.Queue q : nonDurableQueues)
       {
-         q.getPageSubscription().getCounter().increment(tx, 1);
          q.getPageSubscription().notEmpty();
          ids[i++] = q.getID();
       }

@@ -1354,4 +1354,8 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.ERROR)
    @Message(id = 224071, value = "Failed to send SLOW_CONSUMER notification: {0}", format = Message.Format.MESSAGE_FORMAT)
    void failedToSendSlowConsumerNotification(Notification notification, @Cause Exception e);
+
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 224072, value = "Message Counter Sample Period too short: {0}", format = Message.Format.MESSAGE_FORMAT)
+   void invalidMessageCounterPeriod(long value);
 }
