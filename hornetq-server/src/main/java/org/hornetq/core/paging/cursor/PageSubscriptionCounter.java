@@ -23,6 +23,8 @@ import org.hornetq.core.transaction.Transaction;
  */
 public interface PageSubscriptionCounter
 {
+   //incremental counter of messages added
+   long getValueAdded();
 
    long getValue();
 
