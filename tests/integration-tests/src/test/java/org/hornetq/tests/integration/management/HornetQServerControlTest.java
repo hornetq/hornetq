@@ -414,16 +414,10 @@ public class HornetQServerControlTest extends ManagementTestBase
       {
       }
 
-      try
-      {
-         serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD - 1);
-         Assert.fail();
-      }
-      catch (Exception e)
-      {
-      }
+      //this only gets warning now and won't cause exception.
+      serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD - 1);
 
-      Assert.assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
+      Assert.assertEquals(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD - 1, serverControl.getMessageCounterSamplePeriod());
    }
 
    protected void restartServer() throws Exception

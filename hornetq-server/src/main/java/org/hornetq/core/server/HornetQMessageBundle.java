@@ -211,6 +211,9 @@ public interface HornetQMessageBundle
    @Message(id = 119046, value = "invalid value: {0} count must be greater than 0", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException greaterThanZero(Integer count);
 
+   @Message(id = 119047, value = "invalid value: {0} sample period must be greater than 0", format = Message.Format.MESSAGE_FORMAT)
+   IllegalArgumentException periodMustGreaterThanZero(Long newPeriod);
+
    @Message(id = 119048, value = "invalid new Priority value: {0}. It must be between 0 and 9 (both included)", format = Message.Format.MESSAGE_FORMAT)
    IllegalArgumentException invalidNewPriority(Integer period);
 

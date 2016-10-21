@@ -172,7 +172,8 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       JMSUtil.sendMessageWithProperty(session, topic, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, topic, key, matchingValue);
 
-      for (int i = 0; i < 30 && (Integer)proxy.retrieveAttributeValue("messageCount") != 3; i++) {
+      for (int i = 0; i < 30 && (Integer)proxy.retrieveAttributeValue("messageCount") != 3; i++)
+      {
          Thread.sleep(100);
       }
 

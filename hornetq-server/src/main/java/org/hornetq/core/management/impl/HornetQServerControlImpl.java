@@ -874,6 +874,10 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       {
          if (newPeriod < MessageCounterManagerImpl.MIN_SAMPLE_PERIOD)
          {
+            if (newPeriod <= 0)
+            {
+               throw HornetQMessageBundle.BUNDLE.periodMustGreaterThanZero(newPeriod);
+            }
             HornetQServerLogger.LOGGER.invalidMessageCounterPeriod(newPeriod);
          }
 
