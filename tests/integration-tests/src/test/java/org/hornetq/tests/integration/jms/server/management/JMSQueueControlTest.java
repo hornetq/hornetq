@@ -522,11 +522,13 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
 
+      queueControl.flushExecutor();
       Assert.assertEquals(1, queueControl.getMessageCount());
       Assert.assertEquals(0, expiryQueueControl.getMessageCount());
 
       Assert.assertTrue(queueControl.expireMessage(messageIDs[0]));
 
+      queueControl.flushExecutor();
       Assert.assertEquals(0, queueControl.getMessageCount());
       Assert.assertEquals(1, expiryQueueControl.getMessageCount());
 

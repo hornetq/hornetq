@@ -101,6 +101,7 @@ public class TransactionalSendTest extends ServiceTestBase
       }
       Assert.assertEquals(q.getMessageCount(), 0);
       session.commit();
+      q.flushExecutor();
       Assert.assertEquals(q.getMessageCount(), numMessages);
       session.close();
    }
