@@ -45,6 +45,7 @@ final class SimpleClient
          String queueName = RandomUtil.randomString();
          String messageText = RandomUtil.randomString();
 
+         System.err.println("Hello!!!");
          ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorFactoryClassName));
          try
          {
@@ -91,7 +92,7 @@ final class SimpleClient
       }
       catch (Throwable t)
       {
-
+         t.printStackTrace();
          String allStack = t.getMessage() + "|";
          StackTraceElement[] stackTrace = t.getStackTrace();
          for (StackTraceElement stackTraceElement : stackTrace)

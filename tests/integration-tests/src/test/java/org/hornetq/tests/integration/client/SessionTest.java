@@ -197,14 +197,24 @@ public class SessionTest extends ServiceTestBase
       clientSession.createConsumer(queueName);
       clientSession.createConsumer(queueName);
       ClientProducer cp = clientSession.createProducer("a1");
-      cp.send(clientSession.createMessage(false));
-      cp.send(clientSession.createMessage(false));
+      cp.send(clientSession.createMessage(true));
+      cp.send(clientSession.createMessage(true));
+
+      flushQueue();
+
       QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
       Assert.assertEquals(new SimpleString("a1"), resp.getAddress());
       Assert.assertEquals(2, resp.getConsumerCount());
       Assert.assertEquals(2, resp.getMessageCount());
       Assert.assertEquals(null, resp.getFilterString());
       clientSession.close();
+   }
+
+   private void flushQueue() throws Exception
+   {
+      Queue queue = server.locateQueue(SimpleString.toSimpleString(queueName));
+      assertNotNull(queue);
+      queue.flushExecutor();
    }
 
    @Test
@@ -366,13 +376,13 @@ public class SessionTest extends ServiceTestBase
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
-      Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
-      Assert.assertEquals(0, q.getMessageCount());
+      Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+      Assert.assertEquals(0, getMessageCount(server, q.getAddress().toString()));
       clientSession.rollback();
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       clientSession.commit();
-      Assert.assertEquals(2, q.getMessageCount());
+      Assert.assertEquals(2, getMessageCount(server, q.getAddress().toString()));
       clientSession.close();
    }
 
@@ -397,6 +407,7 @@ public class SessionTest extends ServiceTestBase
       cp.send(clientSession.createMessage(false));
       cp.send(clientSession.createMessage(false));
       Queue q = (Queue)server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+      q.flushExecutor();
       Assert.assertEquals(10, q.getMessageCount());
       ClientConsumer cc = clientSession.createConsumer(queueName);
       clientSession.start();

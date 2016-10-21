@@ -11,5 +11,7 @@ grant {
         permission java.io.FilePermission "${user.dir}/hornetq-core-client/target/classes/-", "read";
         permission java.io.FilePermission "${user.dir}/hornetq-core-client/target/hornetq-core-client-${project.version}.jar", "read";
         permission java.util.PropertyPermission "hornetq.version.property.filename", "read";
+        permission java.util.PropertyPermission "hornetq.enforce.maxreplica", "read";
+        permission java.util.PropertyPermission "org.jboss.netty.debug", "read";
         permission java.lang.RuntimePermission "setContextClassLoader";
 };
