@@ -16,6 +16,7 @@ package org.hornetq.core.journal.impl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -128,6 +129,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
          newFileName.close();
          this.close();
       }
+      catch (ClosedChannelException e)
+      {
+         throw e;
+      }
       catch (IOException e)
       {
          factory.onIOError(new HornetQIOErrorException(e.getMessage(), e), e.getMessage(), this);
@@ -155,6 +160,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
       try
       {
          close();
+      }
+      catch (ClosedChannelException e)
+      {
+         throw e;
       }
       catch (IOException e)
       {
