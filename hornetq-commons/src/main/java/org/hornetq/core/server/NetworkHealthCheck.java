@@ -17,21 +17,24 @@
 
 package org.hornetq.core.server;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
 
-/** This will use {@link InetAddress#isReachable(int)} to determine if the network is alive.
- *  It will have a set of addresses, and if any address is reached the network will be considered alive. */
+/**
+ * This will use {@link InetAddress#isReachable(int)} to determine if the network is alive.
+ * It will have a set of addresses, and if any address is reached the network will be considered alive.
+ */
 public class NetworkHealthCheck extends ActiveMQScheduledComponent
 {
 
@@ -41,7 +44,7 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
    public static final String CHECK_PERIOD_SYSTEM_PROP = PREFIX + "checkPeriod";
    public static final Long DEFAULT_CHECK_PERIOD = 5000L;
    public static final String TIMEOUT_SYSTEM_PROP = PREFIX + "timeout";
-   public static final Integer DEFAULT_TIMEOUT = 5;
+   public static final Integer DEFAULT_TIMEOUT = 1000;
    public static final String ADDRESS_LIST_SYSTEM_PROP = PREFIX + "addressList";
 
    private static final Logger logger = Logger.getLogger(NetworkHealthCheck.class);
@@ -57,10 +60,9 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
     */
    private final int networkTimeout;
 
-   public NetworkHealthCheck(ScheduledExecutorService scheduledExecutorService, Executor executor) throws Exception
+   public NetworkHealthCheck()
    {
       this(System.getProperty(NetworkHealthCheck.NIC_NAME_SYSTEM_PROP, null),
-           scheduledExecutorService, executor,
            Long.parseLong(System.getProperty(NetworkHealthCheck.CHECK_PERIOD_SYSTEM_PROP,
                                              NetworkHealthCheck.DEFAULT_CHECK_PERIOD.toString())),
            Integer.parseInt(System.getProperty(NetworkHealthCheck.TIMEOUT_SYSTEM_PROP,
@@ -69,21 +71,31 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
    }
 
    public NetworkHealthCheck(String nicName,
-                             ScheduledExecutorService scheduledExecutorService,
-                             Executor executor,
                              long checkPeriod,
-                             int networkTimeout) throws Exception
+                             int networkTimeout)
    {
-      super(scheduledExecutorService, executor, checkPeriod, TimeUnit.MILLISECONDS, false);
+      super(null, null, checkPeriod, TimeUnit.MILLISECONDS, false);
       this.networkTimeout = networkTimeout;
-      if (nicName != null)
+
+      NetworkInterface netToUse;
+      try
       {
-         this.networkInterface = NetworkInterface.getByName(nicName);
+         if (nicName != null)
+         {
+            netToUse = NetworkInterface.getByName(nicName);
+         }
+         else
+         {
+            netToUse = null;
+         }
       }
-      else
+      catch (Exception e)
       {
-         this.networkInterface = null;
+         logger.warn(e.getMessage(), e);
+         netToUse = null;
       }
+
+      this.networkInterface = netToUse;
 
 
       String addressListProperty = System.getProperty(NetworkHealthCheck.ADDRESS_LIST_SYSTEM_PROP);
@@ -92,70 +104,93 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
       {
          String[] addresses = addressListProperty.split(",");
 
-         for (String address: addresses)
+         for (String address : addresses)
          {
-            this.addAddress(InetAddress.getByName(address));
+            try
+            {
+               this.addAddress(InetAddress.getByName(address));
+            }
+            catch (Exception e)
+            {
+               logger.warn(e.getMessage(), e);
+            }
          }
       }
 
    }
 
-   public synchronized void addComponent(HornetQComponent component)
+   public synchronized NetworkHealthCheck addComponent(HornetQComponent component)
    {
       componentList.add(component);
+      checkStart();
+      return this;
    }
 
-   public synchronized void clearComponents()
+   public synchronized NetworkHealthCheck clearComponents()
    {
       componentList.clear();
+      return this;
    }
 
-   public synchronized void addAddress(InetAddress address)
+   public synchronized NetworkHealthCheck addAddress(InetAddress address)
    {
       if (!check(address))
       {
          logger.warn("Ping Address " + address + " wasn't reacheable");
       }
       addresses.add(address);
+
+      checkStart();
+      return this;
    }
 
-   public synchronized void removeAddress(InetAddress address)
+   public synchronized NetworkHealthCheck removeAddress(InetAddress address)
    {
       addresses.remove(address);
+      return this;
    }
 
-   public synchronized void clearAddresses()
+   public synchronized NetworkHealthCheck clearAddresses()
    {
       addresses.clear();
+      return this;
    }
 
-   public synchronized void addURL(URL url)
+   public synchronized NetworkHealthCheck addURL(URL url)
    {
       if (!check(url))
       {
          logger.warn("Ping url " + url + " wasn't reacheable");
       }
       urls.add(url);
+      checkStart();
+      return this;
    }
 
-   public synchronized void removeURL(URL url)
+   public synchronized NetworkHealthCheck removeURL(URL url)
    {
       urls.remove(url);
+      return this;
    }
 
-   public synchronized void clearURL()
+   public synchronized NetworkHealthCheck clearURL()
    {
       urls.clear();
+      return this;
+   }
+
+
+   private void checkStart()
+   {
+      if (!isStarted() && (!addresses.isEmpty() || !urls.isEmpty()) && !componentList.isEmpty())
+      {
+         start();
+      }
    }
 
    @Override
    public synchronized void run()
    {
-      if (addresses.isEmpty() && urls.isEmpty())
-      {
-         return;
-      }
-
       boolean healthy = check();
 
 
@@ -241,11 +276,15 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
          }
          else
          {
-            if (logger.isTraceEnabled())
-            {
-               logger.tracef(address + " can't be reached");
-            }
-            return false;
+            long timeout =  Math.max(1, TimeUnit.MILLISECONDS.toSeconds(networkTimeout));
+            // it did not work with a simple isReachable, it could be because there's no root access, so we will try ping executable
+            ProcessBuilder processBuilder = new ProcessBuilder("ping", "-c", "1", "-t", "" + timeout, address.getHostAddress());
+            Process pingProcess = processBuilder.start();
+
+            readStream(pingProcess.getInputStream(), false);
+            readStream(pingProcess.getErrorStream(), true);
+
+            return pingProcess.waitFor() == 0;
          }
       }
       catch (Exception e)
@@ -253,6 +292,26 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
          logger.warn(e.getMessage(), e);
          return false;
       }
+   }
+
+   private void readStream(InputStream stream, boolean error) throws IOException
+   {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+
+      String inputLine;
+      while ((inputLine = reader.readLine()) != null)
+      {
+         if (error)
+         {
+            logger.warn(inputLine);
+         }
+         else
+         {
+            logger.trace(inputLine);
+         }
+      }
+
+      reader.close();
    }
 
    public boolean check(URL url)

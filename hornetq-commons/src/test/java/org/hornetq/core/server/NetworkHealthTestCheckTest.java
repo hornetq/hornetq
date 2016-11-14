@@ -22,10 +22,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -40,8 +38,14 @@ import org.junit.Test;
 public class NetworkHealthTestCheckTest
 {
 
-   ScheduledExecutorService scheduledExecutorService;
-   ExecutorService executor;
+   Set<NetworkHealthCheck> list = new HashSet<NetworkHealthCheck>();
+
+   NetworkHealthCheck addCheck(NetworkHealthCheck check)
+   {
+      list.add(check);
+      return check;
+   }
+
    HttpServer httpServer;
 
    final ReusableLatch latch = new ReusableLatch(1);
@@ -75,9 +79,8 @@ public class NetworkHealthTestCheckTest
    public void before() throws Exception
    {
       latch.setCount(1);
-      scheduledExecutorService = new ScheduledThreadPoolExecutor(10);
-      executor = Executors.newSingleThreadExecutor();
    }
+
 
    private void startHTTPServer() throws IOException
    {
@@ -119,19 +122,20 @@ public class NetworkHealthTestCheckTest
    public void after()
    {
       stopHTTPServer();
-      scheduledExecutorService.shutdownNow();
-      executor.shutdownNow();
+      for (NetworkHealthCheck check : this.list)
+      {
+         check.stop();
+      }
    }
 
    @Test
    public void testCheck() throws Exception
    {
-      NetworkHealthCheck check = new NetworkHealthCheck(null, scheduledExecutorService, executor, 100, 100);
+      NetworkHealthCheck check = addCheck(new NetworkHealthCheck(null, 100, 100));
       check.addComponent(component);
 
       // Accordingly to RFC5737, this address is guaranteed to not exist as it is reserved for documentation
       check.addAddress(InetAddress.getByName("203.0.113.1"));
-      check.start();
 
       Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       Assert.assertFalse(component.isStarted());
@@ -152,10 +156,24 @@ public class NetworkHealthTestCheckTest
 
    }
 
+
+   @Test
+   public void testChecExternalAddress() throws Exception
+   {
+      NetworkHealthCheck check = addCheck(new NetworkHealthCheck(null, 100, 100));
+      check.addComponent(component);
+
+      // Any external IP, to make sure we would use a PING
+      InetAddress address = InetAddress.getByName("www.apache.org");
+
+      Assert.assertTrue(check.check(address));
+
+   }
+
    @Test
    public void testCheckNoNodes() throws Exception
    {
-      NetworkHealthCheck check = new NetworkHealthCheck(scheduledExecutorService, executor);
+      NetworkHealthCheck check = addCheck(new NetworkHealthCheck());
       Assert.assertTrue(check.check());
    }
 
@@ -166,8 +184,7 @@ public class NetworkHealthTestCheckTest
 
       startHTTPServer();
 
-      NetworkHealthCheck check = new NetworkHealthCheck(null, scheduledExecutorService, executor, 100, 1000);
-      check.start();
+      NetworkHealthCheck check = addCheck(new NetworkHealthCheck(null, 100, 1000));
 
       Assert.assertTrue(check.check(new URL("http://localhost:8080")));
 

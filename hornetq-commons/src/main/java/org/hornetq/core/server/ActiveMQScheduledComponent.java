@@ -17,22 +17,29 @@
 
 package org.hornetq.core.server;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.utils.HornetQThreadFactory;
 import org.jboss.logging.Logger;
 
-/** This is for components with a scheduled at a fixed rate.
- *  This was back ported from Artemis, almost as is.. to make it easier to back port new elements from artemis. */
+/**
+ * This is for components with a scheduled at a fixed rate.
+ * This was back ported from Artemis, almost as is.. to make it easier to back port new elements from artemis.
+ */
 public abstract class ActiveMQScheduledComponent implements HornetQComponent, Runnable
 {
 
 
    private static final Logger logger = Logger.getLogger(ActiveMQScheduledComponent.class);
-   private final ScheduledExecutorService scheduledExecutorService;
+   private ScheduledExecutorService scheduledExecutorService;
+   private boolean startedOwnScheduler;
    private long period;
    private long millisecondsPeriod;
    private TimeUnit timeUnit;
@@ -52,13 +59,23 @@ public abstract class ActiveMQScheduledComponent implements HornetQComponent, Ru
    {
       this.executor = executor;
       this.scheduledExecutorService = scheduledExecutorService;
-      if (this.scheduledExecutorService == null)
-      {
-         throw new NullPointerException("scheduled Executor is null");
-      }
       this.period = checkPeriod;
       this.timeUnit = timeUnit;
       this.onDemand = onDemand;
+   }
+
+   /**
+    * This is useful for cases where we want our own scheduler executor.
+    *
+    * @param checkPeriod
+    * @param timeUnit
+    * @param onDemand
+    */
+   public ActiveMQScheduledComponent(long checkPeriod,
+                                     TimeUnit timeUnit,
+                                     boolean onDemand)
+   {
+      this(null, null, checkPeriod, timeUnit, onDemand);
    }
 
    @Override
@@ -66,7 +83,18 @@ public abstract class ActiveMQScheduledComponent implements HornetQComponent, Ru
    {
       if (future != null)
       {
+         // already started
          return;
+      }
+
+      if (scheduledExecutorService == null)
+      {
+         scheduledExecutorService = new ScheduledThreadPoolExecutor(1,
+                                                                    new HornetQThreadFactory(this.getClass().getSimpleName() + "-scheduled-threads",
+                                                                                             false,
+                                                                                             getThisClassLoader()));
+         startedOwnScheduler = true;
+
       }
 
       this.millisecondsPeriod = timeUnit.convert(period, TimeUnit.MILLISECONDS);
@@ -82,6 +110,19 @@ public abstract class ActiveMQScheduledComponent implements HornetQComponent, Ru
       {
          logger.tracef("did not start scheduled executor on %s because period was configured as %d", this, period);
       }
+   }
+
+   private ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         @Override
+         public ClassLoader run()
+         {
+            return ActiveMQScheduledComponent.this.getClass().getClassLoader();
+         }
+      });
+
    }
 
    public void delay()
@@ -133,6 +174,12 @@ public abstract class ActiveMQScheduledComponent implements HornetQComponent, Ru
       }
 
       future.cancel(false);
+      if (startedOwnScheduler)
+      {
+         this.scheduledExecutorService.shutdownNow();
+         scheduledExecutorService = null;
+         startedOwnScheduler = false;
+      }
       future = null;
 
    }
@@ -184,7 +231,14 @@ public abstract class ActiveMQScheduledComponent implements HornetQComponent, Ru
       @Override
       public void run()
       {
-         executor.execute(runForExecutor);
+         if (executor != null)
+         {
+            executor.execute(runForExecutor);
+         }
+         else
+         {
+            runForExecutor.run();
+         }
       }
    };
 

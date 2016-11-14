@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import java.net.InetAddress;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -47,11 +48,6 @@ public class NetworkIsolationReplicationTest extends FailoverTestBase
    }
 
    @Test
-   /*
-   * default maxSavedReplicatedJournalsSize is 2, this means the backup will fall back to replicated only twice, after this
-   * it is stopped permanently
-   *
-   * */
    public void testDoNotActivateOnIsolation() throws Exception
    {
       ServerLocator locator = getServerLocator();
@@ -90,9 +86,47 @@ public class NetworkIsolationReplicationTest extends FailoverTestBase
 
       // This will make sure the backup got synchronized after the network was activated again
       Assert.assertTrue(backupServer.getServer().getReplicationEndpoint().isStarted());
-
-
    }
+
+   @Test
+   public void testLiveIsolated() throws Exception
+   {
+      backupServer.stop();
+
+      ServerLocator locator = getServerLocator();
+
+      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+
+      ClientSession session = createSession(sf, false, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      liveServer.start();
+
+      liveServer.getServer().getNetworkHealthCheck().setPeriod(100).setTimeUnit(TimeUnit.MILLISECONDS);
+
+      liveServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("203.0.113.1"));
+
+      Assert.assertFalse(liveServer.getServer().getNetworkHealthCheck().check());
+
+      long timeout = System.currentTimeMillis() + 30000;
+      while (liveServer.isStarted() && System.currentTimeMillis() < timeout)
+      {
+         Thread.sleep(100);
+      }
+
+      Assert.assertFalse(liveServer.isStarted());
+
+      liveServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("127.0.0.1"));
+
+      timeout = System.currentTimeMillis() + 30000;
+      while (!liveServer.isStarted() && System.currentTimeMillis() < timeout)
+      {
+         Thread.sleep(100);
+      }
+
+      Assert.assertTrue(liveServer.isStarted());
+   }
+
    @Override
    protected void createConfigs() throws Exception
    {

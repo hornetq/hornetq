@@ -244,7 +244,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private volatile ExecutorFactory executorFactory;
 
-   private volatile NetworkHealthCheck networkHealthCheck;
+   private final NetworkHealthCheck networkHealthCheck = new NetworkHealthCheck();
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -401,6 +401,38 @@ public class HornetQServerImpl implements HornetQServer
 
    public final synchronized void start() throws Exception
    {
+      networkHealthCheck.clearComponents();
+      networkHealthCheck.addComponent(new HornetQComponent()
+      {
+         @Override
+         public void start() throws Exception
+         {
+            internalStart();
+         }
+
+         @Override
+         public void stop() throws Exception
+         {
+            internalStop();
+         }
+
+         public String toString()
+         {
+            return HornetQServerImpl.this.toString();
+         }
+
+         @Override
+         public boolean isStarted()
+         {
+            return HornetQServerImpl.this.isStarted();
+         }
+      });
+
+      internalStart();
+   }
+
+   private void internalStart() throws Exception
+   {
 
       ThreadRenamingRunnable.setThreadNameDeterminer(new ThreadNameDeterminer()
       {
@@ -536,6 +568,12 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public final void stop() throws Exception
+   {
+      internalStop();
+      networkHealthCheck.stop();
+   }
+
+   private void internalStop() throws Exception
    {
       stop(configuration.isFailoverOnServerShutdown());
    }
@@ -692,12 +730,6 @@ public class HornetQServerImpl implements HornetQServer
 
       if (threadPool != null)
       {
-         if (networkHealthCheck != null)
-         {
-            networkHealthCheck.stop();
-            networkHealthCheck = null;
-         }
-
          threadPool.shutdown();
          try
          {
@@ -1484,9 +1516,6 @@ public class HornetQServerImpl implements HornetQServer
                                                                                false,
                                                                                getThisClassLoader()));
 
-      this.networkHealthCheck = new NetworkHealthCheck(scheduledPool,
-                                                       threadPool);
-
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
       if (configuration.getMemoryMeasureInterval() != -1)
@@ -2203,7 +2232,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (transformerClassName != null)
       {
-         transformer = (Transformer)instantiateInstance(transformerClassName);
+         transformer = (Transformer) instantiateInstance(transformerClassName);
       }
 
       return transformer;
