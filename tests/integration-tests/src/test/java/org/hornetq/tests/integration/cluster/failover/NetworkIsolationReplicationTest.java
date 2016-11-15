@@ -93,18 +93,14 @@ public class NetworkIsolationReplicationTest extends FailoverTestBase
    {
       backupServer.stop();
 
-      ServerLocator locator = getServerLocator();
-
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
-
-      ClientSession session = createSession(sf, false, true, true);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+      liveServer.stop();
+      liveServer.getServer().getConfiguration().setNetworkCheckList("203.0.113.1");
+      liveServer.getServer().getConfiguration().setNetworkCheckPeriod(100);
       liveServer.start();
 
-      liveServer.getServer().getNetworkHealthCheck().setPeriod(100).setTimeUnit(TimeUnit.MILLISECONDS);
+      Assert.assertEquals(100L, liveServer.getServer().getNetworkHealthCheck().getPeriod());
 
-      liveServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("203.0.113.1"));
+      liveServer.getServer().getNetworkHealthCheck().setTimeUnit(TimeUnit.MILLISECONDS);
 
       Assert.assertFalse(liveServer.getServer().getNetworkHealthCheck().check());
 

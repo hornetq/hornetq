@@ -954,4 +954,27 @@ public interface Configuration extends Serializable
     * @return
     */
    void setEnforceMaxReplica(boolean enforceMaxReplica);
+
+   /** A comma separated list of IPs we could use to validate if the network is UP.
+    *  In case of none of these Ips are reached (if configured) the server will be shutdown. */
+   void setNetworkCheckList(String list);
+
+   String getNetworkCheckList();
+
+   /** A comma separated list of URIs we could use to validate if the network is UP.
+    *  In case of none of these Ips are reached (if configured) the server will be shutdown.
+    *  The difference from networkCheckList is that we will use HTTP to make this validation. */
+   void setNetworkCheckURLList(String uris);
+
+   String getNetworkCheckURLList();
+
+   /** The interval on which we will perform network checks. */
+   void setNetworkCheckPeriod(long period);
+
+   long getNetworkCheckPeriod();
+
+   /** Time in ms for how long we should wait for a ping to finish. */
+   void setNetworkCheckTimeout(int timeout);
+
+   int getNetworkCheckTimeout();
 }

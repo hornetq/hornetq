@@ -37,6 +37,21 @@ import org.junit.Test;
 
 public class NetworkHealthTestCheckTest
 {
+   private static final InetAddress INVALID_ADDRESS;
+
+   static
+   {
+      InetAddress address = null;
+      try
+      {
+         address = InetAddress.getByName("203.0.113.1");
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      INVALID_ADDRESS = address;
+   }
 
    Set<NetworkHealthCheck> list = new HashSet<NetworkHealthCheck>();
 
@@ -135,7 +150,7 @@ public class NetworkHealthTestCheckTest
       check.addComponent(component);
 
       // Accordingly to RFC5737, this address is guaranteed to not exist as it is reserved for documentation
-      check.addAddress(InetAddress.getByName("203.0.113.1"));
+      check.addAddress(INVALID_ADDRESS);
 
       Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
       Assert.assertFalse(component.isStarted());
@@ -158,15 +173,17 @@ public class NetworkHealthTestCheckTest
 
 
    @Test
-   public void testChecExternalAddress() throws Exception
+   public void testCheckExternalAddress() throws Exception
    {
       NetworkHealthCheck check = addCheck(new NetworkHealthCheck(null, 100, 100));
       check.addComponent(component);
 
       // Any external IP, to make sure we would use a PING
-      InetAddress address = InetAddress.getByName("www.apache.org");
+      InetAddress address = InetAddress.getByName("127.0.0.1");
 
-      Assert.assertTrue(check.check(address));
+      Assert.assertTrue(check.purePing(address));
+
+      Assert.assertFalse(check.purePing(INVALID_ADDRESS));
 
    }
 

@@ -244,7 +244,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private volatile ExecutorFactory executorFactory;
 
-   private final NetworkHealthCheck networkHealthCheck = new NetworkHealthCheck();
+   private final NetworkHealthCheck networkHealthCheck = new NetworkHealthCheck(HornetQDefaultConfiguration.getDefaultNetworkNic(), HornetQDefaultConfiguration.getDefaultNetworkCheckPeriod(), HornetQDefaultConfiguration.getDefaultNetworkCheckTimeout());
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -402,6 +402,10 @@ public class HornetQServerImpl implements HornetQServer
    public final synchronized void start() throws Exception
    {
       networkHealthCheck.clearComponents();
+      networkHealthCheck.setTimeUnit(TimeUnit.MILLISECONDS);
+      networkHealthCheck.setPeriod(configuration.getNetworkCheckPeriod());
+      networkHealthCheck.parseAddressList(configuration.getNetworkCheckList());
+      networkHealthCheck.parseURIList(configuration.getNetworkCheckURLList());
       networkHealthCheck.addComponent(new HornetQComponent()
       {
          @Override

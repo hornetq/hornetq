@@ -439,6 +439,33 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_ENFORCE_MAX_REPLICA;
    }
 
+
+   public static String getDefaultNetworkCheckList()
+   {
+      return DEFAULT_NETWORK_CHECK_LIST;
+   }
+
+   public static String getDefaultNetworkCheckURLList()
+   {
+      return DEFAULT_NETWORK_CHECK_URL_LIST;
+   }
+
+   public static long getDefaultNetworkCheckPeriod()
+   {
+      return DEFAULT_NETWORK_CHECK_PERIOD;
+   }
+
+   public static int getDefaultNetworkCheckTimeout()
+   {
+      return DEFAULT_NETWORK_CHECK_TIMEOUT;
+   }
+
+   public static String getDefaultNetworkNic()
+   {
+      return DEFAULT_NETWORK_CHECK_NIC;
+   }
+
+
    public static long getDefaultGroupTimeout()
    {
       return DEFAULT_GROUP_TIMEOUT;
@@ -522,7 +549,43 @@ public final class HornetQDefaultConfiguration
    private static String DEFAULT_CLUSTER_USER = "HORNETQ.CLUSTER.ADMIN.USER";
    private static String DEFAULT_CLUSTER_PASSWORD = "CHANGE ME!!";
    private static int DEFAULT_MAX_SAVED_REPLICATED_JOURNALS_SIZE = 2;
-   private static boolean DEFAULT_ENFORCE_MAX_REPLICA = Boolean.parseBoolean(System.getProperty("hornetq.enforce.maxreplica", "true"));
+
+   private static boolean DEFAULT_ENFORCE_MAX_REPLICA;
+
+   public static String DEFAULT_NETWORK_CHECK_LIST;
+
+   public static String DEFAULT_NETWORK_CHECK_URL_LIST;
+
+   public static long DEFAULT_NETWORK_CHECK_PERIOD;
+
+   public static int DEFAULT_NETWORK_CHECK_TIMEOUT;
+
+   public static String DEFAULT_NETWORK_CHECK_NIC;
+
+
+   static
+   {
+      try
+      {
+         DEFAULT_ENFORCE_MAX_REPLICA = Boolean.parseBoolean(System.getProperty("hornetq.enforce.maxreplica", "true"));
+
+         DEFAULT_NETWORK_CHECK_LIST = System.getProperty("brokerconfig.networkCheckList", null);
+
+         DEFAULT_NETWORK_CHECK_URL_LIST = System.getProperty("brokerconfig.networkCheckURLList", null);
+
+         DEFAULT_NETWORK_CHECK_PERIOD = Long.parseLong(System.getProperty("brokerconfig.networkCheckPeriod", "5000"));
+
+         DEFAULT_NETWORK_CHECK_TIMEOUT = Integer.parseInt(System.getProperty("brokerconfig.networkCheckTimeout", "1000"));
+
+         DEFAULT_NETWORK_CHECK_NIC = System.getProperty("brokerconfig.networkCheckNIC", null);
+      }
+      catch (Throwable e)
+      {
+         logger.warn(e.getMessage(), e);
+      }
+
+
+   }
 
    private static long DEFAULT_BROADCAST_PERIOD = 2000;
    private static long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;

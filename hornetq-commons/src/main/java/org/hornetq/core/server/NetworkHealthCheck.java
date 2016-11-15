@@ -37,16 +37,6 @@ import org.jboss.logging.Logger;
  */
 public class NetworkHealthCheck extends ActiveMQScheduledComponent
 {
-
-   private static final String PREFIX = "org.hornetq.networkhealthcheck.";
-
-   public static final String NIC_NAME_SYSTEM_PROP = PREFIX + "";
-   public static final String CHECK_PERIOD_SYSTEM_PROP = PREFIX + "checkPeriod";
-   public static final Long DEFAULT_CHECK_PERIOD = 5000L;
-   public static final String TIMEOUT_SYSTEM_PROP = PREFIX + "timeout";
-   public static final Integer DEFAULT_TIMEOUT = 1000;
-   public static final String ADDRESS_LIST_SYSTEM_PROP = PREFIX + "addressList";
-
    private static final Logger logger = Logger.getLogger(NetworkHealthCheck.class);
 
    private final Set<HornetQComponent> componentList = new HashSet<HornetQComponent>();
@@ -62,12 +52,7 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
 
    public NetworkHealthCheck()
    {
-      this(System.getProperty(NetworkHealthCheck.NIC_NAME_SYSTEM_PROP, null),
-           Long.parseLong(System.getProperty(NetworkHealthCheck.CHECK_PERIOD_SYSTEM_PROP,
-                                             NetworkHealthCheck.DEFAULT_CHECK_PERIOD.toString())),
-           Integer.parseInt(System.getProperty(NetworkHealthCheck.TIMEOUT_SYSTEM_PROP,
-                                               NetworkHealthCheck.DEFAULT_TIMEOUT.toString())));
-
+      this(null, 1000, 1000);
    }
 
    public NetworkHealthCheck(String nicName,
@@ -96,13 +81,13 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
       }
 
       this.networkInterface = netToUse;
+   }
 
-
-      String addressListProperty = System.getProperty(NetworkHealthCheck.ADDRESS_LIST_SYSTEM_PROP);
-
-      if (addressListProperty != null)
+   public synchronized NetworkHealthCheck parseAddressList(String addressList)
+   {
+      if (addressList != null)
       {
-         String[] addresses = addressListProperty.split(",");
+         String[] addresses = addressList.split(",");
 
          for (String address : addresses)
          {
@@ -117,6 +102,34 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
          }
       }
 
+      return this;
+   }
+
+   public synchronized NetworkHealthCheck parseURIList(String addressList)
+   {
+      if (addressList != null)
+      {
+         String[] addresses = addressList.split(",");
+
+         for (String address : addresses)
+         {
+            try
+            {
+               this.addURL(new URL(address));
+            }
+            catch (Exception e)
+            {
+               logger.warn(e.getMessage(), e);
+            }
+         }
+      }
+
+      return this;
+   }
+
+   public int getNetworkTimeout()
+   {
+      return networkTimeout;
    }
 
    public synchronized NetworkHealthCheck addComponent(HornetQComponent component)
@@ -276,15 +289,7 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
          }
          else
          {
-            long timeout =  Math.max(1, TimeUnit.MILLISECONDS.toSeconds(networkTimeout));
-            // it did not work with a simple isReachable, it could be because there's no root access, so we will try ping executable
-            ProcessBuilder processBuilder = new ProcessBuilder("ping", "-c", "1", "-t", "" + timeout, address.getHostAddress());
-            Process pingProcess = processBuilder.start();
-
-            readStream(pingProcess.getInputStream(), false);
-            readStream(pingProcess.getErrorStream(), true);
-
-            return pingProcess.waitFor() == 0;
+            return purePing(address);
          }
       }
       catch (Exception e)
@@ -292,6 +297,19 @@ public class NetworkHealthCheck extends ActiveMQScheduledComponent
          logger.warn(e.getMessage(), e);
          return false;
       }
+   }
+
+   public boolean purePing(InetAddress address) throws IOException, InterruptedException
+   {
+      long timeout = Math.max(1, TimeUnit.MILLISECONDS.toSeconds(networkTimeout));
+      // it did not work with a simple isReachable, it could be because there's no root access, so we will try ping executable
+      ProcessBuilder processBuilder = new ProcessBuilder("ping", "-c", "1", "-t", "" + timeout, address.getHostAddress());
+      Process pingProcess = processBuilder.start();
+
+      readStream(pingProcess.getInputStream(), false);
+      readStream(pingProcess.getErrorStream(), true);
+
+      return pingProcess.waitFor() == 0;
    }
 
    private void readStream(InputStream stream, boolean error) throws IOException

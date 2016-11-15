@@ -68,7 +68,7 @@ public class ConfigurationImpl implements Configuration
    protected long fileDeploymentScanPeriod = HornetQDefaultConfiguration.getDefaultFileDeployerScanPeriod();
 
    private boolean persistDeliveryCountBeforeDelivery =
-            HornetQDefaultConfiguration.isDefaultPersistDeliveryCountBeforeDelivery();
+      HornetQDefaultConfiguration.isDefaultPersistDeliveryCountBeforeDelivery();
 
    private int scheduledThreadPoolMaxSize = HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize();
 
@@ -216,6 +216,15 @@ public class ConfigurationImpl implements Configuration
    private int maxSavedReplicatedJournalsSize = HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize();
 
    private boolean enforceMaxReplica = HornetQDefaultConfiguration.getDefaultEnforceMaxReplica();
+
+   private String networkCheckList = HornetQDefaultConfiguration.getDefaultNetworkCheckList();
+
+   private String networkURLList = HornetQDefaultConfiguration.getDefaultNetworkCheckURLList();
+
+   private long networkCheckPeriod = HornetQDefaultConfiguration.getDefaultNetworkCheckPeriod();
+
+   private int networkCheckTimeout = HornetQDefaultConfiguration.getDefaultNetworkCheckTimeout();
+
 
    // Public -------------------------------------------------------------------------
 
@@ -1062,6 +1071,52 @@ public class ConfigurationImpl implements Configuration
       this.enforceMaxReplica = enforceMaxReplica;
    }
 
+   public void setNetworkCheckList(String list)
+   {
+      this.networkCheckList = list;
+   }
+
+   public String getNetworkCheckList()
+   {
+      return networkCheckList;
+   }
+
+   public void setNetworkCheckURLList(String urls)
+   {
+      this.networkURLList = urls;
+   }
+
+   public String getNetworkCheckURLList()
+   {
+      return networkURLList;
+   }
+
+   /**
+    * The interval on which we will perform network checks.
+    */
+   public void setNetworkCheckPeriod(long period)
+   {
+      this.networkCheckPeriod = period;
+   }
+
+   public long getNetworkCheckPeriod()
+   {
+      return this.networkCheckPeriod;
+   }
+
+   /**
+    * Time in ms for how long we should wait for a ping to finish.
+    */
+   public void setNetworkCheckTimeout(int timeout)
+   {
+      this.networkCheckTimeout = timeout;
+   }
+
+   public int getNetworkCheckTimeout()
+   {
+      return this.networkCheckTimeout;
+   }
+
    @Override
    public int hashCode()
    {
@@ -1079,24 +1134,24 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + ((clusterConfigurations == null) ? 0 : clusterConfigurations.hashCode());
       result = prime * result + ((clusterPassword == null) ? 0 : clusterPassword.hashCode());
       result = prime * result + ((clusterUser == null) ? 0 : clusterUser.hashCode());
-      result = prime * result + (int)(connectionTTLOverride ^ (connectionTTLOverride >>> 32));
+      result = prime * result + (int) (connectionTTLOverride ^ (connectionTTLOverride >>> 32));
       result = prime * result + ((connectorConfigs == null) ? 0 : connectorConfigs.hashCode());
       result =
-               prime * result +
-                        ((connectorServiceConfigurations == null) ? 0 : connectorServiceConfigurations.hashCode());
+         prime * result +
+            ((connectorServiceConfigurations == null) ? 0 : connectorServiceConfigurations.hashCode());
       result = prime * result + (createBindingsDir ? 1231 : 1237);
       result = prime * result + (createJournalDir ? 1231 : 1237);
       result = prime * result + ((discoveryGroupConfigurations == null) ? 0 : discoveryGroupConfigurations.hashCode());
       result = prime * result + ((divertConfigurations == null) ? 0 : divertConfigurations.hashCode());
-      result = prime * result + (int)(failbackDelay ^ (failbackDelay >>> 32));
+      result = prime * result + (int) (failbackDelay ^ (failbackDelay >>> 32));
       result = prime * result + (failoverOnServerShutdown ? 1231 : 1237);
       result = prime * result + (fileDeploymentEnabled ? 1231 : 1237);
-      result = prime * result + (int)(fileDeploymentScanPeriod ^ (fileDeploymentScanPeriod >>> 32));
+      result = prime * result + (int) (fileDeploymentScanPeriod ^ (fileDeploymentScanPeriod >>> 32));
       result = prime * result + ((groupingHandlerConfiguration == null) ? 0 : groupingHandlerConfiguration.hashCode());
       result = prime * result + idCacheSize;
       result =
-               prime * result +
-                        ((incomingInterceptorClassNames == null) ? 0 : incomingInterceptorClassNames.hashCode());
+         prime * result +
+            ((incomingInterceptorClassNames == null) ? 0 : incomingInterceptorClassNames.hashCode());
       result = prime * result + ((jmxDomain == null) ? 0 : jmxDomain.hashCode());
       result = prime * result + (jmxManagementEnabled ? 1231 : 1237);
       result = prime * result + journalBufferSize_AIO;
@@ -1118,22 +1173,22 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (logJournalWriteRate ? 1231 : 1237);
       result = prime * result + ((managementAddress == null) ? 0 : managementAddress.hashCode());
       result =
-               prime * result +
-                        ((managementNotificationAddress == null) ? 0 : managementNotificationAddress.hashCode());
+         prime * result +
+            ((managementNotificationAddress == null) ? 0 : managementNotificationAddress.hashCode());
       result = prime * result + (maskPassword ? 1231 : 1237);
       result = prime * result + maxConcurrentPageIO;
-      result = prime * result + (int)(memoryMeasureInterval ^ (memoryMeasureInterval >>> 32));
+      result = prime * result + (int) (memoryMeasureInterval ^ (memoryMeasureInterval >>> 32));
       result = prime * result + memoryWarningThreshold;
       result = prime * result + (messageCounterEnabled ? 1231 : 1237);
       result = prime * result + messageCounterMaxDayHistory;
-      result = prime * result + (int)(messageCounterSamplePeriod ^ (messageCounterSamplePeriod >>> 32));
-      result = prime * result + (int)(messageExpiryScanPeriod ^ (messageExpiryScanPeriod >>> 32));
+      result = prime * result + (int) (messageCounterSamplePeriod ^ (messageCounterSamplePeriod >>> 32));
+      result = prime * result + (int) (messageExpiryScanPeriod ^ (messageExpiryScanPeriod >>> 32));
       result = prime * result + messageExpiryThreadPriority;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
       result = prime * result + ((nodeGroupName == null) ? 0 : nodeGroupName.hashCode());
       result =
-               prime * result +
-                        ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
+         prime * result +
+            ((outgoingInterceptorClassNames == null) ? 0 : outgoingInterceptorClassNames.hashCode());
       result = prime * result + ((pagingDirectory == null) ? 0 : pagingDirectory.hashCode());
       result = prime * result + (persistDeliveryCountBeforeDelivery ? 1231 : 1237);
       result = prime * result + (persistIDCache ? 1231 : 1237);
@@ -1143,13 +1198,13 @@ public class ConfigurationImpl implements Configuration
       result = prime * result + (runSyncSpeedTest ? 1231 : 1237);
       result = prime * result + scheduledThreadPoolMaxSize;
       result = prime * result + (securityEnabled ? 1231 : 1237);
-      result = prime * result + (int)(securityInvalidationInterval ^ (securityInvalidationInterval >>> 32));
+      result = prime * result + (int) (securityInvalidationInterval ^ (securityInvalidationInterval >>> 32));
       result = prime * result + ((securitySettings == null) ? 0 : securitySettings.hashCode());
-      result = prime * result + (int)(serverDumpInterval ^ (serverDumpInterval >>> 32));
+      result = prime * result + (int) (serverDumpInterval ^ (serverDumpInterval >>> 32));
       result = prime * result + (sharedStore ? 1231 : 1237);
       result = prime * result + threadPoolMaxSize;
-      result = prime * result + (int)(transactionTimeout ^ (transactionTimeout >>> 32));
-      result = prime * result + (int)(transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
+      result = prime * result + (int) (transactionTimeout ^ (transactionTimeout >>> 32));
+      result = prime * result + (int) (transactionTimeoutScanPeriod ^ (transactionTimeoutScanPeriod >>> 32));
       result = prime * result + (wildcardRoutingEnabled ? 1231 : 1237);
       return result;
    }
@@ -1163,7 +1218,7 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (!(obj instanceof ConfigurationImpl))
          return false;
-      ConfigurationImpl other = (ConfigurationImpl)obj;
+      ConfigurationImpl other = (ConfigurationImpl) obj;
       if (acceptorConfigs == null)
       {
          if (other.acceptorConfigs != null)
