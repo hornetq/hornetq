@@ -152,7 +152,7 @@ public class NetworkHealthTestCheckTest
       // Accordingly to RFC5737, this address is guaranteed to not exist as it is reserved for documentation
       check.addAddress(INVALID_ADDRESS);
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(30, TimeUnit.SECONDS));
       Assert.assertFalse(component.isStarted());
 
       latch.setCount(1);
@@ -165,7 +165,7 @@ public class NetworkHealthTestCheckTest
 
       check.addAddress(address);
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assert.assertTrue(latch.await(30, TimeUnit.SECONDS));
       Assert.assertTrue(component.isStarted());
 
 
