@@ -66,23 +66,22 @@ public class NetworkIsolationReplicationTest extends FailoverTestBase
 
       crash(false, true, session);
 
-      for (int i = 0; i < 1000 && !backupServer.isStarted(); i++)
+      for (int i = 0; i < 1000 && backupServer.isStarted(); i++)
       {
          Thread.sleep(10);
       }
 
-      Assert.assertTrue(backupServer.isStarted());
+      Assert.assertFalse(backupServer.isStarted());
       Assert.assertFalse(backupServer.isActive());
 
       liveServer.start();
 
-      for (int i = 0; i < 1000 && backupServer.getServer().getReplicationEndpoint() != null && !backupServer.getServer().getReplicationEndpoint().isStarted(); i++)
+      backupServer.getServer().getNetworkHealthCheck().clearAddresses();
+
+      for (int i = 0; i < 1000 && (backupServer.getServer().getReplicationEndpoint() == null || !backupServer.getServer().getReplicationEndpoint().isStarted()); i++)
       {
          Thread.sleep(10);
       }
-
-
-      backupServer.getServer().getNetworkHealthCheck().clearAddresses();
 
       // This will make sure the backup got synchronized after the network was activated again
       Assert.assertTrue(backupServer.getServer().getReplicationEndpoint().isStarted());

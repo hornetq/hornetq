@@ -1322,7 +1322,7 @@ public abstract class UnitTestCase extends CoreUnitTestCase
    {
       long timeout = System.currentTimeMillis() + 15000;
 
-      while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() > timeout)
+      while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() < timeout)
       {
          try
          {
