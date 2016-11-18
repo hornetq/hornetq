@@ -213,6 +213,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.STOMP_ENABLE_MESSAGE_ID);
       allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropMaskPassword());
       allowableAcceptorKeys.add(HornetQDefaultConfiguration.getPropPasswordCodec());
+      allowableAcceptorKeys.add(TransportConstants.BACKLOG_PROP_NAME);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
