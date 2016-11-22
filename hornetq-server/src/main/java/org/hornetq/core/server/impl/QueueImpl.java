@@ -3082,8 +3082,16 @@ public class QueueImpl implements Queue
    //paging store, intermediateMessageReferences and MessageReferences
    private class TotalQueueIterator implements LinkedListIterator<MessageReference>
    {
+
+      private static final String DUPL_ID = "_HQ_DUPL_ID";
+
       LinkedListIterator<PagedReference> pageIter = null;
       LinkedListIterator<MessageReference> messagesIterator = null;
+
+      private Set<Object> duplIds;
+
+      private MessageReference cachedNext;
+
 
       public TotalQueueIterator()
       {
@@ -3092,6 +3100,7 @@ public class QueueImpl implements Queue
             pageIter = pageSubscription.iterator();
          }
          messagesIterator = new SynchronizedIterator(messageReferences.iterator());
+         duplIds = new HashSet<Object>();
       }
 
       @Override
@@ -3103,13 +3112,38 @@ public class QueueImpl implements Queue
          }
          if (pageIter != null)
          {
-            if (pageIter.hasNext())
+            if (cachedNext != null)
             {
                return true;
             }
+
+            cacheNextMessageReference();
+            return cachedNext != null;
          }
 
          return false;
+      }
+
+      private boolean isDuplicate(MessageReference messageReference)
+      {
+         return duplIds.contains(messageReference.getMessage().toMap().get(DUPL_ID));
+      }
+
+      private void cacheNextMessageReference()
+      {
+         cachedNext = null;
+
+         while (pageIter.hasNext())
+         {
+            MessageReference next = pageIter.next();
+
+            if (!isDuplicate(next))
+            {
+               duplIds.add(next.getMessage().toMap().get(DUPL_ID));
+               cachedNext = next;
+               break;
+            }
+         }
       }
 
       @Override
@@ -3121,9 +3155,15 @@ public class QueueImpl implements Queue
          }
          if (pageIter != null)
          {
-            if (pageIter.hasNext())
+            if (cachedNext == null)
             {
-               return pageIter.next();
+               cacheNextMessageReference();
+            }
+            if (cachedNext != null)
+            {
+               MessageReference next = cachedNext;
+               cachedNext = null;
+               return next;
             }
          }
 
