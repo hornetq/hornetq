@@ -33,10 +33,13 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.CoreNotificationType;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,21 +52,25 @@ import org.junit.runners.Parameterized;
 public class SlowConsumerTest extends ServiceTestBase
 {
    private boolean isNetty = false;
+   private boolean isPaging = false;
 
    // this will ensure that all tests in this class are run twice,
    // once with "true" passed to the class' constructor and once with "false"
-   @Parameterized.Parameters
+   @Parameterized.Parameters(name = "persistent={0}, paging={1}")
    public static Collection getParameters()
    {
       return Arrays.asList(new Object[][]{
-         {true},
-         {false}
+         {true, false},
+         {false, false},
+         {true, true},
+         {false, true}
       });
    }
 
-   public SlowConsumerTest(boolean isNetty)
+   public SlowConsumerTest(boolean isNetty, boolean isPaging)
    {
       this.isNetty = isNetty;
+      this.isPaging = isPaging;
    }
 
    private HornetQServer server;
@@ -78,16 +85,32 @@ public class SlowConsumerTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(false, isNetty);
+      server = createServer(true, isNetty);
 
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setSlowConsumerCheckPeriod(2);
+      addressSettings.setSlowConsumerCheckPeriod(1);
       addressSettings.setSlowConsumerThreshold(10);
       addressSettings.setSlowConsumerPolicy(SlowConsumerPolicy.KILL);
+
+      if (isPaging)
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+         addressSettings.setMaxSizeBytes(10 * 1024);
+         addressSettings.setPageSizeBytes(1024);
+      }
+      else
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+         addressSettings.setMaxSizeBytes(-1);
+         addressSettings.setPageSizeBytes(1024);
+
+      }
 
       server.start();
 
       server.getAddressSettingsRepository().addMatch(QUEUE.toString(), addressSettings);
+
+      server.createQueue(QUEUE, QUEUE, null, true, false).getPageSubscription().getPagingStore().startPaging();
 
       locator = createFactory(isNetty);
    }
@@ -99,9 +122,9 @@ public class SlowConsumerTest extends ServiceTestBase
 
       ClientSession session = addClientSession(sf.createSession(false, true, true, false));
 
-      session.createQueue(QUEUE, QUEUE, null, false);
-
       ClientProducer producer = addClientProducer(session.createProducer(QUEUE));
+
+      assertPaging();
 
       final int numMessages = 25;
 
@@ -126,6 +149,19 @@ public class SlowConsumerTest extends ServiceTestBase
       }
    }
 
+   private void assertPaging() throws Exception
+   {
+      Queue queue = server.locateQueue(QUEUE);
+      if (isPaging)
+      {
+         Assert.assertTrue(queue.getPageSubscription().isPaging());
+      }
+      else
+      {
+         Assert.assertFalse(queue.getPageSubscription().isPaging());
+      }
+   }
+
    @Test
    public void testSlowConsumerNotification() throws Exception
    {
@@ -134,15 +170,20 @@ public class SlowConsumerTest extends ServiceTestBase
 
       ClientSession session = addClientSession(sf.createSession(false, true, true, false));
 
-      session.createQueue(QUEUE, QUEUE, null, false);
-
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setSlowConsumerCheckPeriod(2);
       addressSettings.setSlowConsumerThreshold(10);
       addressSettings.setSlowConsumerPolicy(SlowConsumerPolicy.NOTIFY);
+      if (!isPaging)
+      {
+         addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+         addressSettings.setMaxSizeBytes(-1);
+      }
 
       server.getAddressSettingsRepository().removeMatch(QUEUE.toString());
       server.getAddressSettingsRepository().addMatch(QUEUE.toString(), addressSettings);
+
+      assertPaging();
 
       ClientProducer producer = addClientProducer(session.createProducer(QUEUE));
 
@@ -195,7 +236,7 @@ public class SlowConsumerTest extends ServiceTestBase
       ClientConsumer consumer = addClientConsumer(session.createConsumer(QUEUE));
       session.start();
 
-      assertTrue(notifLatch.await(3, TimeUnit.SECONDS));
+      assertTrue(notifLatch.await(15, TimeUnit.SECONDS));
    }
 
    @Test
@@ -205,8 +246,6 @@ public class SlowConsumerTest extends ServiceTestBase
 
       ClientSession session = addClientSession(sf.createSession(true, true));
 
-      session.createQueue(QUEUE, QUEUE, null, false);
-
       ClientProducer producer = addClientProducer(session.createProducer(QUEUE));
 
       final int numMessages = 5;
@@ -215,6 +254,8 @@ public class SlowConsumerTest extends ServiceTestBase
       {
          producer.send(createTextMessage(session, "m" + i));
       }
+
+      assertPaging();
 
       ClientConsumer consumer = addClientConsumer(session.createConsumer(QUEUE));
       session.start();
@@ -237,8 +278,6 @@ public class SlowConsumerTest extends ServiceTestBase
       ClientSession session = addClientSession(sf.createSession(true, true));
 
       final ClientSession producerSession = addClientSession(sf.createSession(true, true));
-
-      session.createQueue(QUEUE, QUEUE, null, false);
 
       final ClientProducer producer = addClientProducer(producerSession.createProducer(QUEUE));
 
@@ -288,6 +327,8 @@ public class SlowConsumerTest extends ServiceTestBase
       });
 
       t.start();
+
+      assertPaging();
 
       ClientConsumer consumer = addClientConsumer(session.createConsumer(QUEUE));
       session.start();
