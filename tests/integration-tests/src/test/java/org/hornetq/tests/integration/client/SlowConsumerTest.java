@@ -56,7 +56,7 @@ public class SlowConsumerTest extends ServiceTestBase
 
    // this will ensure that all tests in this class are run twice,
    // once with "true" passed to the class' constructor and once with "false"
-   @Parameterized.Parameters(name = "persistent={0}, paging={1}")
+   @Parameterized.Parameters(name = "netty={0}, paging={1}")
    public static Collection getParameters()
    {
       return Arrays.asList(new Object[][]{
