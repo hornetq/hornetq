@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -1162,6 +1163,12 @@ public class ScheduledDeliveryHandlerTest extends Assert
       public long getMessagesAdded()
       {
          return 0;
+      }
+
+      @Override
+      public AtomicLong getMessagesAddedCounter()
+      {
+         return null;
       }
 
       @Override

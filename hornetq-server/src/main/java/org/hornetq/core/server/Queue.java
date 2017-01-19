@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -106,6 +107,8 @@ public interface Queue extends Bindable
    Map<String, List<MessageReference>> getDeliveringMessages();
 
    long getMessagesAdded();
+
+   AtomicLong getMessagesAddedCounter();
 
    long getMessagesAcknowledged();
 

@@ -27,6 +27,7 @@ import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.impl.Page;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServerLogger;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
@@ -95,9 +96,10 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       this.subscription = subscription;
    }
 
-   public long getValueAdded()
+   @Override
+   public synchronized long getValueAdded(AtomicLong qCounter)
    {
-      return added.get() + pendingValue.get();
+      return qCounter.get() + added.get() + pendingValue.get();
    }
 
    @Override
@@ -255,12 +257,12 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    {
       Transaction tx = new TransactionImpl(storage);
 
-      delete(tx);
+      delete(tx, null);
 
       tx.commit();
    }
 
-   public void delete(Transaction tx) throws Exception
+   public void delete(Transaction tx, Queue queue) throws Exception
    {
       // always lock the StorageManager first.
       storage.readLock();
@@ -281,6 +283,12 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
             }
 
             recordID = -1;
+            //before reset counter, added it to the queue
+            if (queue != null)
+            {
+               AtomicLong qCounter = queue.getMessagesAddedCounter();
+               qCounter.addAndGet(added.get() + pendingValue.get());
+            }
             value.set(0);
             added.set(0);
             incrementRecords.clear();
