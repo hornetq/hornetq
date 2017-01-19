@@ -262,7 +262,7 @@ final class PageSubscriptionImpl implements PageSubscription
       if (counter != null)
       {
          // this could be null on testcases
-         counter.delete(tx);
+         counter.delete(tx, queue);
       }
       this.empty = true;
    }

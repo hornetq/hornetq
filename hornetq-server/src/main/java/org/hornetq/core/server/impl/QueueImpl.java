@@ -149,7 +149,7 @@ public class QueueImpl implements Queue
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
-   private volatile long messagesAdded;
+   private AtomicLong messagesAdded = new AtomicLong(0L);
 
    protected final AtomicInteger deliveringCount = new AtomicInteger(0);
 
@@ -513,7 +513,7 @@ public class QueueImpl implements Queue
 
       if (!ref.isPaged())
       {
-         messagesAdded++;
+         messagesAdded.incrementAndGet();
       }
    }
 
@@ -530,7 +530,7 @@ public class QueueImpl implements Queue
          {
             if (!ref.isPaged())
             {
-               messagesAdded++;
+               messagesAdded.incrementAndGet();
             }
          }
 
@@ -1217,12 +1217,20 @@ public class QueueImpl implements Queue
    {
       if (pageSubscription != null)
       {
-         return messagesAdded + pageSubscription.getCounter().getValueAdded();
+         //use pageSubscription to get the number in order to
+         //avoid deadlock
+         return pageSubscription.getCounter().getValueAdded(messagesAdded);
       }
       else
       {
-         return messagesAdded;
+         return messagesAdded.get();
       }
+   }
+
+   @Override
+   public AtomicLong getMessagesAddedCounter()
+   {
+      return messagesAdded;
    }
 
    public long getMessagesAcknowledged()
@@ -1814,7 +1822,7 @@ public class QueueImpl implements Queue
 
    public synchronized void resetMessagesAdded()
    {
-      messagesAdded = 0;
+      messagesAdded.set(0L);
    }
 
    public synchronized void pause()
@@ -1940,7 +1948,7 @@ public class QueueImpl implements Queue
 
          if (!ref.isPaged())
          {
-            messagesAdded++;
+            messagesAdded.incrementAndGet();
          }
          if (added++ > MAX_DELIVERIES_IN_LOOP)
          {
@@ -2570,7 +2578,7 @@ public class QueueImpl implements Queue
                   groups.put(groupID, consumer);
                }
 
-               messagesAdded++;
+               messagesAdded.incrementAndGet();
 
                deliveriesInTransit.countUp();
                proceedDeliver(consumer, ref);

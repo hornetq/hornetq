@@ -14,7 +14,10 @@
 package org.hornetq.core.paging.cursor;
 
 import org.hornetq.core.paging.impl.Page;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A PagingSubscriptionCounterInterface
@@ -24,7 +27,7 @@ import org.hornetq.core.transaction.Transaction;
 public interface PageSubscriptionCounter
 {
    //incremental counter of messages added
-   long getValueAdded();
+   long getValueAdded(AtomicLong qCounter);
 
    long getValue();
 
@@ -54,7 +57,7 @@ public interface PageSubscriptionCounter
 
    // used when leaving page mode, so the counters are deleted in batches
    // for each queue on the address
-   void delete(Transaction tx) throws Exception;
+   void delete(Transaction tx, Queue queue) throws Exception;
 
    void cleanupNonTXCounters(final long pageID) throws Exception;
 
