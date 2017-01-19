@@ -32,12 +32,13 @@ import org.junit.Test;
 
 public class PagingReceiveTest extends ServiceTestBase
 {
-
    private static final SimpleString ADDRESS = new SimpleString("jms.queue.catalog-service.price.change.bm");
 
    private HornetQServer server;
 
    private ServerLocator locator;
+
+   private int numMsgs = 500;
 
    protected boolean isNetty()
    {
@@ -52,6 +53,16 @@ public class PagingReceiveTest extends ServiceTestBase
       System.out.println("message received:" + message);
 
       Assert.assertNotNull("Message not found.", message);
+   }
+
+   @Test
+   public void testReceiveThenCheckCounter() throws Exception
+   {
+      Queue queue = server.locateQueue(ADDRESS);
+      assertEquals(numMsgs, queue.getMessagesAdded());
+      receiveAllMessages();
+      queue.getPageSubscription().cleanupEntries(true);
+      assertEquals(numMsgs, queue.getMessagesAdded());
    }
 
    @Override
@@ -73,7 +84,7 @@ public class PagingReceiveTest extends ServiceTestBase
       ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
       ClientProducer prod = session.createProducer(ADDRESS);
 
-      for (int i = 0; i < 500; i++)
+      for (int i = 0; i < numMsgs; i++)
       {
          ClientMessage msg = session.createMessage(true);
          msg.putIntProperty("key", i);
@@ -89,9 +100,7 @@ public class PagingReceiveTest extends ServiceTestBase
 
       server.stop();
 
-      internalCreateServer();
-
-
+      server = internalCreateServer();
    }
 
    private HornetQServer internalCreateServer() throws Exception
@@ -104,6 +113,24 @@ public class PagingReceiveTest extends ServiceTestBase
 
       locator = createFactory(isNetty());
       return server;
+   }
+
+   private void receiveAllMessages() throws Exception
+   {
+      final ClientSessionFactory sf = createSessionFactory(locator);
+      ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+
+      session.start();
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+      for (int i = 0; i < numMsgs; i++)
+      {
+         ClientMessage message = consumer.receive(2000);
+         assertNotNull(message);
+         message.acknowledge();
+      }
+
+      session.commit();
+      session.close();
    }
 
    private ClientMessage receiveMessage() throws Exception
