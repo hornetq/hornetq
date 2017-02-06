@@ -141,6 +141,13 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       int count = refCount.decrementAndGet();
 
+      if (count < 0)
+      {
+         // this is backporting ARTEMIS-748
+         // this could happen on paged messages since they are not routed and incrementRefCount is never called
+         return count;
+      }
+
       if (pagingStore != null)
       {
          if (count == 0)
