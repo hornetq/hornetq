@@ -13,6 +13,7 @@
 
 package org.hornetq.core.config.impl;
 
+import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -141,6 +142,12 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals(HornetQDefaultConfiguration.getDefaultMessageExpiryThreadPriority(),
                           conf.getMessageExpiryThreadPriority());
       Assert.assertEquals("replication cluster name", null, conf.getReplicationClustername());
+   }
+
+   @Test
+   public void testDefaultConstraints()
+   {
+      assertTrue(ClusterConnectionImpl.checkoutDupCacheSize(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE, conf.getIDCacheSize()));
    }
 
    // Protected ---------------------------------------------------------------------------------------------
