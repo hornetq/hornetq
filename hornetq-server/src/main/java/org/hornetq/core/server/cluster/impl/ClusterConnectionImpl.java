@@ -961,7 +961,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       topology.updateAsLive(nodeID, localMember);
    }
 
-   public boolean checkoutDupCacheSize(final int windowSize, final int idCacheSize)
+   public static boolean checkoutDupCacheSize(final int windowSize, final int idCacheSize)
    {
       final int msgNumInFlight = windowSize / DEFAULT_JMS_MESSAGE_SIZE;
 
@@ -1100,7 +1100,7 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
 
       if ( !checkoutDupCacheSize(serverLocator.getConfirmationWindowSize(),server.getConfiguration().getIDCacheSize()))
       {
-         HornetQServerLogger.LOGGER.duplicateCacheSizeWarning();
+         HornetQServerLogger.LOGGER.duplicateCacheSizeWarning(server.getConfiguration().getIDCacheSize(), serverLocator.getConfirmationWindowSize());
       }
    }
 
