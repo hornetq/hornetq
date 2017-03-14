@@ -579,6 +579,7 @@ public class RemotingConnectionImpl implements CoreRemotingConnection
       catch (Exception e)
       {
          HornetQClientLogger.LOGGER.errorDecodingPacket(e);
+         throw new IllegalStateException(e);
       }
    }
 
