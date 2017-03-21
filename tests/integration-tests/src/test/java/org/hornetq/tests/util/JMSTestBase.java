@@ -48,6 +48,8 @@ public class JMSTestBase extends ServiceTestBase
    protected MBeanServer mbeanServer;
 
    protected ConnectionFactory cf;
+   protected ConnectionFactory nettyCf;
+
    protected Connection conn;
 
    protected InVMContext context;
@@ -124,6 +126,7 @@ public class JMSTestBase extends ServiceTestBase
       Configuration conf = createDefaultConfig(true);
       conf.setSecurityEnabled(useSecurity());
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
       conf.setTransactionTimeoutScanPeriod(100);
 
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
@@ -198,10 +201,20 @@ public class JMSTestBase extends ServiceTestBase
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
       connectorConfigs.add(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
+      List<TransportConfiguration> connectorConfigs1 = new ArrayList<TransportConfiguration>();
+      connectorConfigs1.add(new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
+
       createCF(connectorConfigs, "/cf");
+      createCF("NettyCF", connectorConfigs1, "/nettyCf");
 
       cf = (ConnectionFactory)context.lookup("/cf");
+      nettyCf = (ConnectionFactory)context.lookup("/nettyCf");
+   }
 
+
+   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
+   {
+      createCF("ManualReconnectionToSingleServerTest", connectorConfigs, jndiBindings);
    }
 
    /**
@@ -209,14 +222,14 @@ public class JMSTestBase extends ServiceTestBase
     * @param jndiBindings
     * @throws Exception
     */
-   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
+   protected void createCF(final String name, final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
       int callTimeout = 30000;
 
-      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
+      jmsServer.createConnectionFactory(name,
                                         false,
                                         JMSFactoryType.CF,
                                         registerConnectors(server, connectorConfigs),

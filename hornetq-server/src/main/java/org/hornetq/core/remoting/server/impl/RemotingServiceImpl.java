@@ -584,7 +584,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          if (conn != null)
          {
-            conn.connection.bufferReceived(connectionID, buffer);
+            try
+            {
+               conn.connection.bufferReceived(connectionID, buffer);
+            }
+            catch (RuntimeException e)
+            {
+               HornetQServerLogger.LOGGER.warn("Failed to decode buffer, disconnect immediately.", e);
+               conn.connection.fail(new HornetQException(e.getMessage()));
+            }
          }
          else
          {
