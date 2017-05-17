@@ -205,7 +205,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + suffix);
       backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + suffix);
       backupConfig.setSecurityEnabled(false);
-      backupConfig.setMaxSavedReplicatedJournalSize(0);
+      backupConfig.setMaxSavedReplicatedJournalSize(-1);
       nodeManager = new InVMNodeManager(true, backupConfig.getJournalDirectory());
 
       backupServer = createTestableServer(backupConfig);
