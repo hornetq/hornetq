@@ -1364,4 +1364,8 @@ public interface HornetQServerLogger extends BasicLogger
    @LogMessage(level = Logger.Level.WARN)
    @Message(id = 224072, value = "Message Counter Sample Period too short: {0}", format = Message.Format.MESSAGE_FORMAT)
    void invalidMessageCounterPeriod(long value);
+
+   @LogMessage(level = Logger.Level.INFO)
+   @Message(id = 224073, value = "Deleting old data directory {0} as the max folders is set to 0", format = Message.Format.MESSAGE_FORMAT)
+   void backupDeletingData(String oldPath);
 }
