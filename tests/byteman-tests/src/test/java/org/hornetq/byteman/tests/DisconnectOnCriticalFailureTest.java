@@ -16,17 +16,24 @@
  */
 package org.hornetq.byteman.tests;
 
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.tests.util.JMSTestBase;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.jms.Connection;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +43,14 @@ public class DisconnectOnCriticalFailureTest extends JMSTestBase
 {
 
    private static AtomicBoolean corruptPacket = new AtomicBoolean(false);
+
+   @After
+   @Override
+   public void tearDown() throws Exception
+   {
+      corruptPacket.set(false);
+      super.tearDown();
+   }
 
    @Test
    @BMRules
@@ -82,6 +97,72 @@ public class DisconnectOnCriticalFailureTest extends JMSTestBase
          {
             producerConnection.close();
          }
+      }
+   }
+
+   @Test
+   @BMRules
+      (
+         rules =
+            {
+               @BMRule
+                  (
+                     name = "Corrupt Decoding",
+                     targetClass = "org.hornetq.core.protocol.ClientPacketDecoder",
+                     targetMethod = "decode(org.hornetq.api.core.HornetQBuffer)",
+                     targetLocation = "ENTRY",
+                     action = "org.hornetq.byteman.tests.DisconnectOnCriticalFailureTest.doThrow($1);"
+                  )
+            }
+      )
+   public void testClientDisconnect() throws Exception
+   {
+      Queue q1 = createQueue("queue1");
+      final Connection connection = nettyCf.createConnection();
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      try
+      {
+         connection.setExceptionListener(new ExceptionListener()
+         {
+            @Override
+            public void onException(JMSException e)
+            {
+               latch.countDown();
+            }
+         });
+
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer producer = session.createProducer(q1);
+         TextMessage m = session.createTextMessage("hello");
+         producer.send(m);
+         connection.start();
+
+         corruptPacket.set(true);
+         MessageConsumer consumer = session.createConsumer(q1);
+         consumer.receive(2000);
+
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
+      }
+      finally
+      {
+         corruptPacket.set(false);
+
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
+   }
+
+   public static void doThrow(HornetQBuffer buff)
+   {
+      byte type = buff.getByte(buff.readerIndex());
+      if (corruptPacket.get() && type == PacketImpl.SESS_RECEIVE_MSG)
+      {
+         corruptPacket.set(false);
+         throw new IllegalArgumentException("Invalid type: -84");
       }
    }
 
