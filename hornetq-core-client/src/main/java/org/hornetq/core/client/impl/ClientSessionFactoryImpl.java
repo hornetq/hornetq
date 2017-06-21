@@ -1688,11 +1688,26 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
-         CoreRemotingConnection theConn = connection;
+         final CoreRemotingConnection theConn = connection;
 
          if (theConn != null && connectionID == theConn.getID())
          {
-            theConn.bufferReceived(connectionID, buffer);
+            try
+            {
+               theConn.bufferReceived(connectionID, buffer);
+            }
+            catch (final RuntimeException e)
+            {
+               HornetQClientLogger.LOGGER.warn("Failed to decode buffer, disconnect immediately.", e);
+               threadPool.execute(new Runnable()
+               {
+                  @Override
+                  public void run()
+                  {
+                     theConn.fail(new HornetQException(e.getMessage()));
+                  }
+               });
+            }
          }
       }
    }
