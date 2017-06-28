@@ -4,7 +4,7 @@
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-pom</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.25.x.Final</version>
+   <version>2.3.25.SP20.Final</version>
 
    <name>HornetQ Parent</name>
    <url>http://hornetq.org</url>
