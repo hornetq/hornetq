@@ -493,7 +493,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (HornetQServerLogger.LOGGER.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("Queue " + name + " created on address " + name +
+         HornetQServerLogger.LOGGER.debug("Queue " + name + " created on address " + address +
                                              " with filter=" + filterString + " temporary = " +
                                              temporary + " durable=" + durable + " on session user=" + this.username + ", connection=" + this.remotingConnection);
       }
