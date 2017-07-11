@@ -72,7 +72,6 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.BindingsTransactionImpl;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedList;
@@ -175,8 +174,6 @@ public class QueueImpl implements Queue
    private final SimpleString address;
 
    private Redistributor redistributor;
-
-   private final Set<ScheduledFuture<?>> futures = new ConcurrentHashSet<ScheduledFuture<?>>();
 
    private ScheduledFuture<?> redistributorFuture;
 
@@ -794,8 +791,6 @@ public class QueueImpl implements Queue
       if (redistributorFuture != null)
       {
          redistributorFuture.cancel(false);
-
-         futures.remove(redistributorFuture);
       }
 
       if (redistributor != null)
@@ -811,8 +806,6 @@ public class QueueImpl implements Queue
             DelayedAddRedistributor dar = new DelayedAddRedistributor(executor);
 
             redistributorFuture = scheduledExecutor.schedule(dar, delay, TimeUnit.MILLISECONDS);
-
-            futures.add(redistributorFuture);
          }
       }
       else
@@ -2963,8 +2956,6 @@ public class QueueImpl implements Queue
          synchronized (QueueImpl.this)
          {
             internalAddRedistributor(executor1);
-
-            futures.remove(this);
          }
       }
    }
