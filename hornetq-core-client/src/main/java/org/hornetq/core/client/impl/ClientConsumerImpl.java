@@ -132,7 +132,7 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
 
    private boolean stopped = false;
 
-   private long forceDeliveryCount;
+   private volatile long forceDeliveryCount;
 
    private final SessionQueueQueryResponseMessage queueInfo;
 
@@ -330,7 +330,6 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
                      {
                         HornetQClientLogger.LOGGER.trace("There was nothing on the queue, leaving it now:: returning null");
                      }
-
                      return null;
                   }
                   else
@@ -563,6 +562,12 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
    public SessionQueueQueryResponseMessage getQueueInfo()
    {
       return queueInfo;
+   }
+
+   @Override
+   public long getForceDeliveryCount()
+   {
+      return forceDeliveryCount;
    }
 
    public long getID()

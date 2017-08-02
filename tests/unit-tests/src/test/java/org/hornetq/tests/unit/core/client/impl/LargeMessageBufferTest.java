@@ -932,6 +932,12 @@ public class LargeMessageBufferTest extends UnitTestCase
          return null;
       }
 
+      @Override
+      public long getForceDeliveryCount()
+      {
+         return 0;
+      }
+
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#getNonXAsession()
        */

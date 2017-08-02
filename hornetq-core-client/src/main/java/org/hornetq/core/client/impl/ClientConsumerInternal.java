@@ -77,4 +77,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    void start();
 
    SessionQueueQueryResponseMessage getQueueInfo();
+
+   long getForceDeliveryCount();
 }

@@ -1174,6 +1174,20 @@ final class ClientSessionImpl implements ClientSessionInternal, FailureListener,
                                                                                                        1);
                         sendPacketWithoutLock(packet);
                      }
+
+                     //force a delivery to avoid a infinite waiting
+                     //it can happen when the consumer sends a 'forced delivery' then
+                     //waiting forever, while the connection is broken and the server's
+                     //'forced delivery' message never gets to consumer. If session
+                     //is reconnected, its consumer never knows and stays waiting.
+                     //note this message will either be ignored by consumer (forceDeliveryCount
+                     //doesn't match, which is fine) or be caught by consumer
+                     //(in which case the consumer will wake up, thus avoid the infinite waiting).
+                     if (started && entry.getValue().getForceDeliveryCount() > 0)
+                     {
+                        SessionForceConsumerDelivery forceDel = new SessionForceConsumerDelivery(entry.getKey(), entry.getValue().getForceDeliveryCount() - 1);
+                        this.sendPacketWithoutLock(forceDel);
+                     }
                   }
 
                   if ((!autoCommitAcks || !autoCommitSends) && workDone)
