@@ -553,9 +553,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       try
       {
-         if (largeMessageDeliverer != null)
+         LargeMessageDeliverer pendingLargeMessageDeliverer = largeMessageDeliverer;
+
+         if (pendingLargeMessageDeliverer != null)
          {
-            largeMessageDeliverer.finish();
+            pendingLargeMessageDeliverer.finish();
          }
       }
       catch (Throwable e)
