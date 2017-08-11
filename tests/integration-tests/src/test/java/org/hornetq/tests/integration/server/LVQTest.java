@@ -667,6 +667,29 @@ public class LVQTest extends UnitTestCase
       super.tearDown();
    }
 
+   @Test
+   public void testLargeMessage() throws Exception
+   {
+      ClientProducer producer = clientSessionTxReceives.createProducer(address);
+      ClientConsumer consumer = clientSessionTxReceives.createConsumer(qName1);
+      SimpleString rh = new SimpleString("SMID1");
+
+      for (int i = 0; i < 5000; i++)
+      {
+         ClientMessage message = clientSession.createMessage(true);
+         message.setBodyInputStream(createFakeLargeStream(300 * 1024));
+         message.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
+         producer.send(message);
+         clientSession.commit();
+      }
+      clientSessionTxReceives.start();
+      ClientMessage m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      m.acknowledge();
+      Assert.assertNull(consumer.receiveImmediate());
+      clientSessionTxReceives.commit();
+   }
+
    @Override
    @Before
    public void setUp() throws Exception
@@ -676,8 +699,10 @@ public class LVQTest extends UnitTestCase
       ConfigurationImpl configuration = createBasicConfig();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
+      TransportConfiguration nettyTransportConfig = new TransportConfiguration(UnitTestCase.NETTY_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = HornetQServers.newHornetQServer(configuration, false);
+      configuration.getAcceptorConfigurations().add(nettyTransportConfig);
+      server = HornetQServers.newHornetQServer(configuration, true);
       // start the server
       server.start();
 
@@ -685,7 +710,7 @@ public class LVQTest extends UnitTestCase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normalServer
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY));
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
       ClientSessionFactory sessionFactory = createSessionFactory(locator);
