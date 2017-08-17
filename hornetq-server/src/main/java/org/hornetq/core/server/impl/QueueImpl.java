@@ -2208,7 +2208,6 @@ public class QueueImpl extends CriticalComponentImpl implements Queue
 
                if (status == HandleStatus.HANDLED)
                {
-
                   deliveriesInTransit.countUp();
 
                   handledconsumer = consumer;
@@ -2300,7 +2299,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue
     */
    private boolean needsDepage()
    {
-      return queueMemorySize.get() < pageSubscription.getPagingStore().getMaxSize();
+      return queueMemorySize.get() < pageSubscription.getPagingStore().getMaxSize() || pageSubscription.getPagingStore().getMaxSize() == -1;
    }
 
    private SimpleString extractGroupID(MessageReference ref)
