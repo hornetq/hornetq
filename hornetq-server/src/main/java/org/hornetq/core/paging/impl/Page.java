@@ -191,8 +191,7 @@ public final class Page implements Comparable<Page>
    {
       if (!file.isOpen())
       {
-
-         return;
+         throw new IllegalStateException("can't write to closed file " + file);
       }
 
       ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + Page.SIZE_RECORD);
