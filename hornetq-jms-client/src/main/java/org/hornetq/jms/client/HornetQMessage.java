@@ -41,6 +41,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.utils.UUID;
 
 /**
@@ -733,7 +734,8 @@ public class HornetQMessage implements javax.jms.Message
       for (SimpleString propName : message.getPropertyNames())
       {
          if ((!propName.startsWith(HornetQMessage.JMS) || propName.startsWith(HornetQMessage.JMSX) ||
-             propName.startsWith(HornetQMessage.JMS_)) && !propName.startsWith(HornetQConnection.CONNECTION_ID_PROPERTY_NAME))
+             propName.startsWith(HornetQMessage.JMS_)) && !propName.startsWith(HornetQConnection.CONNECTION_ID_PROPERTY_NAME) &&
+             !propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
          {
             set.add(propName.toString());
          }
