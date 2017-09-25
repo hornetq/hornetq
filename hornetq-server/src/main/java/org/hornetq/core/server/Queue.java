@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.apache.activemq.artemis.utils.critical.CriticalComponent;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -32,7 +33,7 @@ import org.hornetq.utils.LinkedListIterator;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-public interface Queue extends Bindable
+public interface Queue extends Bindable,CriticalComponent
 {
    SimpleString getName();
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -225,6 +226,19 @@ public class ConfigurationImpl implements Configuration
 
    private int networkCheckTimeout = HornetQDefaultConfiguration.getDefaultNetworkCheckTimeout();
 
+   private boolean criticalAnalyzer = HornetQDefaultConfiguration.getDefaultCriticalAnalyzer();
+   long criticalAnalyzerTimeout = HornetQDefaultConfiguration.getDefaultCriticalAnalyzerTimeout();
+   long criticalAnalyzerCheckPeriod = 0; // unset
+   CriticalAnalyzerPolicy criticalAnalyzerPolicy = HornetQDefaultConfiguration.getCriticalAnalyzerPolicy();
+
+
+   public ConfigurationImpl()
+   {
+      this.criticalAnalyzer = Boolean.parseBoolean(System.getProperty("brokerconfig.criticalAnalyzer", "" + criticalAnalyzer));
+      this.criticalAnalyzerPolicy = CriticalAnalyzerPolicy.valueOf(System.getProperty("brokerconfig.criticalAnalyzerPolicy", criticalAnalyzerPolicy.name()));
+      this.criticalAnalyzerTimeout = Long.parseLong(System.getProperty("brokerconfig.criticalAnalyzerTimeout", "" + criticalAnalyzerTimeout));
+      this.criticalAnalyzerCheckPeriod = Long.parseLong(System.getProperty("brokerconfig.criticalAnalyzerCheckPeriod", "" + (criticalAnalyzerTimeout / 2)));
+   }
 
    // Public -------------------------------------------------------------------------
 
@@ -1115,6 +1129,58 @@ public class ConfigurationImpl implements Configuration
    public int getNetworkCheckTimeout()
    {
       return this.networkCheckTimeout;
+   }
+
+   @Override
+   public boolean isCriticalAnalyzer()
+   {
+      return criticalAnalyzer;
+   }
+
+   @Override
+   public Configuration setCriticalAnalyzer(boolean criticalAnalyzer)
+   {
+      this.criticalAnalyzer = criticalAnalyzer;
+      return this;
+   }
+
+   @Override
+   public long getCriticalAnalyzerTimeout()
+   {
+      return criticalAnalyzerTimeout;
+   }
+
+   @Override
+   public Configuration setCriticalAnalyzerTimeout(long timeout)
+   {
+      this.criticalAnalyzerTimeout = timeout;
+      return this;
+   }
+
+   @Override
+   public long getCriticalAnalyzerCheckPeriod()
+   {
+      return criticalAnalyzerCheckPeriod;
+   }
+
+   @Override
+   public Configuration setCriticalAnalyzerCheckPeriod(long checkPeriod)
+   {
+      this.criticalAnalyzerCheckPeriod = checkPeriod;
+      return this;
+   }
+
+   @Override
+   public CriticalAnalyzerPolicy getCriticalAnalyzerPolicy()
+   {
+      return criticalAnalyzerPolicy;
+   }
+
+   @Override
+   public Configuration setCriticalAnalyzerPolicy(CriticalAnalyzerPolicy policy)
+   {
+      this.criticalAnalyzerPolicy = policy;
+      return this;
    }
 
    @Override

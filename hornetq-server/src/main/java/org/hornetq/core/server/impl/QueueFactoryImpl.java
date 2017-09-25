@@ -15,6 +15,8 @@ package org.hornetq.core.server.impl;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
+import org.apache.activemq.artemis.utils.critical.EmptyCriticalAnalyzer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
@@ -47,12 +49,17 @@ public class QueueFactoryImpl implements QueueFactory
 
    protected final ExecutorFactory executorFactory;
 
+   protected final CriticalAnalyzer analyzer;
+
    public QueueFactoryImpl(final ExecutorFactory executorFactory,
                            final ScheduledExecutorService scheduledExecutor,
                            final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                           final StorageManager storageManager)
+                           final StorageManager storageManager,
+                           final CriticalAnalyzer analyzer)
    {
       this.addressSettingsRepository = addressSettingsRepository;
+
+      this.analyzer = analyzer == null ? EmptyCriticalAnalyzer.getInstance() : analyzer;
 
       this.scheduledExecutor = scheduledExecutor;
 
@@ -76,7 +83,7 @@ public class QueueFactoryImpl implements QueueFactory
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
 
-      Queue queue;
+      QueueImpl queue;
       if (addressSettings.isLastValueQueue())
       {
          queue = new LastValueQueue(persistenceID,
@@ -90,7 +97,8 @@ public class QueueFactoryImpl implements QueueFactory
                                     postOffice,
                                     storageManager,
                                     addressSettingsRepository,
-                                    executorFactory.getExecutor());
+                                    executorFactory.getExecutor(),
+                                    this, analyzer);
       }
       else
       {
@@ -105,9 +113,19 @@ public class QueueFactoryImpl implements QueueFactory
                                postOffice,
                                storageManager,
                                addressSettingsRepository,
-                               executorFactory.getExecutor());
+                               executorFactory.getExecutor(),
+                               this, analyzer);
       }
 
+      analyzer.add(queue);
+
       return queue;
+   }
+
+
+   @Override
+   public void queueRemoved(Queue queue)
+   {
+      analyzer.remove(queue);
    }
 }

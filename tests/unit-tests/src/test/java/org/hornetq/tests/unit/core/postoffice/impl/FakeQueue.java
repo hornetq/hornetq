@@ -38,6 +38,24 @@ public class FakeQueue implements Queue
 {
 
    @Override
+   public void enterCritical(int path)
+   {
+
+   }
+
+   @Override
+   public void leaveCritical(int path)
+   {
+
+   }
+
+   @Override
+   public boolean isExpired(long timeout)
+   {
+      return false;
+   }
+
+   @Override
    public boolean isInternalQueue()
    {
       // no-op

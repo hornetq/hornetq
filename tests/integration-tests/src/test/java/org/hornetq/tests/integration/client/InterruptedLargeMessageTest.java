@@ -520,7 +520,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
                   postOffice,
                   storageManager,
                   addressSettingsRepository,
-                  executor);
+                  executor,
+                  null,
+                  null);
          }
 
          @Override
@@ -532,6 +534,10 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       class NoPostACKQueueFactory implements QueueFactory
       {
+         @Override
+         public void queueRemoved(Queue queue)
+         {
+         }
 
          final StorageManager storageManager;
 

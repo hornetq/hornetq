@@ -102,7 +102,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(HornetQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize());
 
-         journal = new JournalStorageManager(configuration, factory, null);
+         journal = new JournalStorageManager(configuration, factory);
 
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
@@ -129,7 +129,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          journal.stop();
 
-         journal = new JournalStorageManager(configuration, factory, null);
+         journal = new JournalStorageManager(configuration, factory);
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
@@ -160,7 +160,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          mapDups.clear();
 
-         journal = new JournalStorageManager(configuration, factory, null);
+         journal = new JournalStorageManager(configuration, factory);
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 

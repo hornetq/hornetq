@@ -40,11 +40,13 @@ public final class FileConfiguration extends ConfigurationImpl
 
    public FileConfiguration()
    {
+      super();
       configurationUrl = DEFAULT_CONFIGURATION_URL;
    }
 
    public FileConfiguration(String configurationUrl)
    {
+      super();
       this.configurationUrl = configurationUrl;
    }
 

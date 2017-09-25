@@ -255,7 +255,9 @@ public class HangConsumerTest extends ServiceTestBase
                   postOffice,
                   storageManager,
                   addressSettingsRepository,
-                  executor);
+                  executor,
+                  null,
+                  null);
          }
 
          @Override
@@ -275,7 +277,7 @@ public class HangConsumerTest extends ServiceTestBase
                              final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                              final StorageManager storageManager)
          {
-            super(executorFactory, scheduledExecutor, addressSettingsRepository, storageManager);
+            super(executorFactory, scheduledExecutor, addressSettingsRepository, storageManager, null);
          }
 
          @Override
@@ -393,7 +395,7 @@ public class HangConsumerTest extends ServiceTestBase
 
 
       // Forcing a situation where the server would unexpectedly create a duplicated queue. The server should still start normally
-      LocalQueueBinding newBinding = new LocalQueueBinding(QUEUE, new QueueImpl(queueID, QUEUE, QUEUE, null, true, false, null, null, null, null, null), server.getNodeID());
+      LocalQueueBinding newBinding = new LocalQueueBinding(QUEUE, new QueueImpl(queueID, QUEUE, QUEUE, null, true, false, null, null, null, null, null, null, null), server.getNodeID());
       server.getStorageManager().addQueueBinding(txID, newBinding);
       server.getStorageManager().commitBindings(txID);
 

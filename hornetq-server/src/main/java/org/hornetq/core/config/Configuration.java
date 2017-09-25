@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
@@ -977,4 +978,22 @@ public interface Configuration extends Serializable
    void setNetworkCheckTimeout(int timeout);
 
    int getNetworkCheckTimeout();
+
+   boolean isCriticalAnalyzer();
+
+   Configuration setCriticalAnalyzer(boolean CriticalAnalyzer);
+
+   long getCriticalAnalyzerTimeout();
+
+   Configuration setCriticalAnalyzerTimeout(long timeout);
+
+   long getCriticalAnalyzerCheckPeriod();
+
+   Configuration setCriticalAnalyzerCheckPeriod(long checkPeriod);
+
+   CriticalAnalyzerPolicy getCriticalAnalyzerPolicy();
+
+   Configuration setCriticalAnalyzerPolicy(CriticalAnalyzerPolicy policy);
+
+
 }

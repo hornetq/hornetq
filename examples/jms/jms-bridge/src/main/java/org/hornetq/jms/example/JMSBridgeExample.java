@@ -61,7 +61,7 @@ public class JMSBridgeExample
       Hashtable<String, String> targetJndiParams = createJndiParams(targetServer);
       // Step 2. Create and start a JMS Bridge
       // Note, the Bridge needs a transaction manager, in this instance we will use the JBoss TM
-      JMSBridge jmsBridge = new JMSBridgeImpl(
+      JMSBridge jmsBridge = new JMSBridgeImpl("topic-queue bridge",
                new JNDIConnectionFactoryFactory(sourceJndiParams, "/source/ConnectionFactory"),
                new JNDIConnectionFactoryFactory(targetJndiParams, "/target/ConnectionFactory"),
                new JNDIDestinationFactory(sourceJndiParams, "/source/topic"),
