@@ -279,7 +279,8 @@ public class JournalStorageManager extends CriticalComponentImpl implements Stor
                                               bindingsFF,
                                               "hornetq-bindings",
                                               "bindings",
-                                              1);
+                                              1,
+                                              criticalErrorListener);
 
       bindingsJournal = localBindings;
       originalBindingsJournal = localBindings;
@@ -330,7 +331,8 @@ public class JournalStorageManager extends CriticalComponentImpl implements Stor
                                              "hornetq-data",
                                              "hq",
                                              config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
-                                                : config.getJournalMaxIO_NIO());
+                                                : config.getJournalMaxIO_NIO(),
+                                             criticalErrorListener);
 
       messageJournal = localMessage;
       originalMessageJournal = localMessage;

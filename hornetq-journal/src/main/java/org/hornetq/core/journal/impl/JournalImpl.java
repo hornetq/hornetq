@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal.impl;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -193,6 +195,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    private ConcurrentHashSet<CountDownLatch> latches = new ConcurrentHashSet<CountDownLatch>();
 
+   private final IOCriticalErrorListener criticalErrorListener;
+
    // Lock used during the append of records
    // This lock doesn't represent a global lock.
    // After a record is appended, the usedFile can't be changed until the positives and negatives are updated
@@ -225,7 +229,20 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                       final String fileExtension,
                       final int maxAIO)
    {
-      this(fileSize, minFiles, compactMinFiles, compactPercentage, fileFactory, filePrefix, fileExtension, maxAIO, 0);
+      this(fileSize, minFiles, compactMinFiles, compactPercentage, fileFactory, filePrefix, fileExtension, maxAIO, 0, null);
+   }
+
+   public JournalImpl(final int fileSize,
+                      final int minFiles,
+                      final int compactMinFiles,
+                      final int compactPercentage,
+                      final SequentialFileFactory fileFactory,
+                      final String filePrefix,
+                      final String fileExtension,
+                      final int maxAIO,
+                      IOCriticalErrorListener listener)
+   {
+      this(fileSize, minFiles, compactMinFiles, compactPercentage, fileFactory, filePrefix, fileExtension, maxAIO, 0, listener);
    }
 
 
@@ -236,7 +253,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                       final SequentialFileFactory fileFactory,
                       final String filePrefix,
                       final String fileExtension,
-                      final int maxAIO, final int userVersion)
+                      final int maxAIO, final int userVersion,
+                      IOCriticalErrorListener criticalErrorListener)
    {
       super(fileFactory.isSupportsCallbacks(), fileSize);
       if (fileSize % fileFactory.getAlignment() != 0)
@@ -277,6 +295,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                                                    minFiles);
 
       this.userVersion = userVersion;
+
+      this.criticalErrorListener = criticalErrorListener;
    }
 
    @Override
@@ -3148,24 +3168,55 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     */
    protected JournalFile switchFileIfNecessary(int size) throws Exception
    {
+
       // We take into account the fileID used on the Header
       if (size > fileSize - currentFile.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER))
       {
          throw new IllegalArgumentException("Record is too large to store " + size);
       }
 
-      if (!currentFile.getFile().fits(size))
+      try
       {
-         moveNextFile(true);
-
-         // The same check needs to be done at the new file also
          if (!currentFile.getFile().fits(size))
          {
-            // Sanity check, this should never happen
-            throw new IllegalStateException("Invalid logic on buffer allocation");
+            moveNextFile(true);
+
+            // The same check needs to be done at the new file also
+            if (!currentFile.getFile().fits(size))
+            {
+               // Sanity check, this should never happen
+               throw new IllegalStateException("Invalid logic on buffer allocation");
+            }
          }
+         return currentFile;
       }
-      return currentFile;
+      catch (Throwable e)
+      {
+         criticalIO(e);
+         return null; // this will never happen, the method will call throw
+      }
+   }
+
+   private void criticalIO(Throwable e) throws Exception
+   {
+      if (criticalErrorListener != null)
+      {
+         criticalErrorListener.onIOException(e, e.getMessage(), currentFile == null ? null : currentFile.getFile());
+      }
+      if (e instanceof Exception)
+      {
+         throw (Exception) e;
+      }
+      else if (e instanceof IllegalStateException)
+      {
+         throw (IllegalStateException)e;
+      }
+      else
+      {
+         IOException ioex = new IOException();
+         ioex.initCause(e);
+         throw ioex;
+      }
    }
 
    private CountDownLatch newLatch(int countDown)
@@ -3209,21 +3260,29 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     */
    private void moveNextFile(final boolean scheduleReclaim) throws Exception
    {
-      filesRepository.closeFile(currentFile);
-
-      currentFile = filesRepository.openFile();
-
-      if (scheduleReclaim)
+      try
       {
-         scheduleReclaim();
+         filesRepository.closeFile(currentFile);
+
+         currentFile = filesRepository.openFile();
+
+         if (scheduleReclaim)
+         {
+            scheduleReclaim();
+         }
+
+         if (trace)
+         {
+            HornetQJournalLogger.LOGGER.movingNextFile(currentFile);
+         }
+
+         fileFactory.activateBuffer(currentFile.getFile());
+      }
+      catch (Throwable e)
+      {
+         criticalIO(e);
       }
 
-      if (trace)
-      {
-         HornetQJournalLogger.LOGGER.movingNextFile(currentFile);
-      }
-
-      fileFactory.activateBuffer(currentFile.getFile());
    }
 
    @Override
