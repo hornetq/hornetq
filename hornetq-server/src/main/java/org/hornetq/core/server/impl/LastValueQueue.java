@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -26,6 +27,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -56,7 +58,9 @@ public class LastValueQueue extends QueueImpl
                          final PostOffice postOffice,
                          final StorageManager storageManager,
                          final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                         final Executor executor)
+                         final Executor executor,
+                         final QueueFactory factory,
+                         final CriticalAnalyzer analyzer)
    {
       super(persistenceID,
             address,
@@ -69,8 +73,9 @@ public class LastValueQueue extends QueueImpl
             postOffice,
             storageManager,
             addressSettingsRepository,
-            executor);
-      new Exception("LastValueQeue " + this).toString();
+            executor,
+            factory,
+            analyzer);
    }
 
    @Override

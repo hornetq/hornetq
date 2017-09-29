@@ -43,6 +43,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
+import org.apache.activemq.artemis.utils.critical.CriticalComponentImpl;
+import org.apache.activemq.artemis.utils.critical.EmptyCriticalAnalyzer;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
@@ -141,8 +144,10 @@ import static org.hornetq.core.persistence.impl.journal.JournalRecordIds.SET_SCH
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class JournalStorageManager implements StorageManager
+public class JournalStorageManager extends CriticalComponentImpl implements StorageManager
 {
+   private static final int CRITICAL_PATHS = 1;
+   private static final int CRITICAL_STORE = 0;
 
    private static final Logger logger = Logger.getLogger(JournalStorageManager.class);
 
@@ -229,14 +234,21 @@ public class JournalStorageManager implements StorageManager
 
    private final Set<Long> largeMessagesToDelete = new HashSet<Long>();
 
-   public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory)
+   public JournalStorageManager(final Configuration config, ExecutorFactory executorFactory)
    {
-      this(config, executorFactory, null);
+      this(config, EmptyCriticalAnalyzer.getInstance(), executorFactory, null);
    }
 
-   public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory,
+   public JournalStorageManager(final Configuration config, final CriticalAnalyzer analyzer, final ExecutorFactory executorFactory)
+   {
+      this(config, analyzer, executorFactory, null);
+   }
+
+   public JournalStorageManager(final Configuration config, final CriticalAnalyzer analyzer, final ExecutorFactory executorFactory,
                                 final IOCriticalErrorListener criticalErrorListener)
    {
+      super(analyzer, CRITICAL_PATHS);
+
       this.executorFactory = executorFactory;
 
       this.ioCriticalErrorListener = criticalErrorListener;
@@ -267,7 +279,8 @@ public class JournalStorageManager implements StorageManager
                                               bindingsFF,
                                               "hornetq-bindings",
                                               "bindings",
-                                              1);
+                                              1,
+                                              criticalErrorListener);
 
       bindingsJournal = localBindings;
       originalBindingsJournal = localBindings;
@@ -318,7 +331,8 @@ public class JournalStorageManager implements StorageManager
                                              "hornetq-data",
                                              "hq",
                                              config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
-                                                : config.getJournalMaxIO_NIO());
+                                                : config.getJournalMaxIO_NIO(),
+                                             criticalErrorListener);
 
       messageJournal = localMessage;
       originalMessageJournal = localMessage;
@@ -974,6 +988,7 @@ public class JournalStorageManager implements StorageManager
    @Override
    public void readLock()
    {
+      enterCritical(CRITICAL_STORE);
       storageManagerLock.readLock().lock();
    }
 
@@ -981,6 +996,7 @@ public class JournalStorageManager implements StorageManager
    public void readUnLock()
    {
       storageManagerLock.readLock().unlock();
+      leaveCritical(CRITICAL_STORE);
    }
 
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception

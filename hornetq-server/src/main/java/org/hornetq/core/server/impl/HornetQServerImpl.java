@@ -14,7 +14,6 @@
 package org.hornetq.core.server.impl;
 
 import javax.management.MBeanServer;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -43,6 +42,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAction;
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerImpl;
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
+import org.apache.activemq.artemis.utils.critical.CriticalComponent;
+import org.apache.activemq.artemis.utils.critical.EmptyCriticalAnalyzer;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
@@ -224,7 +229,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private final HornetQSecurityManager securityManager;
 
-   private final Configuration configuration;
+   protected final Configuration configuration;
 
    private final MBeanServer mbeanServer;
 
@@ -242,7 +247,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private volatile ScheduledExecutorService scheduledPool;
 
-   private volatile ExecutorFactory executorFactory;
+   protected volatile ExecutorFactory executorFactory;
 
    private final NetworkHealthCheck networkHealthCheck = new NetworkHealthCheck(HornetQDefaultConfiguration.getDefaultNetworkNic(), HornetQDefaultConfiguration.getDefaultNetworkCheckPeriod(), HornetQDefaultConfiguration.getDefaultNetworkCheckTimeout());
 
@@ -306,10 +311,12 @@ public class HornetQServerImpl implements HornetQServer
 
    private Activation activation;
 
-   private final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
+   protected final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
 
    private final Object failbackCheckerGuard = new Object();
    private boolean cancelFailBackChecker;
+
+   protected CriticalAnalyzer analyzer;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -457,6 +464,9 @@ public class HornetQServerImpl implements HornetQServer
       }
       state = SERVER_STATE.STARTING;
 
+      initializeCriticalAnalyzer();
+
+
       activationLatch.setCount(1);
 
       HornetQServerLogger.LOGGER.debug("Starting server " + this);
@@ -534,6 +544,102 @@ public class HornetQServerImpl implements HornetQServer
          OperationContextImpl.clearContext();
       }
    }
+
+   private void initializeCriticalAnalyzer() throws Exception
+   {
+
+      if (analyzer == null)
+      {
+         if (configuration.isCriticalAnalyzer())
+         {
+            this.analyzer = new CriticalAnalyzerImpl();
+         }
+         else
+         {
+            this.analyzer = EmptyCriticalAnalyzer.getInstance();
+         }
+      }
+
+      /** Calling this for cases where the server was stopped and now is being restarted... failback, etc...*/
+      this.analyzer.clear();
+
+      analyzer.setCheckTime(configuration.getCriticalAnalyzerCheckPeriod(), TimeUnit.MILLISECONDS).setTimeout(configuration.getCriticalAnalyzerTimeout(), TimeUnit.MILLISECONDS);
+
+      if (configuration.isCriticalAnalyzer())
+      {
+         analyzer.start();
+      }
+
+      CriticalAction criticalAction = null;
+      final CriticalAnalyzerPolicy criticalAnalyzerPolicy = configuration.getCriticalAnalyzerPolicy();
+      switch (criticalAnalyzerPolicy)
+      {
+
+         case HALT:
+            criticalAction = new CriticalAction()
+            {
+               @Override
+               public void run(CriticalComponent failedComponent)
+               {
+
+                  HornetQServerLogger.LOGGER.criticalSystemHalt(failedComponent);
+                  threadDump("Failed component");
+
+                  Runtime.getRuntime().halt(70); // Linux systems will have /usr/include/sysexits.h showing 70 as internal software error
+
+               }
+            };
+            break;
+         case SHUTDOWN:
+            criticalAction = new CriticalAction()
+            {
+               @Override
+               public void run(CriticalComponent failedComponent)
+               {
+                  HornetQServerLogger.LOGGER.criticalSystemShutdown(failedComponent);
+
+                  threadDump("Failed component");
+
+
+                  // you can't stop from the check thread,
+                  // nor can use an executor
+                  Thread stopThread = new Thread()
+                  {
+                     @Override
+                     public void run()
+                     {
+                        try
+                        {
+                           HornetQServerImpl.this.stop();
+                        }
+                        catch (Throwable e)
+                        {
+                           HornetQServerLogger.LOGGER.warn(e.getMessage(), e);
+                        }
+                     }
+                  };
+                  stopThread.start();
+               }
+            };
+            break;
+         case LOG:
+
+            criticalAction = new CriticalAction()
+            {
+               @Override
+               public void run(CriticalComponent failedComponent)
+               {
+                  HornetQServerLogger.LOGGER.criticalSystemLog(failedComponent);
+
+                  threadDump("Failed component");
+               }
+            };
+      }
+
+      this.analyzer.addAction(criticalAction);
+   }
+
+
 
    @Override
    protected final void finalize() throws Throwable
@@ -1446,11 +1552,12 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance)
     */
-   private StorageManager createStorageManager()
+   protected StorageManager createStorageManager()
    {
       if (configuration.isPersistenceEnabled())
       {
-         return new JournalStorageManager(configuration, executorFactory, shutdownOnCriticalIO);
+         JournalStorageManager manager = new JournalStorageManager(configuration, analyzer, executorFactory, shutdownOnCriticalIO);
+         analyzer.add(manager);
       }
       return new NullStorageManager(shutdownOnCriticalIO);
    }
@@ -1556,7 +1663,7 @@ public class HornetQServerImpl implements HornetQServer
                                             configuration.getClusterPassword(),
                                             managementService);
 
-      queueFactory = new QueueFactoryImpl(executorFactory, scheduledPool, addressSettingsRepository, storageManager);
+      queueFactory = new QueueFactoryImpl(executorFactory, scheduledPool, addressSettingsRepository, storageManager, analyzer);
 
       pagingManager = createPagingManager();
 

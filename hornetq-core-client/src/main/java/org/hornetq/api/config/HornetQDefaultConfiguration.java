@@ -1,5 +1,6 @@
 package org.hornetq.api.config;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.impl.JournalConstants;
 import org.jboss.logging.Logger;
@@ -460,11 +461,25 @@ public final class HornetQDefaultConfiguration
       return DEFAULT_NETWORK_CHECK_TIMEOUT;
    }
 
+   public static boolean getDefaultCriticalAnalyzer()
+   {
+      return DEFAULT_CRITICAL_ANALYZER;
+   }
+
+   public static long getDefaultCriticalAnalyzerTimeout()
+   {
+      return DEFAULT_CRITICAL_ANALYZER_TIMEOUT;
+   }
+
+   public static CriticalAnalyzerPolicy getCriticalAnalyzerPolicy()
+   {
+      return DEFAULT_ANALYZE_CRITICAL_POLICY;
+   }
+
    public static String getDefaultNetworkNic()
    {
       return DEFAULT_NETWORK_CHECK_NIC;
    }
-
 
    public static long getDefaultGroupTimeout()
    {
@@ -561,6 +576,12 @@ public final class HornetQDefaultConfiguration
    public static int DEFAULT_NETWORK_CHECK_TIMEOUT;
 
    public static String DEFAULT_NETWORK_CHECK_NIC;
+
+   public static final boolean DEFAULT_CRITICAL_ANALYZER = false;
+
+   public static final long DEFAULT_CRITICAL_ANALYZER_TIMEOUT = 120000;
+
+   public static final CriticalAnalyzerPolicy DEFAULT_ANALYZE_CRITICAL_POLICY = CriticalAnalyzerPolicy.SHUTDOWN;
 
 
    static

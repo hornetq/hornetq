@@ -944,6 +944,22 @@ public class ScheduledDeliveryHandlerTest extends Assert
    public class FakeQueueForScheduleUnitTest implements Queue
    {
 
+      @Override
+      public void enterCritical(int path)
+      {
+      }
+
+      @Override
+      public void leaveCritical(int path)
+      {
+      }
+
+      @Override
+      public boolean isExpired(long timeout)
+      {
+         return false;
+      }
+
       final CountDownLatch expectedElements;
       LinkedList<MessageReference> messages = new LinkedList<MessageReference>();
 

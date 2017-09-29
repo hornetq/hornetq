@@ -38,6 +38,8 @@ public interface QueueFactory
                      boolean durable,
                      boolean temporary);
 
+   void queueRemoved(Queue queue);
+
    /**
     * This is required for delete-all-reference to work correctly with paging
     * @param postOffice

@@ -94,7 +94,7 @@ public class RestartSMTest extends ServiceTestBase
 
       PostOffice postOffice = new FakePostOffice();
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory, null);
+      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory);
 
       try
       {

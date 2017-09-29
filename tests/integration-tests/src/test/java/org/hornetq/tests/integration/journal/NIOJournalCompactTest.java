@@ -1791,7 +1791,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       final ExecutorService deleteExecutor = Executors.newCachedThreadPool();
 
-      final JournalStorageManager storage = new JournalStorageManager(config, factory, null);
+      final JournalStorageManager storage = new JournalStorageManager(config, factory);
 
       storage.start();
       storage.loadInternalOnly();

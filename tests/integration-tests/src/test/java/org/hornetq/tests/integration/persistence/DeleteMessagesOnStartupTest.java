@@ -79,7 +79,7 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
    @Override
    protected JournalStorageManager createJournalStorageManager(Configuration configuration)
    {
-      return new JournalStorageManager(configuration, execFactory, null)
+      return new JournalStorageManager(configuration, execFactory)
       {
          @Override
          public void deleteMessage(final long messageID) throws Exception

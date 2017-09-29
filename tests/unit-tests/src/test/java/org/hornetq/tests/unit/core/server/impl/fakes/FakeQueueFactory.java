@@ -40,6 +40,11 @@ public class FakeQueueFactory implements QueueFactory
 
    private PostOffice postOffice;
 
+   @Override
+   public void queueRemoved(Queue queue)
+   {
+   }
+
    public Queue createQueue(final long persistenceID,
                             final SimpleString address,
                             final SimpleString name,
@@ -59,7 +64,9 @@ public class FakeQueueFactory implements QueueFactory
                            postOffice,
                            null,
                            null,
-                           executor);
+                           executor,
+                           null,
+                           null);
    }
 
    public void setPostOffice(final PostOffice postOffice)

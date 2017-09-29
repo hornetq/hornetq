@@ -504,7 +504,7 @@ public final class ReplicationTest extends ServiceTestBase
     */
    private JournalStorageManager getStorage() throws Exception
    {
-      return new JournalStorageManager(createDefaultConfig(), factory, null);
+      return new JournalStorageManager(createDefaultConfig(), factory);
    }
 
    /**
