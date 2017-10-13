@@ -1558,6 +1558,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          JournalStorageManager manager = new JournalStorageManager(configuration, analyzer, executorFactory, shutdownOnCriticalIO);
          analyzer.add(manager);
+         return manager;
       }
       return new NullStorageManager(shutdownOnCriticalIO);
    }
