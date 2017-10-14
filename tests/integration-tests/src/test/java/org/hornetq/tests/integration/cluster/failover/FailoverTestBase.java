@@ -239,29 +239,14 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       InVMConnector.failOnCreateConnection = false;
 
-      if (backupServer != null)
-      {
-         backupServer.stop();
-      }
-
-      if (liveServer != null)
-      {
-         liveServer.stop();
-      }
-
-      if (nodeManager != null)
-      {
-         nodeManager.stop();
-      }
+      super.tearDown();
+      Assert.assertEquals(0, InVMRegistry.instance.size());
 
       backupServer = null;
 
       liveServer = null;
 
       nodeManager = null;
-
-      super.tearDown();
-      Assert.assertEquals(0, InVMRegistry.instance.size());
 
       try
       {
