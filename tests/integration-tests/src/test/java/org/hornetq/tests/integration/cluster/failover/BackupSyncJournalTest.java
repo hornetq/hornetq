@@ -446,6 +446,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    protected void createConfigs() throws Exception
    {
       createReplicatedConfigs();
+      backupConfig.setMaxSavedReplicatedJournalSize(-1);
    }
 
    @Override
