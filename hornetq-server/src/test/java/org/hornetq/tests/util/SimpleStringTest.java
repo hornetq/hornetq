@@ -15,6 +15,8 @@ package org.hornetq.tests.util;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.utils.DataConstants;
 import org.junit.Assert;
@@ -450,6 +452,25 @@ public class SimpleStringTest extends Assert
             Assert.assertFalse(t.failed);
          }
       }
+   }
+
+
+   @Test
+   public void testOutOfBoundsThrownOnMalformedString()
+   {
+      HornetQBuffer byteBuffer = HornetQBuffers.dynamicBuffer(5);
+      byteBuffer.writeInt(Integer.MAX_VALUE);
+
+      Exception e = null;
+      try
+      {
+         byteBuffer.readSimpleString();
+      }
+      catch (IndexOutOfBoundsException iob)
+      {
+         e = iob;
+      }
+      assertTrue(e instanceof IndexOutOfBoundsException);
    }
 
 }
