@@ -44,7 +44,7 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
    }
 
    @Override
-   protected FileLock tryLock(final int lockPos) throws Exception
+   protected FileLock tryLock(final long lockPos) throws Exception
    {
       File file = newFileForRegionLock(lockPos);
 
@@ -67,7 +67,7 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
    }
 
    @Override
-   protected FileLock lock(final int liveLockPos) throws IOException
+   protected FileLock lock(final long liveLockPos) throws IOException
    {
       File file = newFileForRegionLock(liveLockPos);
 
@@ -106,7 +106,7 @@ public final class AIOFileLockNodeManager extends FileLockNodeManager
     * @param liveLockPos
     * @return
     */
-   protected File newFileForRegionLock(final int liveLockPos)
+   protected File newFileForRegionLock(final long liveLockPos)
    {
       File file = newFile("server." + liveLockPos + ".lock");
       return file;
