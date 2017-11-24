@@ -22,6 +22,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQServerLogger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -30,11 +31,15 @@ import org.hornetq.utils.UUID;
  */
 public class FileLockNodeManager extends NodeManager
 {
-   private static final int LIVE_LOCK_POS = 1;
+   private static final Logger logger = Logger.getLogger(FileLockNodeManager.class);
 
-   private static final int BACKUP_LOCK_POS = 2;
+   private static final long STATE_LOCK_POS = 0;
 
-   private static final int LOCK_LENGTH = 1;
+   private static final long LIVE_LOCK_POS = 1;
+
+   private static final long BACKUP_LOCK_POS = 2;
+
+   private static final long LOCK_LENGTH = 1;
 
    private static final byte LIVE = 'L';
 
@@ -117,6 +122,7 @@ public class FileLockNodeManager extends NodeManager
    @Override
    public void awaitLiveNode() throws Exception
    {
+      logger.debug("awaitng live node...");
       do
       {
          byte state = getState();
@@ -215,30 +221,69 @@ public class FileLockNodeManager extends NodeManager
     * @param status
     * @throws IOException
     */
-   private void writeFileLockStatus(byte status) throws IOException
+   private void writeFileLockStatus(byte status) throws Exception
    {
       if (replicatedBackup && channel == null)
          return;
+      logger.debug("wrting status: " + status);
       ByteBuffer bb = ByteBuffer.allocateDirect(1);
       bb.put(status);
       bb.position(0);
-      channel.write(bb, 0);
-      channel.force(true);
+
+      if (!channel.isOpen())
+      {
+         setUpServerLockFile();
+      }
+
+      FileLock lock = null;
+
+      try
+      {
+         lock = lock(STATE_LOCK_POS);
+         channel.write(bb, 0);
+         channel.force(true);
+      }
+      finally
+      {
+         if (lock != null)
+         {
+            lock.release();
+         }
+      }
+
    }
 
    private byte getState() throws Exception
    {
+      byte result;
+      logger.debug("getting state...");
       ByteBuffer bb = ByteBuffer.allocateDirect(1);
       int read;
-      read = channel.read(bb, 0);
-      if (read <= 0)
+      FileLock lock = null;
+      try
       {
-         return FileLockNodeManager.NOT_STARTED;
+         lock = lock(STATE_LOCK_POS);
+         read = channel.read(bb, 0);
+         if (read <= 0)
+         {
+            result =  FileLockNodeManager.NOT_STARTED;
+         }
+         else
+         {
+            result = bb.get(0);
+         }
       }
-      else
+      finally
       {
-         return bb.get(0);
+         if (lock != null)
+         {
+            lock.release();
+         }
       }
+
+      logger.debug("state: " + result);
+
+      return result;
    }
 
    @Override
@@ -257,24 +302,39 @@ public class FileLockNodeManager extends NodeManager
       return getNodeId();
    }
 
-   protected FileLock tryLock(final int lockPos) throws Exception
+   protected FileLock tryLock(final long lockPos) throws Exception
    {
-      return channel.tryLock(lockPos, LOCK_LENGTH, false);
+      try
+      {
+         logger.debug("trying to lock position: " + lockPos);
+         FileLock lock = channel.tryLock(lockPos, LOCK_LENGTH, false);
+         if (lock != null)
+         {
+            logger.debug("locked postion: " + lockPos);
+         }
+         else
+         {
+            logger.debug("failed to lock postion: " + lockPos);
+         }
+
+         return lock;
+      }
+      catch (java.nio.channels.OverlappingFileLockException ex)
+      {
+         logger.trace(ex);
+         return null;
+      }
+
+
    }
 
-   protected FileLock lock(final int liveLockPos) throws IOException
+   protected FileLock lock(final long lockPosition) throws Exception
    {
+      long start = System.currentTimeMillis();
+
       while (!interrupted)
       {
-         FileLock lock = null;
-         try
-         {
-            lock = channel.tryLock(liveLockPos, 1, false);
-         }
-         catch (java.nio.channels.OverlappingFileLockException ex)
-         {
-            // This just means that another object on the same JVM is holding the lock
-         }
+         FileLock lock = tryLock(lockPosition);
 
          if (lock == null)
          {
@@ -298,7 +358,7 @@ public class FileLockNodeManager extends NodeManager
       FileLock lock;
       do
       {
-         lock = channel.tryLock(liveLockPos, 1, false);
+         lock = tryLock(lockPosition);
          if (lock == null)
          {
             try
