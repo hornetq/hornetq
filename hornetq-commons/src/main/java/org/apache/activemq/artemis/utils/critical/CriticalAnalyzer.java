@@ -23,6 +23,8 @@ import org.hornetq.core.server.HornetQComponent;
 public interface CriticalAnalyzer extends HornetQComponent
 {
 
+   int getNumberOfComponents();
+
    void clear();
 
    boolean isMeasuring();

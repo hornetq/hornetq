@@ -32,6 +32,7 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -236,6 +237,12 @@ public class TransactionImplTest extends ServiceTestBase
       public void lineUpContext()
       {
 
+      }
+
+      @Override
+      public SequentialFileFactory getJournalSequentialFileFactory()
+      {
+         return null;
       }
 
       @Override

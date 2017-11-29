@@ -179,8 +179,9 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       open(maxIO, true);
    }
 
-   public synchronized void open(final int maxIO, final boolean useExecutor) throws HornetQException
+   public synchronized void open(final int maxIO, final boolean useExecutor) throws Exception
    {
+      super.open(maxIO, useExecutor);
       opened = true;
 
       aioFile = new AsynchronousFileImpl(useExecutor ? writerExecutor : null, pollerExecutor, this);

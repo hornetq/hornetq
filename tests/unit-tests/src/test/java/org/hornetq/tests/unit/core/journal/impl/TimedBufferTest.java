@@ -93,7 +93,7 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS, false);
+      TimedBuffer timedBuffer = new TimedBuffer(null,100, TimedBufferTest.ONE_SECOND_IN_NANOS, false);
 
       timedBuffer.start();
 
@@ -168,7 +168,7 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS / 10, false);
+      TimedBuffer timedBuffer = new TimedBuffer(null,100, TimedBufferTest.ONE_SECOND_IN_NANOS / 10, false);
 
       timedBuffer.start();
 
@@ -259,7 +259,7 @@ public class TimedBufferTest extends UnitTestCase
 
       final CountDownLatch sleptLatch = new CountDownLatch(1);
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS / 1000, false)
+      TimedBuffer timedBuffer = new TimedBuffer(null,100, TimedBufferTest.ONE_SECOND_IN_NANOS / 1000, false)
       {
 
          @Override
@@ -345,7 +345,7 @@ public class TimedBufferTest extends UnitTestCase
 
       final CountDownLatch sleptLatch = new CountDownLatch(TimedBuffer.MAX_CHECKS_ON_SLEEP);
 
-      TimedBuffer timedBuffer = new TimedBuffer(100, TimedBufferTest.ONE_SECOND_IN_NANOS / 1000, false)
+      TimedBuffer timedBuffer = new TimedBuffer(null,100, TimedBufferTest.ONE_SECOND_IN_NANOS / 1000, false)
       {
 
          @Override

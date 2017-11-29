@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.activemq.artemis.utils.critical.CriticalComponentImpl;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
@@ -38,10 +39,15 @@ import org.hornetq.journal.HornetQJournalLogger;
 /**
  * A AbstractSequentialFile
  *
+ * Notice that this class implements CriticalComponent, while it wasn't necessary to do so in Artemis.
+ * This is because in Artemis the TimedBuffer will do the required IO, so there wasn't need to add this class.
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public abstract class AbstractSequentialFile implements SequentialFile
+public abstract class AbstractSequentialFile extends CriticalComponentImpl implements SequentialFile
 {
+
+   protected static final int CRITICAL_PATHS = 1;
+   protected static final int CRITICAL_PATH_INTERNAL_WRITE = 0;
 
    private File file;
 
@@ -75,7 +81,8 @@ public abstract class AbstractSequentialFile implements SequentialFile
                                  final SequentialFileFactory factory,
                                  final Executor writerExecutor)
    {
-      super();
+      super(factory.getCriticalAnalyzer(), CRITICAL_PATHS);
+
       this.file = file;
       this.directory = directory;
       this.factory = factory;
@@ -140,6 +147,11 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
+   public void open(final int maxIO, final boolean useExecutor) throws Exception
+   {
+      getCriticalAnalyzer().add(this);
+   }
+
    /**
     * @throws IOException only declare exception due to signature. Sub-class needs it.
     */
@@ -189,22 +201,29 @@ public abstract class AbstractSequentialFile implements SequentialFile
     */
    public synchronized void close() throws IOException, InterruptedException, HornetQException
    {
-      final CountDownLatch donelatch = new CountDownLatch(1);
-
-      if (writerExecutor != null)
+      try
       {
-         writerExecutor.execute(new Runnable()
-         {
-            public void run()
-            {
-               donelatch.countDown();
-            }
-         });
+         final CountDownLatch donelatch = new CountDownLatch(1);
 
-         while (!donelatch.await(60, TimeUnit.SECONDS))
+         if (writerExecutor != null)
          {
-            HornetQJournalLogger.LOGGER.couldNotCompleteTask(new Exception("trace"), file.getName());
+            writerExecutor.execute(new Runnable()
+            {
+               public void run()
+               {
+                  donelatch.countDown();
+               }
+            });
+
+            while (!donelatch.await(60, TimeUnit.SECONDS))
+            {
+               HornetQJournalLogger.LOGGER.couldNotCompleteTask(new Exception("trace"), file.getName());
+            }
          }
+      }
+      finally
+      {
+         getCriticalAnalyzer().remove(this);
       }
    }
 

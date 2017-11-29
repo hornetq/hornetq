@@ -304,7 +304,8 @@ public class JournalStorageManager extends CriticalComponentImpl implements Stor
                                                   config.getJournalBufferSize_AIO(),
                                                   config.getJournalBufferTimeout_AIO(),
                                                   config.isLogJournalWriteRate(),
-                                                  criticalErrorListener);
+                                                  criticalErrorListener,
+                                                  getCriticalAnalyzer());
       }
       else if (config.getJournalType() == JournalType.NIO)
       {
@@ -314,7 +315,8 @@ public class JournalStorageManager extends CriticalComponentImpl implements Stor
                                                   config.getJournalBufferSize_NIO(),
                                                   config.getJournalBufferTimeout_NIO(),
                                                   config.isLogJournalWriteRate(),
-                                                  criticalErrorListener);
+                                                  criticalErrorListener,
+                                                  getCriticalAnalyzer());
       }
       else
       {
@@ -353,6 +355,11 @@ public class JournalStorageManager extends CriticalComponentImpl implements Stor
       }
    }
 
+   @Override
+   public SequentialFileFactory getJournalSequentialFileFactory()
+   {
+      return journalFF;
+   }
 
    @Override
    public void criticalError(Throwable error)

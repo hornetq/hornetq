@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -86,6 +87,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       }
 
       return sf;
+   }
+
+   @Override
+   public CriticalAnalyzer getCriticalAnalyzer()
+   {
+      return null;
    }
 
    public void clearBuffer(final ByteBuffer buffer)

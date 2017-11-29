@@ -16,6 +16,8 @@ package org.hornetq.core.journal;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
+
 /**
  *
  * A SequentialFileFactory
@@ -26,6 +28,8 @@ import java.util.List;
  */
 public interface SequentialFileFactory
 {
+   CriticalAnalyzer getCriticalAnalyzer();
+
    SequentialFile createSequentialFile(String fileName, int maxIO);
 
    /**

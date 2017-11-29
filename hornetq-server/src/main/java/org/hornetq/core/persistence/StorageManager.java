@@ -26,6 +26,7 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -57,6 +58,8 @@ import org.hornetq.core.transaction.Transaction;
  */
 public interface StorageManager extends HornetQComponent
 {
+
+   SequentialFileFactory getJournalSequentialFileFactory();
 
    void criticalError(Throwable error);
 

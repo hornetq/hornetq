@@ -22,6 +22,8 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
+import org.apache.activemq.artemis.utils.critical.CriticalComponentImpl;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQInterruptedException;
@@ -36,8 +38,18 @@ import org.hornetq.journal.HornetQJournalLogger;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class TimedBuffer
+public class TimedBuffer extends CriticalComponentImpl
 {
+
+   protected static final int CRITICAL_PATHS = 6;
+   protected static final int CRITICAL_PATH_FLUSH = 0;
+   protected static final int CRITICAL_PATH_STOP = 1;
+   protected static final int CRITICAL_PATH_START = 2;
+   protected static final int CRITICAL_PATH_CHECK_SIZE = 3;
+   protected static final int CRITICAL_PATH_ADD_BYTES = 4;
+   protected static final int CRITICAL_PATH_SET_OBSERVER = 5;
+
+
    // Constants -----------------------------------------------------
 
    // The number of tries on sleep before switching to spin
@@ -99,8 +111,9 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
-   public TimedBuffer(final int size, final int timeout, final boolean logRates)
+   public TimedBuffer(CriticalAnalyzer analyzer, final int size, final int timeout, final boolean logRates)
    {
+      super(analyzer, CRITICAL_PATHS);
       bufferSize = size;
 
       this.logRates = logRates;
@@ -123,92 +136,131 @@ public class TimedBuffer
    }
 
    // for Debug purposes
-   public synchronized boolean isUseSleep()
+   public boolean isUseSleep()
    {
       return useSleep;
    }
 
-   public synchronized void setUseSleep(boolean useSleep)
+   public void setUseSleep(boolean useSleep)
    {
       this.useSleep = useSleep;
    }
 
-   public synchronized void start()
+   public void start()
    {
-      if (started)
-      {
-         return;
-      }
-
-      // Need to start with the spin limiter acquired
+      enterCritical(CRITICAL_PATH_START);
       try
       {
-         spinLimiter.acquire();
+         synchronized (this)
+         {
+            if (started)
+            {
+               return;
+            }
+
+            // Need to start with the spin limiter acquired
+            try
+            {
+               spinLimiter.acquire();
+            }
+            catch (InterruptedException e)
+            {
+               throw new HornetQInterruptedException(e);
+            }
+
+            timerRunnable = new CheckTimer();
+
+            timerThread = new Thread(timerRunnable, "hornetq-buffer-timeout");
+
+            timerThread.start();
+
+            if (logRates)
+            {
+               logRatesTimerTask = new LogRatesTimerTask();
+
+               logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
+            }
+
+            started = true;
+         }
       }
-      catch (InterruptedException e)
+      finally
       {
-         throw new HornetQInterruptedException(e);
+         leaveCritical(CRITICAL_PATH_START);
       }
-
-      timerRunnable = new CheckTimer();
-
-      timerThread = new Thread(timerRunnable, "hornetq-buffer-timeout");
-
-      timerThread.start();
-
-      if (logRates)
-      {
-         logRatesTimerTask = new LogRatesTimerTask();
-
-         logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
-      }
-
-      started = true;
    }
 
    public void stop()
    {
-      if (!started)
+      enterCritical(CRITICAL_PATH_STOP);
+      try
       {
-         return;
-      }
-
-      flush();
-
-      bufferObserver = null;
-
-      timerRunnable.close();
-
-      spinLimiter.release();
-
-      if (logRates)
-      {
-         logRatesTimerTask.cancel();
-      }
-
-      while (timerThread.isAlive())
-      {
-         try
+         synchronized (this)
          {
-            timerThread.join();
-         }
-         catch (InterruptedException e)
-         {
-            throw new HornetQInterruptedException(e);
+            try
+            {
+               if (!started)
+               {
+                  return;
+               }
+
+               flush();
+
+               bufferObserver = null;
+
+               timerRunnable.close();
+
+               spinLimiter.release();
+
+               if (logRates)
+               {
+                  logRatesTimerTask.cancel();
+               }
+
+               while (timerThread.isAlive())
+               {
+                  try
+                  {
+                     timerThread.join();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     throw new HornetQInterruptedException(e);
+                  }
+               }
+
+            }
+            finally
+            {
+               started = false;
+            }
          }
       }
-
-      started = false;
+      finally
+      {
+         leaveCritical(CRITICAL_PATH_STOP);
+      }
    }
 
-   public synchronized void setObserver(final TimedBufferObserver observer)
+   public void setObserver(final TimedBufferObserver observer)
    {
-      if (bufferObserver != null)
+      enterCritical(CRITICAL_PATH_SET_OBSERVER);
+      try
       {
-         flush();
-      }
+         synchronized (this)
+         {
+            if (bufferObserver != null)
+            {
+               flush();
+            }
 
-      bufferObserver = observer;
+            bufferObserver = observer;
+         }
+      }
+      finally
+      {
+         leaveCritical(CRITICAL_PATH_SET_OBSERVER);
+      }
    }
 
    /**
@@ -216,76 +268,98 @@ public class TimedBuffer
     *
     * @param sizeChecked
     */
-   public synchronized boolean checkSize(final int sizeChecked)
+   public boolean checkSize(final int sizeChecked)
    {
-      if (!started)
+      enterCritical(CRITICAL_PATH_CHECK_SIZE);
+      try
       {
-         throw new IllegalStateException("TimedBuffer is not started");
-      }
-
-      if (sizeChecked > bufferSize)
-      {
-         throw new IllegalStateException("Can't write records bigger than the bufferSize(" + bufferSize +
-                                            ") on the journal");
-      }
-
-      if (bufferLimit == 0 || buffer.writerIndex() + sizeChecked > bufferLimit)
-      {
-         // Either there is not enough space left in the buffer for the sized record
-         // Or a flush has just been performed and we need to re-calcualate bufferLimit
-
-         flush();
-
-         delayFlush = true;
-
-         final int remainingInFile = bufferObserver.getRemainingBytes();
-
-         if (sizeChecked > remainingInFile)
+         synchronized (this)
          {
-            return false;
-         }
-         else
-         {
-            // There is enough space in the file for this size
+            if (!started)
+            {
+               throw new IllegalStateException("TimedBuffer is not started");
+            }
 
-            // Need to re-calculate buffer limit
+            if (sizeChecked > bufferSize)
+            {
+               throw new IllegalStateException("Can't write records bigger than the bufferSize(" + bufferSize +
+                                                  ") on the journal");
+            }
 
-            bufferLimit = Math.min(remainingInFile, bufferSize);
+            if (bufferLimit == 0 || buffer.writerIndex() + sizeChecked > bufferLimit)
+            {
+               // Either there is not enough space left in the buffer for the sized record
+               // Or a flush has just been performed and we need to re-calcualate bufferLimit
 
-            return true;
+               flush();
+
+               delayFlush = true;
+
+               final int remainingInFile = bufferObserver.getRemainingBytes();
+
+               if (sizeChecked > remainingInFile)
+               {
+                  return false;
+               }
+               else
+               {
+                  // There is enough space in the file for this size
+
+                  // Need to re-calculate buffer limit
+
+                  bufferLimit = Math.min(remainingInFile, bufferSize);
+
+                  return true;
+               }
+            }
+            else
+            {
+               delayFlush = true;
+
+               return true;
+            }
          }
       }
-      else
+      finally
       {
-         delayFlush = true;
-
-         return true;
+         leaveCritical(CRITICAL_PATH_CHECK_SIZE);
       }
    }
 
-   public synchronized void addBytes(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback)
+   public void addBytes(final HornetQBuffer bytes, final boolean sync, final IOAsyncTask callback)
    {
       addBytes(new ByteArrayEncoding(bytes.toByteBuffer().array()), sync, callback);
    }
 
-   public synchronized void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
+   public void addBytes(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback)
    {
-      if (!started)
+      enterCritical(CRITICAL_PATH_ADD_BYTES);
+      try
       {
-         throw new IllegalStateException("TimedBuffer is not started");
+         synchronized (this)
+         {
+            if (!started)
+            {
+               throw new IllegalStateException("TimedBuffer is not started");
+            }
+
+            delayFlush = false;
+
+            bytes.encode(buffer);
+
+            callbacks.add(callback);
+
+            if (sync)
+            {
+               pendingSync = true;
+
+               startSpin();
+            }
+         }
       }
-
-      delayFlush = false;
-
-      bytes.encode(buffer);
-
-      callbacks.add(callback);
-
-      if (sync)
+      finally
       {
-         pendingSync = true;
-
-         startSpin();
+         leaveCritical(CRITICAL_PATH_ADD_BYTES);
       }
 
    }
@@ -301,45 +375,53 @@ public class TimedBuffer
     */
    public void flush(final boolean force)
    {
-      synchronized (this)
+      enterCritical(CRITICAL_PATH_FLUSH);
+      try
       {
-         if (!started)
+         synchronized (this)
          {
-            throw new IllegalStateException("TimedBuffer is not started");
-         }
-
-         if ((force || !delayFlush) && buffer.writerIndex() > 0)
-         {
-            int pos = buffer.writerIndex();
-
-            if (logRates)
+            if (!started)
             {
-               bytesFlushed.addAndGet(pos);
+               throw new IllegalStateException("TimedBuffer is not started");
             }
 
-            ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
+            if ((force || !delayFlush) && buffer.writerIndex() > 0)
+            {
+               int pos = buffer.writerIndex();
 
-            // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
-            // Using bufferToFlush.put(buffer) would make several append calls for each byte
-            // We also transfer the content of this buffer to the native file's buffer
+               if (logRates)
+               {
+                  bytesFlushed.addAndGet(pos);
+               }
 
-            bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
+               ByteBuffer bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
 
-            bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
+               // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
+               // Using bufferToFlush.put(buffer) would make several append calls for each byte
+               // We also transfer the content of this buffer to the native file's buffer
 
-            stopSpin();
+               bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
 
-            pendingSync = false;
+               bufferObserver.flushBuffer(bufferToFlush, pendingSync, callbacks);
 
-            // swap the instance as the previous callback list is being used asynchronously
-            callbacks = new LinkedList<IOAsyncTask>();
+               stopSpin();
 
-            buffer.clear();
+               pendingSync = false;
 
-            bufferLimit = 0;
+               // swap the instance as the previous callback list is being used asynchronously
+               callbacks = new LinkedList<IOAsyncTask>();
 
-            flushesDone.incrementAndGet();
+               buffer.clear();
+
+               bufferLimit = 0;
+
+               flushesDone.incrementAndGet();
+            }
          }
+      }
+      finally
+      {
+         leaveCritical(CRITICAL_PATH_FLUSH);
       }
    }
 

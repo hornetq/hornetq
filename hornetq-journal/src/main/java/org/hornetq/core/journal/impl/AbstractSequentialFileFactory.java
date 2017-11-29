@@ -25,6 +25,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
+import org.apache.activemq.artemis.utils.critical.EmptyCriticalAnalyzer;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
@@ -33,12 +35,10 @@ import org.hornetq.journal.HornetQJournalLogger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- *
  * An abstract SequentialFileFactory containing basic functionality for both AIO and NIO SequentialFactories
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 abstract class AbstractSequentialFileFactory implements SequentialFileFactory
 {
@@ -54,27 +54,44 @@ abstract class AbstractSequentialFileFactory implements SequentialFileFactory
 
    protected final long bufferTimeout;
 
+   protected final CriticalAnalyzer criticalAnalyzer;
+
    private final IOCriticalErrorListener critialErrorListener;
+
+   @Override
+   public CriticalAnalyzer getCriticalAnalyzer()
+   {
+      return criticalAnalyzer;
+   }
 
    /**
     * Asynchronous writes need to be done at another executor.
     * This needs to be done at NIO, or else we would have the callers thread blocking for the return.
     * At AIO this is necessary as context switches on writes would fire flushes at the kernel.
-    *  */
+    */
    protected ExecutorService writeExecutor;
 
    AbstractSequentialFileFactory(final String journalDir,
-                                        final boolean buffered,
-                                        final int bufferSize,
-                                        final int bufferTimeout,
-                                        final boolean logRates,
-                                        final IOCriticalErrorListener criticalErrorListener)
+                                 final boolean buffered,
+                                 final int bufferSize,
+                                 final int bufferTimeout,
+                                 final boolean logRates,
+                                 final IOCriticalErrorListener criticalErrorListener,
+                                 CriticalAnalyzer criticalAnalyzer)
    {
       this.journalDir = journalDir;
 
+      this.criticalAnalyzer = criticalAnalyzer;
+
+      if (criticalAnalyzer == null)
+      {
+         criticalAnalyzer = EmptyCriticalAnalyzer.getInstance();
+      }
+
+
       if (buffered)
       {
-         timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, logRates);
+         timedBuffer = new TimedBuffer(criticalAnalyzer, bufferSize, bufferTimeout, logRates);
       }
       else
       {

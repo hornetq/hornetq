@@ -59,11 +59,11 @@ public class SyncSpeedTest
    {
       if (AIO)
       {
-         fileFactory = new AIOSequentialFileFactory(".", 0, 0, false, null);
+         fileFactory = new AIOSequentialFileFactory(".", 0, 0, false, null,null);
       }
       else
       {
-         fileFactory = new NIOSequentialFileFactory(".", false, 0, 0, false, null);
+         fileFactory = new NIOSequentialFileFactory(".", false, 0, 0, false, null, null);
       }
    }
 

@@ -58,6 +58,12 @@ public class EmptyCriticalAnalyzer implements CriticalAnalyzer
    }
 
    @Override
+   public int getNumberOfComponents()
+   {
+      return 0;
+   }
+
+   @Override
    public void stop() throws Exception
    {
 

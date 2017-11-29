@@ -44,6 +44,12 @@ public class CriticalAnalyzerImpl implements CriticalAnalyzer
    }
 
    @Override
+   public int getNumberOfComponents()
+   {
+      return components.size();
+   }
+
+   @Override
    public boolean isMeasuring()
    {
       return true;
@@ -142,6 +148,8 @@ public class CriticalAnalyzerImpl implements CriticalAnalyzer
             logger.warn(e.getMessage(), e);
          }
       }
+
+      actions.clear();
    }
 
    @Override

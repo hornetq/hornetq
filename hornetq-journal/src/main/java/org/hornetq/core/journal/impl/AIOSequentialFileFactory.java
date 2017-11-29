@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -56,6 +57,7 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
            JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
            JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
            false,
+           null,
            null);
    }
 
@@ -65,7 +67,8 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
            JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
            JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
            false,
-           listener);
+           listener,
+           null);
    }
 
    public AIOSequentialFileFactory(final String journalDir,
@@ -73,16 +76,17 @@ public final class AIOSequentialFileFactory extends AbstractSequentialFileFactor
                                    final int bufferTimeout,
                                    final boolean logRates)
    {
-      this(journalDir, bufferSize, bufferTimeout, logRates, null);
+      this(journalDir, bufferSize, bufferTimeout, logRates, null, null);
    }
 
    public AIOSequentialFileFactory(final String journalDir,
                                    final int bufferSize,
                                    final int bufferTimeout,
                                    final boolean logRates,
-                                   final IOCriticalErrorListener listener)
+                                   final IOCriticalErrorListener listener,
+                                   final CriticalAnalyzer criticalAnalyzer)
    {
-      super(journalDir, true, bufferSize, bufferTimeout, logRates, listener);
+      super(journalDir, true, bufferSize, bufferTimeout, logRates, listener, criticalAnalyzer);
    }
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
