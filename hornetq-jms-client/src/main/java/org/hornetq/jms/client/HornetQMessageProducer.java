@@ -47,7 +47,15 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class HornetQMessageProducer implements MessageProducer, QueueSender, TopicPublisher
 {
-   private final HornetQConnection connection;
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   private final ConnectionFactoryOptions options;
+
+   private final HornetQConnection jbossConn;
 
    private final SimpleString connID;
 
@@ -66,12 +74,17 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    private final HornetQDestination defaultDestination;
    // Constructors --------------------------------------------------
 
-   protected HornetQMessageProducer(final HornetQConnection connection, final ClientProducer producer,
-                                    final HornetQDestination defaultDestination, final ClientSession clientSession) throws JMSException
+   protected HornetQMessageProducer(final HornetQConnection jbossConn,
+                                    final ClientProducer producer,
+                                    final HornetQDestination defaultDestination,
+                                    final ClientSession clientSession,
+                                    final ConnectionFactoryOptions options) throws JMSException
    {
-      this.connection = connection;
+      this.options = options;
 
-      connID = connection.getClientID() != null ? new SimpleString(connection.getClientID()) : connection.getUID();
+      this.jbossConn = jbossConn;
+
+      connID = jbossConn.getClientID() != null ? new SimpleString(jbossConn.getClientID()) : jbossConn.getUID();
 
       this.clientProducer = producer;
 
@@ -170,7 +183,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public void close() throws JMSException
    {
-      connection.getThreadAwareContext().assertNotCompletionListenerThread();
+      jbossConn.getThreadAwareContext().assertNotCompletionListenerThread();
       try
       {
          clientProducer.close();
@@ -404,7 +417,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          address = destination.getSimpleAddress();
 
-         if (!connection.containsKnownDestination(address))
+         if (!jbossConn.containsKnownDestination(address))
          {
             try
             {
@@ -415,7 +428,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
                }
                else
                {
-                  connection.addKnownDestination(address);
+                  jbossConn.addKnownDestination(address);
                }
             }
             catch (HornetQException e)
@@ -445,7 +458,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          }
          else if (jmsMessage instanceof ObjectMessage)
          {
-            hqJmsMessage = new HornetQObjectMessage((ObjectMessage)jmsMessage, clientSession);
+            hqJmsMessage = new HornetQObjectMessage((ObjectMessage)jmsMessage, clientSession, options);
          }
          else if (jmsMessage instanceof StreamMessage)
          {
@@ -583,12 +596,12 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          try
          {
-            producer.connection.getThreadAwareContext().setCurrentThread(true);
+            producer.jbossConn.getThreadAwareContext().setCurrentThread(true);
             completionListener.onCompletion(jmsMessage);
          }
          finally
          {
-            producer.connection.getThreadAwareContext().clearCurrentThread(true);
+            producer.jbossConn.getThreadAwareContext().clearCurrentThread(true);
          }
       }
 

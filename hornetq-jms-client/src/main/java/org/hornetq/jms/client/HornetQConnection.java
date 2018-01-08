@@ -124,12 +124,16 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
 
    private HornetQConnectionFactory factoryReference;
 
+   private final ConnectionFactoryOptions options;
+
    // Constructors ---------------------------------------------------------------------------------
 
-   public HornetQConnection(final String username, final String password, final int connectionType,
+   public HornetQConnection(final ConnectionFactoryOptions options, final String username, final String password, final int connectionType,
                             final String clientID, final int dupsOKBatchSize, final int transactionBatchSize,
                             final ClientSessionFactory sessionFactory)
    {
+      this.options = options;
+
       this.username = username;
 
       this.password = password;
@@ -696,11 +700,11 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
    {
       if (isXA)
       {
-         return new HornetQXASession(this, transacted, true, acknowledgeMode, session, type);
+         return new HornetQXASession(options,this, transacted, true, acknowledgeMode, session, type);
       }
       else
       {
-         return new HornetQSession(this, transacted, false, acknowledgeMode, session, type);
+         return new HornetQSession(options, this, transacted, false, acknowledgeMode, session, type);
       }
    }
 
@@ -748,6 +752,15 @@ public class HornetQConnection extends HornetQConnectionForContextImpl implement
       return started;
    }
 
+   public String getDeserializationBlackList()
+   {
+      return this.factoryReference.getDeserializationBlackList();
+   }
+
+   public String getDeserializationWhiteList()
+   {
+      return this.factoryReference.getDeserializationWhiteList();
+   }
 
    // Inner classes --------------------------------------------------------------------------------
 

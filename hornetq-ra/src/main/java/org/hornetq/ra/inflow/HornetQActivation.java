@@ -336,7 +336,7 @@ public class HornetQActivation
          {
             cf = factory.getServerLocator().createSessionFactory();
             session = setupSession(cf);
-            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, cf, i);
+            HornetQMessageHandler handler = new HornetQMessageHandler(factory, this, ra.getTM(), (ClientSessionInternal)session, cf, i);
             handler.setup();
             handlers.add(handler);
          }

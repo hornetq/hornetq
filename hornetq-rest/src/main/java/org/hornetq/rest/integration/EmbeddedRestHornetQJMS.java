@@ -12,6 +12,7 @@
  */
 package org.hornetq.rest.integration;
 
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.jms.server.embedded.EmbeddedJMS;
 import org.hornetq.spi.core.naming.BindingRegistry;
 
@@ -21,6 +22,13 @@ import org.hornetq.spi.core.naming.BindingRegistry;
  */
 public class EmbeddedRestHornetQJMS extends EmbeddedRestHornetQ
 {
+
+   public EmbeddedRestHornetQJMS(ConnectionFactoryOptions jmsOptions)
+   {
+      super(jmsOptions);
+   }
+
+
    @Override
    protected void initEmbeddedHornetQ()
    {

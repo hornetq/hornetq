@@ -15,6 +15,7 @@ package org.hornetq.rest.topic;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.PushConsumer;
 import org.hornetq.rest.queue.push.PushStore;
@@ -26,9 +27,9 @@ import org.hornetq.rest.queue.push.xml.PushRegistration;
  */
 public class PushSubscription extends PushConsumer
 {
-   public PushSubscription(ClientSessionFactory factory, String destination, String id, PushRegistration registration, PushStore store)
+   public PushSubscription(ClientSessionFactory factory, String destination, String id, PushRegistration registration, PushStore store, ConnectionFactoryOptions jmsOptions)
    {
-      super(factory, destination, id, registration, store);
+      super(factory, destination, id, registration, store, jmsOptions);
    }
 
    @Override

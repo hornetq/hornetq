@@ -17,7 +17,6 @@ import javax.jms.MessageFormatException;
 import javax.jms.ObjectMessage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
@@ -25,6 +24,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.utils.ObjectInputStreamWithClassLoader;
 
 /**
  * HornetQ implementation of a JMS ObjectMessage.
@@ -48,28 +48,33 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    // keep a snapshot of the Serializable Object as a byte[] to provide Object isolation
    private byte[] data;
 
+   private final ConnectionFactoryOptions options;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   protected HornetQObjectMessage(final ClientSession session)
+   protected HornetQObjectMessage(final ClientSession session, ConnectionFactoryOptions options)
    {
       super(HornetQObjectMessage.TYPE, session);
+      this.options = options;
    }
 
-   protected HornetQObjectMessage(final ClientMessage message, final ClientSession session)
+   protected HornetQObjectMessage(final ClientMessage message, final ClientSession session, ConnectionFactoryOptions options)
    {
       super(message, session);
+      this.options = options;
    }
 
    /**
     * A copy constructor for foreign JMS ObjectMessages.
     */
-   public HornetQObjectMessage(final ObjectMessage foreign, final ClientSession session) throws JMSException
+   public HornetQObjectMessage(final ObjectMessage foreign, final ClientSession session, ConnectionFactoryOptions options) throws JMSException
    {
       super(foreign, HornetQObjectMessage.TYPE, session);
 
       setObject(foreign.getObject());
+      this.options = options;
    }
 
    // Public --------------------------------------------------------
@@ -151,7 +156,17 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       try
       {
          ByteArrayInputStream bais = new ByteArrayInputStream(data);
-         ObjectInputStream ois = new org.hornetq.utils.ObjectInputStreamWithClassLoader(bais);
+         ObjectInputStreamWithClassLoader ois = new org.hornetq.utils.ObjectInputStreamWithClassLoader(bais);
+         String blackList = getDeserializationBlackList();
+         if (blackList != null)
+         {
+            ois.setBlackList(blackList);
+         }
+         String whiteList = getDeserializationWhiteList();
+         if (whiteList != null)
+         {
+            ois.setWhiteList(whiteList);
+         }
          Serializable object = (Serializable)ois.readObject();
          return object;
       }
@@ -199,4 +214,38 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
          return false;
       }
    }
+
+   private String getDeserializationBlackList()
+   {
+      if (options == null)
+      {
+         return null;
+      }
+      else
+      {
+         return options.getDeserializationBlackList();
+      }
+   }
+
+   private String getDeserializationWhiteList()
+   {
+      if (options == null)
+      {
+         return null;
+      }
+      else
+      {
+         return options.getDeserializationWhiteList();
+      }
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+
 }

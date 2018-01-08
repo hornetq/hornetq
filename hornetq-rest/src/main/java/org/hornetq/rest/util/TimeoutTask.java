@@ -90,7 +90,10 @@ public class TimeoutTask implements Runnable
    public synchronized void stop()
    {
       running = false;
-      thread.interrupt();
+      if (thread != null)
+      {
+         thread.interrupt();
+      }
    }
 
    public synchronized int getInterval()

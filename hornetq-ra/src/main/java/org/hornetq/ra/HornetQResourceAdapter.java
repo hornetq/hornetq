@@ -961,6 +961,44 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setProducerWindowSize(producerWindowSize);
    }
 
+   public String getDeserializationBlackList()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getDeserializationBlackList()");
+      }
+      return raProperties.getDeserializationBlackList();
+   }
+
+   public void setDeserializationBlackList(String deserializationBlackList)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setDeserializationBlackList(" + deserializationBlackList + ")");
+      }
+
+      raProperties.setDeserializationBlackList(deserializationBlackList);
+   }
+
+   public String getDeserializationWhiteList()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("getDeserializationWhiteList()");
+      }
+      return raProperties.getDeserializationWhiteList();
+   }
+
+   public void setDeserializationWhiteList(String deserializationWhiteList)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQRALogger.LOGGER.trace("setDeserializationWhiteList(" + deserializationWhiteList + ")");
+      }
+
+      raProperties.setDeserializationWhiteList(deserializationWhiteList);
+   }
+
    /**
     * Get min large message size
     *
@@ -2144,6 +2182,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQRALogger.LOGGER.debug("TM located = " + tm);
       }
+
    }
 
 
@@ -2349,6 +2388,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (val5 != null)
       {
          cf.setConnectionLoadBalancingPolicyClassName(val5);
+      }
+      val5 = overrideProperties.getDeserializationBlackList() != null ? overrideProperties.getDeserializationBlackList() : raProperties.getDeserializationBlackList();
+      if (val5 != null)
+      {
+         cf.setDeserializationBlackList(val5);
+      }
+      val5 = overrideProperties.getDeserializationWhiteList() != null ? overrideProperties.getDeserializationWhiteList() : raProperties.getDeserializationWhiteList();
+      if (val5 != null)
+      {
+         cf.setDeserializationWhiteList(val5);
       }
    }
 

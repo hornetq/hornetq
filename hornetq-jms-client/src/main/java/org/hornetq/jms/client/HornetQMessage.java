@@ -147,6 +147,12 @@ public class HornetQMessage implements javax.jms.Message
 
    public static HornetQMessage createMessage(final ClientMessage message, final ClientSession session)
    {
+      return createMessage(message, session, null);
+   }
+
+
+   public static HornetQMessage createMessage(final ClientMessage message, final ClientSession session, final ConnectionFactoryOptions options)
+   {
       int type = message.getType();
 
       HornetQMessage msg;
@@ -170,7 +176,7 @@ public class HornetQMessage implements javax.jms.Message
          }
          case HornetQObjectMessage.TYPE:
          {
-            msg = new HornetQObjectMessage(message, session);
+            msg = new HornetQObjectMessage(message, session, options);
             break;
          }
          case HornetQStreamMessage.TYPE: // 6

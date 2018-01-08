@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 
@@ -44,6 +45,8 @@ public class PushConsumerResource
    protected final String startup = Long.toString(System.currentTimeMillis());
    protected final AtomicLong sessionCounter = new AtomicLong(1);
    protected PushStore pushStore;
+
+   private ConnectionFactoryOptions jmsOptions;
 
    public void start()
    {
@@ -71,7 +74,7 @@ public class PushConsumerResource
    public void addRegistration(PushRegistration reg) throws Exception
    {
       if (reg.isEnabled() == false) return;
-      PushConsumer consumer = new PushConsumer(sessionFactory, destination, reg.getId(), reg, pushStore);
+      PushConsumer consumer = new PushConsumer(sessionFactory, destination, reg.getId(), reg, pushStore, jmsOptions);
       consumer.start();
       consumers.put(reg.getId(), consumer);
    }
@@ -86,7 +89,7 @@ public class PushConsumerResource
       String genId = sessionCounter.getAndIncrement() + "-" + startup;
       registration.setId(genId);
       registration.setDestination(destination);
-      PushConsumer consumer = new PushConsumer(sessionFactory, destination, genId, registration, pushStore);
+      PushConsumer consumer = new PushConsumer(sessionFactory, destination, genId, registration, pushStore, jmsOptions);
       try
       {
          consumer.start();
@@ -159,5 +162,10 @@ public class PushConsumerResource
    public void setDestination(String destination)
    {
       this.destination = destination;
+   }
+
+   public void setJmsOptions(ConnectionFactoryOptions jmsOptions)
+   {
+      this.jmsOptions = jmsOptions;
    }
 }
