@@ -22,6 +22,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.BasicAuth;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
@@ -46,6 +47,8 @@ public class UriStrategy implements PushStrategy
    protected UriBuilder targetUri;
    protected String method;
    protected String contentType;
+
+   protected ConnectionFactoryOptions jmsOptions;
 
    UriStrategy()
    {
@@ -96,6 +99,12 @@ public class UriStrategy implements PushStrategy
       connManager.shutdown();
    }
 
+   @Override
+   public void setJmsOptions(ConnectionFactoryOptions jmsOptions)
+   {
+      this.jmsOptions = jmsOptions;
+   }
+
    public boolean push(ClientMessage message)
    {
       HornetQRestLogger.LOGGER.debug("Pushing " + message);
@@ -113,7 +122,7 @@ public class UriStrategy implements PushStrategy
             HornetQRestLogger.LOGGER.debug("Setting XmlHttpHeader: " + header.getName() + "=" + header.getValue());
             request.header(header.getName(), header.getValue());
          }
-         HttpMessageHelper.buildMessage(message, request, contentType);
+         HttpMessageHelper.buildMessage(message, request, contentType, jmsOptions);
          ClientResponse<?> res = null;
          try
          {

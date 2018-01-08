@@ -13,6 +13,9 @@
 
    <properties>
       <hornetq.basedir>${project.basedir}/../..</hornetq.basedir>
+       <karaf.version>4.0.6</karaf.version>
+       <pax.exam.version>4.9.1</pax.exam.version>
+       <jetty.version>9.4.0.M1</jetty.version>
    </properties>
 
    <dependencies>
@@ -121,6 +124,59 @@
          <groupId>org.jboss.logmanager</groupId>
          <artifactId>jboss-logmanager</artifactId>
       </dependency>
+
+       <!-- karaf test -->
+
+       <dependency>
+           <groupId>org.ops4j.pax.exam</groupId>
+           <artifactId>pax-exam-container-karaf</artifactId>
+           <version>${pax.exam.version}</version>
+           <scope>test</scope>
+       </dependency>
+       <dependency>
+           <groupId>org.ops4j.pax.exam</groupId>
+           <artifactId>pax-exam-junit4</artifactId>
+           <version>${pax.exam.version}</version>
+           <scope>test</scope>
+       </dependency>
+       <dependency>
+           <groupId>org.apache.karaf</groupId>
+           <artifactId>apache-karaf</artifactId>
+           <version>${karaf.version}</version>
+           <type>tar.gz</type>
+       </dependency>
+       <dependency>
+           <groupId>org.apache.karaf.shell</groupId>
+           <artifactId>org.apache.karaf.shell.console</artifactId>
+           <version>${karaf.version}</version>
+       </dependency>
+       <!--<dependency>-->
+           <!--<groupId>org.hornetq</groupId>-->
+           <!--<artifactId>hornetq-pom</artifactId>-->
+           <!--<version>${project.version}</version>-->
+       <!--</dependency>-->
+
+
+
+       <!-- rest test -->
+       <dependency>
+           <groupId>org.eclipse.jetty.aggregate</groupId>
+           <artifactId>jetty-all</artifactId>
+           <version>${jetty.version}</version>
+           <type>jar</type>
+           <classifier>uber</classifier>
+       </dependency>
+       <dependency>
+           <groupId>org.jboss.resteasy</groupId>
+           <artifactId>resteasy-jaxrs</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.hornetq.rest</groupId>
+           <artifactId>hornetq-rest</artifactId>
+           <version>${project.version}</version>
+           <scope>compile</scope>
+       </dependency>
+
    </dependencies>
 
    <build>
@@ -128,9 +184,44 @@
          <testResource>
             <directory>src/test/resources</directory>
             <filtering>true</filtering>
+             <excludes>
+                 <exclude>**/rest/*.xml</exclude>
+             </excludes>
          </testResource>
       </testResources>
       <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <phase>process-test-classes</phase>
+                      <id>bwlist-rest-test-war</id>
+                      <goals>
+                          <goal>single</goal>
+                      </goals>
+                      <configuration>
+                          <descriptor>src/test/resources/rest/bwlist-rest-test-asm.xml</descriptor>
+                          <finalName>rest-test-bwlist</finalName>
+                          <appendAssemblyId>false</appendAssemblyId>
+                          <outputDirectory>target/test-classes/rest/</outputDirectory>
+                      </configuration>
+                  </execution>
+                  <execution>
+                      <phase>process-test-classes</phase>
+                      <id>rest-test-war</id>
+                      <goals>
+                          <goal>single</goal>
+                      </goals>
+                      <configuration>
+                          <descriptor>src/test/resources/rest/rest-test-asm.xml</descriptor>
+                          <finalName>rest-test</finalName>
+                          <appendAssemblyId>false</appendAssemblyId>
+                          <outputDirectory>target/test-classes/rest/</outputDirectory>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>

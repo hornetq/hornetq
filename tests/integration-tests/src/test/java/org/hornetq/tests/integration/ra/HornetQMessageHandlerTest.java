@@ -12,23 +12,35 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import javax.jms.Connection;
+import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.resource.ResourceException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -74,6 +86,115 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      qResourceAdapter.stop();
+   }
+
+   @Test
+   public void testObjectMessageReceiveSerializationControl() throws Exception
+   {
+      String blackList = "org.hornetq.tests.integration.ra";
+      String whiteList = "*";
+      testDeserialization(blackList, whiteList, false);
+   }
+
+   @Test
+   public void testObjectMessageReceiveSerializationControl1() throws Exception
+   {
+      String blackList = "some.other.pkg";
+      String whiteList = "org.hornetq.tests.integration.ra";
+      testDeserialization(blackList, whiteList, true);
+   }
+
+   @Test
+   public void testObjectMessageReceiveSerializationControl2() throws Exception
+   {
+      String blackList = "*";
+      String whiteList = "org.hornetq.tests.integration.ra";
+      testDeserialization(blackList, whiteList, false);
+   }
+
+   @Test
+   public void testObjectMessageReceiveSerializationControl3() throws Exception
+   {
+      String blackList = "org.hornetq.tests";
+      String whiteList = "org.hornetq.tests.integration.ra";
+      testDeserialization(blackList, whiteList, false);
+   }
+
+   @Test
+   public void testObjectMessageReceiveSerializationControl4() throws Exception
+   {
+      String blackList = null;
+      String whiteList = "some.other.pkg";
+      testDeserialization(blackList, whiteList, false);
+   }
+
+   @Test
+   public void testObjectMessageReceiveSerializationControl5() throws Exception
+   {
+      String blackList = null;
+      String whiteList = null;
+      testDeserialization(blackList, whiteList, true);
+   }
+
+   private void testDeserialization(String blackList, String whiteList, boolean shouldSucceed) throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = newResourceAdapter();
+      qResourceAdapter.setDeserializationBlackList(blackList);
+      qResourceAdapter.setDeserializationWhiteList(whiteList);
+
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+
+      HashMap<String, Object> transportConfig = new HashMap<String, Object>();
+
+      HornetQConnectionFactory jmsFactory = new HornetQConnectionFactory(new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig)));
+      Connection connection = jmsFactory.createConnection();
+
+      try
+      {
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Queue jmsQueue = session.createQueue(MDBQUEUE);
+         ObjectMessage objMsg = session.createObjectMessage();
+         objMsg.setObject(new DummySerializable());
+         MessageProducer producer = session.createProducer(jmsQueue);
+         producer.send(objMsg);
+      }
+      finally
+      {
+         connection.close();
+      }
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+
+      ObjectMessage objMsg = (ObjectMessage) endpoint.lastMessage;
+
+      try
+      {
+         Object obj = objMsg.getObject();
+         assertTrue("deserialization should fail but got: " + obj, shouldSucceed);
+         assertTrue(obj instanceof DummySerializable);
+      }
+      catch (JMSException e)
+      {
+         assertFalse("got unexpected exception: " + e, shouldSucceed);
+      }
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
 
@@ -849,5 +970,10 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
             }
          }
       }
+   }
+
+
+   static class DummySerializable implements Serializable
+   {
    }
 }

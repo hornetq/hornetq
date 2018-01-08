@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.queue.push.FilePushStore;
 import org.hornetq.rest.queue.push.PushStore;
 
@@ -17,6 +18,11 @@ public class QueueServiceManager extends DestinationServiceManager
    protected PushStore pushStore;
    protected List<QueueDeployment> queues = new ArrayList<QueueDeployment>();
    protected QueueDestinationsResource destination;
+
+   public QueueServiceManager(ConnectionFactoryOptions jmsOptions)
+   {
+      super(jmsOptions);
+   }
 
    public List<QueueDeployment> getQueues()
    {

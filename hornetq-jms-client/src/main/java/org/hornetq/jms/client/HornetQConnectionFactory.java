@@ -41,7 +41,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class HornetQConnectionFactory implements Serializable, Referenceable
+public class HornetQConnectionFactory implements  ConnectionFactoryOptions, Serializable, Referenceable
 {
    private static final long serialVersionUID = -2810634789345348326L;
 
@@ -598,7 +598,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       {
          if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
          {
-            connection = new HornetQXAConnection(username,
+            connection = new HornetQXAConnection(this,
+                                                username,
                                                 password,
                                                 type,
                                                 clientID,
@@ -609,7 +610,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
          {
             connection =
-                     new HornetQXAConnection(username,
+                     new HornetQXAConnection(this,
+                                                      username,
                                                       password,
                                                       type,
                                                       clientID,
@@ -620,7 +622,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
          {
             connection =
-                     new HornetQXAConnection(username,
+                     new HornetQXAConnection(this,
+                                                      username,
                                                       password,
                                                       type,
                                                       clientID,
@@ -633,7 +636,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       {
          if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
          {
-            connection = new HornetQConnection(username,
+            connection = new HornetQConnection(this,
+                                               username,
                                                password,
                                                type,
                                                clientID,
@@ -644,7 +648,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
          {
             connection =
-                     new HornetQConnection(username,
+                     new HornetQConnection(this,
+                                                    username,
                                                     password,
                                                     type,
                                                     clientID,
@@ -655,7 +660,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
          else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
          {
             connection =
-                     new HornetQConnection(username,
+                     new HornetQConnection(this,
+                                                    username,
                                                     password,
                                                     type,
                                                     clientID,
@@ -690,6 +696,10 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return connection;
    }
 
+   private String deserializationBlackList;
+
+   private String deserializationWhiteList;
+
    @Override
    public String toString()
    {
@@ -714,6 +724,26 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       {
          throw new IllegalStateException("Cannot set attribute on HornetQConnectionFactory after it has been used");
       }
+   }
+
+   public String getDeserializationBlackList()
+   {
+      return deserializationBlackList;
+   }
+
+   public void setDeserializationBlackList(String blackList)
+   {
+      this.deserializationBlackList = blackList;
+   }
+
+   public String getDeserializationWhiteList()
+   {
+      return deserializationWhiteList;
+   }
+
+   public void setDeserializationWhiteList(String whiteList)
+   {
+      this.deserializationWhiteList = whiteList;
    }
 
    @Override

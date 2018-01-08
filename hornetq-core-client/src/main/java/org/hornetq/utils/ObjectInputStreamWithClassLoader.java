@@ -21,6 +21,8 @@ import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -30,7 +32,18 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
 
    // Constants ------------------------------------------------------------------------------------
 
+   /**
+    * Value used to indicate that all classes should be white or black listed,
+    */
+   public static final String CATCH_ALL_WILDCARD = "*";
+
+   public static final String WHITELIST_PROPERTY = "org.hornetq.jms.deserialization.whitelist";
+   public static final String BLACKLIST_PROPERTY = "org.hornetq.jms.deserialization.blacklist";
+
    // Attributes -----------------------------------------------------------------------------------
+
+   private List<String> whiteList = new ArrayList<String>();
+   private List<String> blackList = new ArrayList<String>();
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -39,9 +52,56 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
    public ObjectInputStreamWithClassLoader(final InputStream in) throws IOException
    {
       super(in);
+      String whiteList = System.getProperty(WHITELIST_PROPERTY, null);
+      setWhiteList(whiteList);
+
+      String blackList = System.getProperty(BLACKLIST_PROPERTY, null);
+      setBlackList(blackList);
    }
 
    // Public ---------------------------------------------------------------------------------------
+
+   /**
+    * @return the whiteList configured on this policy instance.
+    */
+   public String getWhiteList()
+   {
+      return StringUtil.joinStringList(whiteList, ",");
+   }
+
+   /**
+    * @return the blackList configured on this policy instance.
+    */
+   public String getBlackList()
+   {
+      return StringUtil.joinStringList(blackList, ",");
+   }
+
+   /**
+    * Replaces the currently configured whiteList with a comma separated
+    * string containing the new whiteList. Null or empty string denotes
+    * no whiteList entries, {@value #CATCH_ALL_WILDCARD} indicates that
+    * all classes are whiteListed.
+    *
+    * @param whiteList the whiteList that this policy is configured to recognize.
+    */
+   public void setWhiteList(String whiteList)
+   {
+      this.whiteList = StringUtil.splitStringList(whiteList, ",");
+   }
+
+   /**
+    * Replaces the currently configured blackList with a comma separated
+    * string containing the new blackList. Null or empty string denotes
+    * no blacklist entries, {@value #CATCH_ALL_WILDCARD} indicates that
+    * all classes are blacklisted.
+    *
+    * @param blackList the blackList that this policy is configured to recognize.
+    */
+   public void setBlackList(String blackList)
+   {
+      this.blackList = StringUtil.splitStringList(blackList, ",");
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -107,25 +167,26 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
    {
       String name = desc.getName();
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      Class clazz;
       try
       {
          // HORNETQ-747 https://issues.jboss.org/browse/HORNETQ-747
          // Use Class.forName instead of ClassLoader.loadClass to avoid issues with loading arrays
-         Class clazz = Class.forName(name, false, loader);
+         clazz = Class.forName(name, false, loader);
          // sanity check only.. if a classLoader can't find a clazz, it will throw an exception
          if (clazz == null)
          {
-            return super.resolveClass(desc);
+            clazz = super.resolveClass(desc);
          }
-         else
-         {
-            return clazz;
-         }
+
+
       }
       catch (ClassNotFoundException e)
       {
          return super.resolveClass(desc);
       }
+
+      return checkSecurity(clazz);
    }
 
    private Class resolveProxyClass0(String[] interfaces) throws IOException, ClassNotFoundException
@@ -157,7 +218,7 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
       }
       try
       {
-         return Proxy.getProxyClass(hasNonPublicInterface ? nonPublicLoader : latestLoader, classObjs);
+         return checkSecurity(Proxy.getProxyClass(hasNonPublicInterface ? nonPublicLoader : latestLoader, classObjs));
       }
       catch (IllegalArgumentException e)
       {
@@ -188,6 +249,99 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
       {
          throw new RuntimeException(c);
       }
+   }
+
+   private Class<?> checkSecurity(Class<?> clazz) throws ClassNotFoundException
+   {
+      Class<?> target = clazz;
+
+      while (target.isArray())
+      {
+         target = target.getComponentType();
+      }
+
+      while (target.isAnonymousClass() || target.isLocalClass())
+      {
+         target = target.getEnclosingClass();
+      }
+
+      if (!target.isPrimitive())
+      {
+         if (!isTrustedType(target))
+         {
+            throw new ClassNotFoundException("Forbidden " + clazz + "! " +
+                    "This class is not trusted to be deserialized under the current configuration. " +
+                    "Please refer to the documentation for more information on how to configure trusted classes.");
+         }
+      }
+
+      return clazz;
+   }
+
+   private boolean isTrustedType(Class<?> clazz)
+   {
+      if (clazz == null)
+      {
+         return true;
+      }
+
+      String className = clazz.getCanonicalName();
+      if (className == null)
+      {
+         // Shouldn't happen as we pre-processed things, but just in case..
+         className = clazz.getName();
+      }
+
+      for (String blackListEntry : blackList)
+      {
+         if (CATCH_ALL_WILDCARD.equals(blackListEntry))
+         {
+            return false;
+         }
+         else if (isClassOrPackageMatch(className, blackListEntry))
+         {
+            return false;
+         }
+      }
+
+      for (String whiteListEntry : whiteList)
+      {
+         if (CATCH_ALL_WILDCARD.equals(whiteListEntry))
+         {
+            return true;
+         }
+         else if (isClassOrPackageMatch(className, whiteListEntry))
+         {
+            return true;
+         }
+      }
+
+      // Failing outright rejection or allow from above
+      // reject only if the whiteList is not empty.
+      return whiteList.size() == 0;
+   }
+
+   private boolean isClassOrPackageMatch(String className, String listEntry)
+   {
+      if (className == null)
+      {
+         return false;
+      }
+
+      // Check if class is an exact match of the entry
+      if (className.equals(listEntry))
+      {
+         return true;
+      }
+
+      // Check if class is from a [sub-]package matching the entry
+      int entryLength = listEntry.length();
+      if (className.length() > entryLength && className.startsWith(listEntry) && '.' == className.charAt(entryLength))
+      {
+         return true;
+      }
+
+      return false;
    }
 
    // Inner classes --------------------------------------------------------------------------------

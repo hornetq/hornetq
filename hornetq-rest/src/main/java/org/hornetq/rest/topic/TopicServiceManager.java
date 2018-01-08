@@ -2,6 +2,7 @@ package org.hornetq.rest.topic;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.queue.DestinationServiceManager;
 
 import java.util.ArrayList;
@@ -16,6 +17,11 @@ public class TopicServiceManager extends DestinationServiceManager
    protected TopicPushStore pushStore;
    protected List<TopicDeployment> topics = new ArrayList<TopicDeployment>();
    protected TopicDestinationsResource destination;
+
+   public TopicServiceManager(ConnectionFactoryOptions jmsOptions)
+   {
+      super(jmsOptions);
+   }
 
    public TopicPushStore getPushStore()
    {

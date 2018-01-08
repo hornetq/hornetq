@@ -36,13 +36,14 @@ public class HornetQXASession extends HornetQSession implements XAQueueSession, 
     * @param session
     * @param sessionType
     */
-   protected HornetQXASession(HornetQConnection connection,
+   protected HornetQXASession(final ConnectionFactoryOptions options,
+                              HornetQConnection connection,
                               boolean transacted,
                               boolean xa,
                               int ackMode,
                               ClientSession session,
                               int sessionType)
    {
-      super(connection, transacted, xa, ackMode, session, sessionType);
+      super(options, connection, transacted, xa, ackMode, session, sessionType);
    }
 }

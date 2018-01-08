@@ -45,6 +45,8 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    // Attributes ----------------------------------------------------
 
+   private final ConnectionFactoryOptions options;
+
    private final ClientConsumer consumer;
 
    private MessageListener listener;
@@ -67,13 +69,16 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    // Constructors --------------------------------------------------
 
-   protected HornetQMessageConsumer(final HornetQSession session,
+   protected HornetQMessageConsumer(final ConnectionFactoryOptions options,
+                                 final HornetQSession session,
                                  final ClientConsumer consumer,
                                  final boolean noLocal,
                                  final HornetQDestination destination,
                                  final String selector,
                                  final SimpleString autoDeleteQueueName) throws JMSException
    {
+      this.options = options;
+
       this.session = session;
 
       this.consumer = consumer;
@@ -109,7 +114,7 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
    {
       this.listener = listener;
 
-      coreListener = listener == null ? null : new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
+      coreListener = listener == null ? null : new JMSMessageListenerWrapper(options, session, consumer, listener, ackMode);
 
       try
       {
@@ -226,10 +231,10 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
          if (message != null)
          {
-            msg = HornetQMessage.createMessage(message,
-                                               (ackMode == Session.CLIENT_ACKNOWLEDGE |
-                                                ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE) ?
-                                                                session.getCoreSession() : null);
+            boolean needSession = ackMode == Session.CLIENT_ACKNOWLEDGE ||
+               ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE ||
+               message.getType() == HornetQObjectMessage.TYPE;
+            msg = HornetQMessage.createMessage(message, needSession ? session.getCoreSession() : null, options);
 
             try
             {

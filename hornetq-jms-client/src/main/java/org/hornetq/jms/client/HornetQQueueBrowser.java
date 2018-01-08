@@ -41,6 +41,8 @@ public final class HornetQQueueBrowser implements QueueBrowser
 
    // Attributes -----------------------------------------------------------------------------------
 
+   private final ConnectionFactoryOptions options;
+
    private final ClientSession session;
 
    private ClientConsumer consumer;
@@ -51,8 +53,9 @@ public final class HornetQQueueBrowser implements QueueBrowser
 
    // Constructors ---------------------------------------------------------------------------------
 
-   protected HornetQQueueBrowser(final HornetQQueue queue, final String messageSelector, final ClientSession session) throws JMSException
+   protected HornetQQueueBrowser(final ConnectionFactoryOptions options, final HornetQQueue queue, final String messageSelector, final ClientSession session) throws JMSException
    {
+      this.options = options;
       this.session = session;
       this.queue = queue;
       if (messageSelector != null)
@@ -148,7 +151,7 @@ public final class HornetQQueueBrowser implements QueueBrowser
          {
             ClientMessage next = current;
             current = null;
-            msg = HornetQMessage.createMessage(next, session);
+            msg = HornetQMessage.createMessage(next, session, options);
             try
             {
                msg.doBeforeReceive();

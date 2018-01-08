@@ -2,6 +2,7 @@ package org.hornetq.rest.queue;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.HttpHeaderProperty;
 
@@ -43,7 +44,7 @@ public abstract class ConsumedMessage
       }
    }
 
-   public static ConsumedMessage createConsumedMessage(ClientMessage message)
+   public static ConsumedMessage createConsumedMessage(ClientMessage message, ConnectionFactoryOptions options)
    {
       Boolean aBoolean = message.getBooleanProperty(POSTED_AS_HTTP_MESSAGE);
       if (aBoolean != null && aBoolean.booleanValue())
@@ -52,7 +53,7 @@ public abstract class ConsumedMessage
       }
       else if (message.getType() == ClientMessage.OBJECT_TYPE)
       {
-         return new ConsumedObjectMessage(message);
+         return new ConsumedObjectMessage(message, options);
       }
       else
       {

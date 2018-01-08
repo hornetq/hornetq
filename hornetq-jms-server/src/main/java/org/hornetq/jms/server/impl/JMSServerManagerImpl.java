@@ -657,7 +657,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          @Override
          public void runException() throws Exception
          {
-            checkJNDI(jndi);
+            if (jndi != null)
+            {
+               checkJNDI(jndi);
+            }
 
             if (internalCreateTopic(topicName))
             {
@@ -671,11 +674,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
                ArrayList<String> bindings = new ArrayList<String>();
 
-               for (String jndiItem : jndi)
+               if (jndi != null)
                {
-                  if (bindToJndi(jndiItem, destination))
+                  for (String jndiItem : jndi)
                   {
-                     bindings.add(jndiItem);
+                     if (bindToJndi(jndiItem, destination))
+                     {
+                        bindings.add(jndiItem);
+                     }
                   }
                }
 
@@ -1460,6 +1466,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       cf.setFailoverOnInitialConnection(cfConfig.isFailoverOnInitialConnection());
       cf.setCompressLargeMessage(cfConfig.isCompressLargeMessages());
       cf.setGroupID(cfConfig.getGroupID());
+      cf.setDeserializationBlackList(cfConfig.getDeserializationBlackList());
+      cf.setDeserializationWhiteList(cfConfig.getDeserializationWhiteList());
       return cf;
    }
 

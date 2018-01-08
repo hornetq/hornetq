@@ -43,7 +43,7 @@ public class PersistentPushQueueConsumerTest
       hornetqServer.start();
 
       deployment = EmbeddedContainer.start();
-      manager = new MessageServiceManager();
+      manager = new MessageServiceManager(null);
       manager.start();
       deployment.getRegistry().addSingletonResource(manager.getQueueManager().getDestination());
       deployment.getRegistry().addSingletonResource(manager.getTopicManager().getDestination());

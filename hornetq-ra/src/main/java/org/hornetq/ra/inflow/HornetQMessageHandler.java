@@ -30,6 +30,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.ra.HornetQRALogger;
@@ -61,6 +62,8 @@ public class HornetQMessageHandler implements MessageHandler
     */
    private MessageEndpoint endpoint;
 
+   private final ConnectionFactoryOptions options;
+
    private final HornetQActivation activation;
 
    private boolean useLocalTx;
@@ -75,12 +78,14 @@ public class HornetQMessageHandler implements MessageHandler
 
    private ClientSessionFactory cf;
 
-   public HornetQMessageHandler(final HornetQActivation activation,
+   public HornetQMessageHandler(final ConnectionFactoryOptions options,
+                                final HornetQActivation activation,
                                 final TransactionManager tm,
                                 final ClientSessionInternal session,
                                 final ClientSessionFactory cf,
                                 final int sessionNr)
    {
+      this.options = options;
       this.activation = activation;
       this.session = session;
       this.cf = cf;
@@ -306,7 +311,7 @@ public class HornetQMessageHandler implements MessageHandler
          HornetQRALogger.LOGGER.trace("onMessage(" + message + ")");
       }
 
-      HornetQMessage msg = HornetQMessage.createMessage(message, session);
+      HornetQMessage msg = HornetQMessage.createMessage(message, session, options);
       boolean beforeDelivery = false;
 
       try

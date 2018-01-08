@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBContext;
 
@@ -16,6 +17,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.queue.DestinationSettings;
 import org.hornetq.rest.queue.QueueServiceManager;
 import org.hornetq.rest.topic.TopicServiceManager;
@@ -33,14 +35,22 @@ import org.hornetq.utils.XMLUtil;
 public class MessageServiceManager
 {
    protected ExecutorService threadPool;
-   protected QueueServiceManager queueManager = new QueueServiceManager();
-   protected TopicServiceManager topicManager = new TopicServiceManager();
+   protected QueueServiceManager queueManager;
+   protected TopicServiceManager topicManager;
    protected TimeoutTask timeoutTask;
    protected int timeoutTaskInterval = 1;
    protected MessageServiceConfiguration configuration = new MessageServiceConfiguration();
    protected boolean configSet = false;
    protected String configResourcePath;
    protected BindingRegistry registry;
+   private ClientSessionFactory consumerSessionFactory;
+
+   public MessageServiceManager(ConnectionFactoryOptions jmsOptions)
+   {
+      queueManager = new QueueServiceManager(jmsOptions);
+      topicManager = new TopicServiceManager(jmsOptions);
+   }
+
 
    public BindingRegistry getRegistry()
    {
@@ -154,7 +164,7 @@ public class MessageServiceManager
          consumerLocator.setConsumerWindowSize(configuration.getConsumerWindowSize());
       }
 
-      ClientSessionFactory consumerSessionFactory = consumerLocator.createSessionFactory();
+      consumerSessionFactory = consumerLocator.createSessionFactory();
       HornetQRestLogger.LOGGER.debug("Created ClientSessionFactory: " + consumerSessionFactory);
 
       ServerLocator defaultLocator =  new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
@@ -205,5 +215,15 @@ public class MessageServiceManager
       queueManager = null;
       if (topicManager != null) topicManager.stop();
       topicManager = null;
+      this.timeoutTask.stop();
+      threadPool.shutdown();
+      try
+      {
+         threadPool.awaitTermination(5000, TimeUnit.SECONDS);
+      }
+      catch (InterruptedException e)
+      {
+      }
+      this.consumerSessionFactory.close();
    }
 }

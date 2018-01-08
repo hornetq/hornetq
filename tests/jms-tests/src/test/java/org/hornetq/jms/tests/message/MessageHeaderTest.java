@@ -799,7 +799,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
                                                           (byte)4,
                                                           1000);
       ClientSession session = new FakeSession(clientMessage);
-      HornetQMessage jbossMessage = HornetQMessage.createMessage(clientMessage, session);
+      HornetQMessage jbossMessage = HornetQMessage.createMessage(clientMessage, session, null);
       jbossMessage.clearProperties();
 
       MessageHeaderTestBase.configureMessage(jbossMessage);
@@ -885,7 +885,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
-      HornetQObjectMessage copy = new HornetQObjectMessage(foreignObjectMessage, session);
+      HornetQObjectMessage copy = new HornetQObjectMessage(foreignObjectMessage, session, null);
 
       MessageHeaderTestBase.ensureEquivalent(foreignObjectMessage, copy);
    }
