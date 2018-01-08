@@ -16,6 +16,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
@@ -38,13 +39,16 @@ public class PushConsumer
    protected PushStrategy strategy;
    protected PushStore store;
 
-   public PushConsumer(ClientSessionFactory factory, String destination, String id, PushRegistration registration, PushStore store)
+   private ConnectionFactoryOptions jmsOptions;
+
+   public PushConsumer(ClientSessionFactory factory, String destination, String id, PushRegistration registration, PushStore store, ConnectionFactoryOptions jmsOptions)
    {
       this.factory = factory;
       this.destination = destination;
       this.id = id;
       this.registration = registration;
       this.store = store;
+      this.jmsOptions = jmsOptions;
    }
 
    public PushStrategy getStrategy()
@@ -85,6 +89,7 @@ public class PushConsumer
          strategy = new UriStrategy();
       }
       strategy.setRegistration(registration);
+      strategy.setJmsOptions(jmsOptions);
       strategy.start();
 
       sessions = new ArrayList<ClientSession>();

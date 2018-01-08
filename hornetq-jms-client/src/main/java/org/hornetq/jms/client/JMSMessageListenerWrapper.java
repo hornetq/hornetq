@@ -30,6 +30,8 @@ import org.hornetq.api.jms.HornetQJMSConstants;
  */
 public class JMSMessageListenerWrapper implements MessageHandler
 {
+   private final ConnectionFactoryOptions options;
+
    private final HornetQConnection connection;
 
    private final HornetQSession session;
@@ -42,12 +44,15 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
    private final boolean individualACK;
 
-   protected JMSMessageListenerWrapper(final HornetQConnection connection,
+   protected JMSMessageListenerWrapper(final ConnectionFactoryOptions options,
+                                       final HornetQConnection connection,                                    
                                        final HornetQSession session,
                                        final ClientConsumer consumer,
                                        final MessageListener listener,
                                        final int ackMode)
    {
+      this.options = options;
+
       this.connection = connection;
 
       this.session = session;

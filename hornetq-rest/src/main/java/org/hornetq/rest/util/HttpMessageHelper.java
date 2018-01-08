@@ -14,15 +14,15 @@ package org.hornetq.rest.util;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.HttpHeaderProperty;
+import org.hornetq.utils.ObjectInputStreamWithClassLoader;
 import org.jboss.resteasy.client.ClientRequest;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -40,47 +40,7 @@ public class HttpMessageHelper
       return lowerKey.toLowerCase().startsWith("content") || lowerKey.toLowerCase().equals("link");
    }
 
-   public static void buildMessage(ClientMessage message, Response.ResponseBuilder builder)
-   {
-      for (SimpleString key : message.getPropertyNames())
-      {
-         String k = key.toString();
-         String headerName = HttpHeaderProperty.fromPropertyName(k);
-         if (headerName == null)
-         {
-            continue;
-         }
-         builder.header(headerName, message.getStringProperty(k));
-      }
-      int size = message.getBodySize();
-      if (size > 0)
-      {
-         byte[] body = new byte[size];
-         message.getBodyBuffer().readBytes(body);
-         Boolean aBoolean = message.getBooleanProperty(POSTED_AS_HTTP_MESSAGE);
-         if (aBoolean != null && aBoolean.booleanValue())
-         {
-            builder.entity(body);
-         }
-         else
-         {
-            ByteArrayInputStream bais = new ByteArrayInputStream(body);
-            Object obj = null;
-            try
-            {
-               ObjectInputStream ois = new ObjectInputStream(bais);
-               obj = ois.readObject();
-            }
-            catch (Exception e)
-            {
-               throw new RuntimeException(e);
-            }
-            builder.entity(obj);
-         }
-      }
-   }
-
-   public static void buildMessage(ClientMessage message, ClientRequest request, String contentType)
+   public static void buildMessage(ClientMessage message, ClientRequest request, String contentType, ConnectionFactoryOptions jmsOptions)
    {
       for (SimpleString key : message.getPropertyNames())
       {
@@ -122,13 +82,19 @@ public class HttpMessageHelper
             Object obj = null;
             try
             {
-               ObjectInputStream ois = new ObjectInputStream(bais);
+               ObjectInputStreamWithClassLoader ois = new ObjectInputStreamWithClassLoader(bais);
+               if (jmsOptions != null)
+               {
+                  ois.setBlackList(jmsOptions.getDeserializationBlackList());
+                  ois.setWhiteList(jmsOptions.getDeserializationWhiteList());
+               }
                obj = ois.readObject();
                HornetQRestLogger.LOGGER.debug("**** Building Message from object: " + obj.toString());
                request.body(contentType, obj);
             }
             catch (Exception e)
             {
+               e.printStackTrace();
                throw new RuntimeException(e);
             }
          }

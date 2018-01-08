@@ -36,6 +36,14 @@ import org.hornetq.api.jms.HornetQJMSConstants;
  */
 public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscriber
 {
+   // Constants -----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   private final ConnectionFactoryOptions options;
+
    private final ClientConsumer consumer;
 
    private MessageListener listener;
@@ -58,14 +66,17 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
    // Constructors --------------------------------------------------
 
-   protected HornetQMessageConsumer(final HornetQConnection connection,
-                                    final HornetQSession session,
-                                    final ClientConsumer consumer,
-                                    final boolean noLocal,
-                                    final HornetQDestination destination,
-                                    final String selector,
-                                    final SimpleString autoDeleteQueueName) throws JMSException
+   protected HornetQMessageConsumer(final ConnectionFactoryOptions options,
+                                 final HornetQConnection connection,
+                                 final HornetQSession session,
+                                 final ClientConsumer consumer,
+                                 final boolean noLocal,
+                                 final HornetQDestination destination,
+                                 final String selector,
+                                 final SimpleString autoDeleteQueueName) throws JMSException
    {
+      this.options = options;
+
       this.connection = connection;
 
       this.session = session;
@@ -103,7 +114,7 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
    {
       this.listener = listener;
 
-      coreListener = listener == null ? null : new JMSMessageListenerWrapper(connection, session, consumer, listener, ackMode);
+      coreListener = listener == null ? null : new JMSMessageListenerWrapper(options, connection, session, consumer, listener, ackMode);
 
       try
       {
@@ -222,9 +233,10 @@ public final class HornetQMessageConsumer implements QueueReceiver, TopicSubscri
 
          if (coreMessage != null)
          {
-            boolean needSession =
-                     ackMode == Session.CLIENT_ACKNOWLEDGE || ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE;
-            jmsMsg = HornetQMessage.createMessage(coreMessage, needSession ? session.getCoreSession() : null);
+            boolean needSession = ackMode == Session.CLIENT_ACKNOWLEDGE ||
+               ackMode == HornetQJMSConstants.INDIVIDUAL_ACKNOWLEDGE ||
+               coreMessage.getType() == HornetQObjectMessage.TYPE;
+            jmsMsg = HornetQMessage.createMessage(coreMessage, needSession ? session.getCoreSession() : null, options);
 
             jmsMsg.doBeforeReceive();
 

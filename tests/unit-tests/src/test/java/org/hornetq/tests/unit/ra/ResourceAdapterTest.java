@@ -512,6 +512,46 @@ public class ResourceAdapterTest extends ServiceTestBase
    }
 
    @Test
+   public void testActivationDeserializationParameters() throws Exception
+   {
+      HornetQServer server = createServer(false);
+
+      try
+      {
+
+         server.start();
+
+         HornetQResourceAdapter ra = new HornetQResourceAdapter();
+
+         ra.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+         ra.setUserName("userGlobal");
+         ra.setPassword("passwordGlobal");
+         ra.setDeserializationWhiteList("a.b.c.d.e");
+         ra.setDeserializationBlackList("f.g.h.i.j");
+         ra.start(new BootstrapContext());
+
+         HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
+         assertEquals("a.b.c.d.e", factory.getDeserializationWhiteList());
+         assertEquals("f.g.h.i.j", factory.getDeserializationBlackList());
+
+         ConnectionFactoryProperties overrides = new ConnectionFactoryProperties();
+         overrides.setDeserializationWhiteList("k.l.m.n");
+         overrides.setDeserializationBlackList("o.p.q.r");
+
+         factory = ra.createHornetQConnectionFactory(overrides);
+         assertEquals("k.l.m.n", factory.getDeserializationWhiteList());
+         assertEquals("o.p.q.r", factory.getDeserializationBlackList());
+
+         ra.stop();
+
+      }
+      finally
+      {
+         server.stop();
+      }
+   }
+
+   @Test
    public void testForConnectionLeakDuringActivationWithMissingDestination() throws Exception
    {
       HornetQServer server = createServer(false);

@@ -13,6 +13,7 @@
 package org.hornetq.rest.queue.push;
 
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.queue.push.xml.PushRegistration;
 
 /**
@@ -36,4 +37,6 @@ public interface PushStrategy
    void start() throws Exception;
 
    void stop() throws Exception;
+
+   void setJmsOptions(ConnectionFactoryOptions jmsOptions);
 }

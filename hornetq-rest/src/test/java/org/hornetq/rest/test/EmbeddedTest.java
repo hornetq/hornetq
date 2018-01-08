@@ -42,7 +42,7 @@ public class EmbeddedTest
    @BeforeClass
    public static void startEmbedded() throws Exception
    {
-      server = new EmbeddedRestHornetQJMS();
+      server = new EmbeddedRestHornetQJMS(null);
       server.getManager().setConfigResourcePath("hornetq-rest.xml");
       server.start();
    }

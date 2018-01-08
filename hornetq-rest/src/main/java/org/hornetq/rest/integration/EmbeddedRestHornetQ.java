@@ -13,6 +13,7 @@
 package org.hornetq.rest.integration;
 
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
 import org.hornetq.rest.MessageServiceManager;
 import org.jboss.resteasy.test.TestPortProvider;
@@ -25,14 +26,15 @@ public class EmbeddedRestHornetQ
 {
    protected TJWSEmbeddedJaxrsServer tjws = new TJWSEmbeddedJaxrsServer();
    protected EmbeddedHornetQ embeddedHornetQ;
-   protected MessageServiceManager manager = new MessageServiceManager();
+   protected MessageServiceManager manager = new MessageServiceManager(null);
 
-   public EmbeddedRestHornetQ()
+   public EmbeddedRestHornetQ(ConnectionFactoryOptions jmsOptions)
    {
       int port = TestPortProvider.getPort();
       tjws.setPort(port);
       tjws.setRootResourcePath("");
       tjws.setSecurityDomain(null);
+      manager = new MessageServiceManager(jmsOptions);
       initEmbeddedHornetQ();
    }
 
