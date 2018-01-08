@@ -4,6 +4,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.queue.push.PushConsumer;
 
@@ -34,6 +35,12 @@ public class PushSubscriptionsResource
    protected final String startup = Long.toString(System.currentTimeMillis());
    protected final AtomicLong sessionCounter = new AtomicLong(1);
    protected TopicPushStore pushStore;
+   private ConnectionFactoryOptions jmsOptions;
+
+   public PushSubscriptionsResource(ConnectionFactoryOptions jmsOptions)
+   {
+      this.jmsOptions = jmsOptions;
+   }
 
    public void stop()
    {
@@ -91,7 +98,7 @@ public class PushSubscriptionsResource
       {
          createSession = createSubscription(destination, reg.isDurable());
       }
-      PushSubscription consumer = new PushSubscription(sessionFactory, reg.getDestination(), reg.getId(), reg, pushStore);
+      PushSubscription consumer = new PushSubscription(sessionFactory, reg.getDestination(), reg.getId(), reg, pushStore, jmsOptions);
       try
       {
          consumer.start();
@@ -143,7 +150,7 @@ public class PushSubscriptionsResource
       ClientSession createSession = createSubscription(genId, registration.isDurable());
       try
       {
-         PushSubscription consumer = new PushSubscription(sessionFactory, genId, genId, registration, pushStore);
+         PushSubscription consumer = new PushSubscription(sessionFactory, genId, genId, registration, pushStore, jmsOptions);
          try
          {
             consumer.start();

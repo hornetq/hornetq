@@ -33,11 +33,11 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 public final class HornetQXAConnection extends HornetQConnection implements XATopicConnection, XAQueueConnection
 {
 
-   public HornetQXAConnection(final String username, final String password, final int connectionType,
+   public HornetQXAConnection(final ConnectionFactoryOptions options, final String username, final String password, final int connectionType,
                               final String clientID, final int dupsOKBatchSize, final int transactionBatchSize,
                               final ClientSessionFactory sessionFactory)
    {
-      super(username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
+      super(options, username, password, connectionType, clientID, dupsOKBatchSize, transactionBatchSize, sessionFactory);
    }
 
    @Override

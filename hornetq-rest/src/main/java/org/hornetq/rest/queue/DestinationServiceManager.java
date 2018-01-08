@@ -5,6 +5,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.rest.util.LinkStrategy;
 import org.hornetq.rest.util.TimeoutTask;
 import org.hornetq.spi.core.naming.BindingRegistry;
@@ -27,6 +28,13 @@ public abstract class DestinationServiceManager
    protected long producerTimeToLive;
    protected LinkStrategy linkStrategy;
    protected BindingRegistry registry;
+
+   protected ConnectionFactoryOptions jmsOptions;
+
+   public DestinationServiceManager(ConnectionFactoryOptions jmsOptions)
+   {
+      this.jmsOptions = jmsOptions;
+   }
 
    public BindingRegistry getRegistry()
    {
@@ -170,4 +178,9 @@ public abstract class DestinationServiceManager
    public abstract void start() throws Exception;
 
    public abstract void stop();
+
+   public ConnectionFactoryOptions getJmsOptions()
+   {
+      return jmsOptions;
+   }
 }

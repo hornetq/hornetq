@@ -53,6 +53,8 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    // Attributes ----------------------------------------------------
 
+   private final ConnectionFactoryOptions options;
+
    private final HornetQConnection jbossConn;
 
    private final SimpleString connID;
@@ -78,8 +80,11 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
    protected HornetQMessageProducer(final HornetQConnection jbossConn,
                                     final ClientProducer producer,
                                     final HornetQDestination defaultDestination,
-                                    final ClientSession clientSession) throws JMSException
+                                    final ClientSession clientSession,
+                                    final ConnectionFactoryOptions options) throws JMSException
    {
+      this.options = options;
+
       this.jbossConn = jbossConn;
 
       connID = jbossConn.getClientID() != null ? new SimpleString(jbossConn.getClientID()) : jbossConn.getUID();
@@ -372,7 +377,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          }
          else if (message instanceof ObjectMessage)
          {
-            msg = new HornetQObjectMessage((ObjectMessage)message, clientSession);
+            msg = new HornetQObjectMessage((ObjectMessage)message, clientSession, options);
          }
          else if (message instanceof StreamMessage)
          {

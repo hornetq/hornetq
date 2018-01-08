@@ -87,6 +87,8 @@ public class HornetQSession implements QueueSession, TopicSession
 
    // Attributes ----------------------------------------------------
 
+   private final ConnectionFactoryOptions options;
+
    private final HornetQConnection connection;
 
    private final ClientSession session;
@@ -105,13 +107,16 @@ public class HornetQSession implements QueueSession, TopicSession
 
    // Constructors --------------------------------------------------
 
-   protected HornetQSession(final HornetQConnection connection,
+   protected HornetQSession(final ConnectionFactoryOptions options,
+                            final HornetQConnection connection,
                             final boolean transacted,
                             final boolean xa,
                             final int ackMode,
                             final ClientSession session,
                             final int sessionType)
    {
+      this.options = options;
+
       this.connection = connection;
 
       this.ackMode = ackMode;
@@ -152,14 +157,14 @@ public class HornetQSession implements QueueSession, TopicSession
    {
       checkClosed();
 
-      return new HornetQObjectMessage(session);
+      return new HornetQObjectMessage(session, options);
    }
 
    public ObjectMessage createObjectMessage(final Serializable object) throws JMSException
    {
       checkClosed();
 
-      HornetQObjectMessage msg = new HornetQObjectMessage(session);
+      HornetQObjectMessage msg = new HornetQObjectMessage(session, options);
 
       msg.setObject(object);
 
@@ -335,7 +340,7 @@ public class HornetQSession implements QueueSession, TopicSession
 
          ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getSimpleAddress());
 
-         return new HornetQMessageProducer(connection, producer, jbd, session);
+         return new HornetQMessageProducer(connection, producer, jbd, session, options);
       }
       catch (HornetQException e)
       {
@@ -629,7 +634,7 @@ public class HornetQSession implements QueueSession, TopicSession
             }
          }
 
-         HornetQMessageConsumer jbc = new HornetQMessageConsumer(this,
+         HornetQMessageConsumer jbc = new HornetQMessageConsumer(options, this,
                                                                  consumer,
                                                                  noLocal,
                                                                  dest,
@@ -704,7 +709,7 @@ public class HornetQSession implements QueueSession, TopicSession
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
-      return new HornetQQueueBrowser((HornetQQueue)jbq, filterString, session);
+      return new HornetQQueueBrowser(options, (HornetQQueue)jbq, filterString, session);
 
    }
 
@@ -1002,6 +1007,17 @@ public class HornetQSession implements QueueSession, TopicSession
          }
       }
    }
+
+   public String getDeserializationBlackList()
+   {
+      return connection.getDeserializationBlackList();
+   }
+
+   public String getDeserializationWhiteList()
+   {
+      return connection.getDeserializationWhiteList();
+   }
+
 
    // Protected -----------------------------------------------------
 

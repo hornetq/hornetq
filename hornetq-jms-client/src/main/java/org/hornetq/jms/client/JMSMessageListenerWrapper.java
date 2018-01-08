@@ -32,6 +32,8 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
  */
 public class JMSMessageListenerWrapper implements MessageHandler
 {
+   private final ConnectionFactoryOptions options;
+
    private final HornetQSession session;
 
    private final MessageListener listener;
@@ -42,11 +44,14 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
    private final boolean individualACK;
 
-   protected JMSMessageListenerWrapper(final HornetQSession session,
+   protected JMSMessageListenerWrapper(final ConnectionFactoryOptions options,
+                                       final HornetQSession session,
                                        final ClientConsumer consumer,
                                        final MessageListener listener,
                                        final int ackMode)
    {
+      this.options = options;
+
       this.session = session;
 
       this.consumer = consumer;

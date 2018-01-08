@@ -17,6 +17,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.jms.client.ConnectionFactoryOptions;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.rest.HornetQRestLogger;
 import org.hornetq.rest.util.Constants;
@@ -186,7 +187,7 @@ public class QueueConsumer
             return builder.build();
          }
          previousIndex = index;
-         lastConsumed = ConsumedMessage.createConsumedMessage(message);
+         lastConsumed = ConsumedMessage.createConsumedMessage(message, this.getJmsOptions());
          String token = Long.toString(lastConsumed.getMessageID());
          Response response = getMessageResponse(lastConsumed, info, basePath, token).build();
          if (autoAck) message.acknowledge();
@@ -194,7 +195,9 @@ public class QueueConsumer
       }
       catch (Exception e)
       {
-         throw new RuntimeException(e);
+         Response errorResponse = Response.serverError().entity(e.getMessage())
+                 .status(Response.Status.INTERNAL_SERVER_ERROR).build();
+         return errorResponse;
       }
    }
 
@@ -272,5 +275,10 @@ public class QueueConsumer
       builder.path(basePath);
       String uri = builder.build().toString();
       serviceManager.getLinkStrategy().setLinkHeader(response, "consumer", "consumer", uri, MediaType.APPLICATION_XML);
+   }
+
+   public ConnectionFactoryOptions getJmsOptions()
+   {
+      return serviceManager.getJmsOptions();
    }
 }

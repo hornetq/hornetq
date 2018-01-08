@@ -196,7 +196,7 @@ public class TopicDestinationsResource
 
       subscriptionsResource.setDestination(topicName);
       subscriptionsResource.setSessionFactory(manager.getConsumerSessionFactory());
-      PushSubscriptionsResource push = new PushSubscriptionsResource();
+      PushSubscriptionsResource push = new PushSubscriptionsResource(manager.getJmsOptions());
       push.setDestination(topicName);
       push.setSessionFactory(manager.getConsumerSessionFactory());
       topicResource.setPushSubscriptions(push);
