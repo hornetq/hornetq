@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.util;
 
+import org.hornetq.tests.CoreUnitTestCase;
 import org.hornetq.tests.unit.util.deserialization.pkg1.EnclosingClass;
 import org.hornetq.tests.unit.util.deserialization.pkg1.TestClass1;
 import org.hornetq.tests.unit.util.deserialization.pkg1.TestClass2;
@@ -110,7 +111,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
          //Class.isAnonymousClass() call used in ObjectInputStreamWithClassLoader
          //need to access the enclosing class and its parent class of the obj
          //i.e. ActiveMQTestBase and Assert.
-         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(this.getClass());
+         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(this.getClass(), UnitTestCase.class, CoreUnitTestCase.class, Assert.class);
          Thread.currentThread().setContextClassLoader(testClassLoader);
 
          ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
@@ -152,7 +153,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
          byte[] bytes = ObjectInputStreamWithClassLoaderTest
                .toBytes(originalProxy);
 
-         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(this.getClass());
+         ClassLoader testClassLoader = ObjectInputStreamWithClassLoaderTest.newClassLoader(this.getClass(), UnitTestCase.class, CoreUnitTestCase.class, Assert.class);
          Thread.currentThread().setContextClassLoader(testClassLoader);
          ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
          org.hornetq.utils.ObjectInputStreamWithClassLoader ois = new ObjectInputStreamWithClassLoader(
