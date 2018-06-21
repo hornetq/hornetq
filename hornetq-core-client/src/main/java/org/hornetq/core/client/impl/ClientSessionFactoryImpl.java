@@ -96,7 +96,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final ServerLocatorInternal serverLocator;
 
-   private TransportConfiguration connectorConfig;
+   private final TransportConfiguration connectorConfig;
+
+   private TransportConfiguration currentConnectorConfig;
 
    private TransportConfiguration backupConfig;
 
@@ -207,6 +209,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       this.connectorConfig = connectorConfig;
 
+      this.currentConnectorConfig = connectorConfig;
+
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
       checkTransportKeys(connectorFactory, connectorConfig.getParams());
@@ -255,7 +259,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       if (connection == null)
       {
          StringBuilder msg =
-            new StringBuilder("Unable to connect to server using configuration ").append(connectorConfig);
+            new StringBuilder("Unable to connect to server using configuration ").append(currentConnectorConfig);
          if (backupConfig != null)
          {
             msg.append(" and backup configuration ").append(backupConfig);
@@ -267,7 +271,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public TransportConfiguration getConnectorConfiguration()
    {
-      return connectorConfig;
+      return currentConnectorConfig;
    }
 
    public void setBackupConnector(final TransportConfiguration live, final TransportConfiguration backUp)
@@ -279,7 +283,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       // so this will create the instance to be used on the isEquivalent check
       if (localConnector == null)
       {
-         localConnector = connectorFactory.createConnector(connectorConfig.getParams(),
+         localConnector = connectorFactory.createConnector(currentConnectorConfig.getParams(),
                                                            new DelegatingBufferHandler(),
                                                            this,
                                                            closeExecutor,
@@ -303,7 +307,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                 " / " +
                                                 backUp +
                                                 " but it didn't belong to " +
-                                                connectorConfig);
+                                                currentConnectorConfig);
          }
       }
    }
@@ -1231,7 +1235,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
-               connector = connectorFactory.createConnector(connectorConfig.getParams(),
+               connector = connectorFactory.createConnector(currentConnectorConfig.getParams(),
                                                             handler,
                                                             this,
                                                             closeExecutor,
@@ -1242,7 +1246,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                {
                   HornetQClientLogger.LOGGER.debug("Trying to connect with connector = " + connectorFactory +
                                                       ", parameters = " +
-                                                      connectorConfig.getParams() +
+                                                      currentConnectorConfig.getParams() +
                                                       " connector = " +
                                                       connector);
                }
@@ -1324,7 +1328,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                               HornetQClientLogger.LOGGER.debug("Connected to the backup at " + backupConfig);
                            }
 
-                           connectorConfig = backupConfig;
+                           currentConnectorConfig = backupConfig;
 
                            backupConfig = null;
 
@@ -1332,11 +1336,47 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                         }
                      }
                   }
-                  else
+
+                  if (tc == null)
                   {
-                     if (ClientSessionFactoryImpl.isTrace)
+                     if (ClientSessionFactoryImpl.isDebug)
                      {
-                        HornetQClientLogger.LOGGER.trace("No Backup configured!", new Exception("trace"));
+                        HornetQClientLogger.LOGGER.debug("Backup is not active, trying original connection configuration now.");
+                     }
+
+                     if (!currentConnectorConfig.equals(connectorConfig))
+                     {
+                        ConnectorFactory originalConnectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+                        Connector originalConnector = originalConnectorFactory.createConnector(connectorConfig.getParams(), handler, this, closeExecutor, threadPool, scheduledThreadPool);
+                        if (originalConnector != null)
+                        {
+                           originalConnector.start();
+                           tc = originalConnector.createConnection();
+                           if (tc == null)
+                           {
+                              if (ClientSessionFactoryImpl.isDebug)
+                              {
+                                 HornetQClientLogger.LOGGER.debug("Connector towards " + connector + " failed");
+                              }
+                              try
+                              {
+                                 originalConnector.close();
+                              }
+                              catch (Throwable t)
+                              {
+                              }
+                           }
+                           else
+                           {
+                              if (ClientSessionFactoryImpl.isDebug)
+                              {
+                                 HornetQClientLogger.LOGGER.debug("Returning into original connector");
+                                 connector = originalConnector;
+                                 backupConfig = null;
+                                 currentConnectorConfig = connectorConfig;
+                              }
+                           }
+                        }
                      }
                   }
                }
