@@ -577,6 +577,49 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
+   @Test(timeout = 60000)
+   public void testFailBothRestartLive() throws Exception
+   {
+      ServerLocator locator = getServerLocator();
+
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(10);
+
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, true);
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      sendMessagesSomeDurable(session, producer);
+
+      crash(session);
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+
+      session.start();
+
+      receiveDurableMessages(consumer);
+
+      backupServer.getServer().stop();
+
+      liveServer.start();
+
+      consumer.close();
+
+      producer.close();
+
+      producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      sendMessagesSomeDurable(session, producer);
+
+      sf.close();
+      Assert.assertEquals(0, sf.numSessions());
+      Assert.assertEquals(0, sf.numConnections());
+   }
+
    /**
     * Basic fail-back test.
     *
