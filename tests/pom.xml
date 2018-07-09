@@ -52,4 +52,26 @@
       <module>integration-tests</module>
       <module>byteman-tests</module>
    </modules>
+
+   <profiles>
+      <profile>
+         <id>jdk8tests</id>
+         <activation>
+            <jdk>[1.8,)</jdk>
+         </activation>
+         <modules>
+            <module>unit-tests</module>
+            <module>jms-tests</module>
+            <module>joram-tests</module>
+            <module>soak-tests</module>
+            <module>stress-tests</module>
+            <module>timing-tests</module>
+            <module>concurrent-tests</module>
+            <module>performance-tests</module>
+            <module>integration-tests</module>
+            <module>byteman-tests</module>
+            <module>jdk8-tests</module>
+         </modules>
+      </profile>
+   </profiles>
 </project>

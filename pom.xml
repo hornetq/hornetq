@@ -57,6 +57,7 @@
       <skipPerformanceTests>true</skipPerformanceTests>
       <skipConcurrentTests>true</skipConcurrentTests>
       <skipRestTests>true</skipRestTests>
+      <skipJDK8Tests>true</skipJDK8Tests>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <hornetq-surefire-argline>-Djava.util.logging.manager=org.jboss.logmanager.LogManager
