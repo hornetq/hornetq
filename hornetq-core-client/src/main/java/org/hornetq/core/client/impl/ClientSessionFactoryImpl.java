@@ -83,7 +83,6 @@ import org.hornetq.utils.VersionLoader;
  */
 public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, ConnectionLifeCycleListener
 {
-
    // Constants
    // ------------------------------------------------------------------------------------
 
@@ -96,11 +95,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final ServerLocatorInternal serverLocator;
 
-   private final TransportConfiguration connectorConfig;
+   private TransportConfiguration connectorConfig;
 
    private TransportConfiguration currentConnectorConfig;
 
-   private TransportConfiguration backupConfig;
+   private volatile TransportConfiguration backupConfig;
 
    private ConnectorFactory connectorFactory;
 
@@ -206,8 +205,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       e.fillInStackTrace();
 
       this.serverLocator = serverLocator;
-
-      this.connectorConfig = connectorConfig;
 
       this.currentConnectorConfig = connectorConfig;
 
@@ -1219,6 +1216,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
+   //The order of connector configs to try to get a connection:
+   //currentConnectorConfig, backupConfig and last connectorConfig.
+   //On each successful connect, the current and last will be
+   //updated properly.
    public CoreRemotingConnection getConnection()
    {
       if (closed)
@@ -1257,7 +1258,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   if (ClientSessionFactoryImpl.isDebug)
                   {
-                     HornetQClientLogger.LOGGER.debug("Trying to connect at the main server using connector :" + connectorConfig);
+                     HornetQClientLogger.LOGGER.debug("Trying to connect at the main server using connector :" + currentConnectorConfig);
                   }
 
                   tc = connector.createConnection();
@@ -1328,9 +1329,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                               HornetQClientLogger.LOGGER.debug("Connected to the backup at " + backupConfig);
                            }
 
+                           connectorConfig = currentConnectorConfig;
                            currentConnectorConfig = backupConfig;
-
-                           backupConfig = null;
 
                            connectorFactory = backupConnectorFactory;
                         }
@@ -1344,14 +1344,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                         HornetQClientLogger.LOGGER.debug("Backup is not active, trying original connection configuration now.");
                      }
 
-                     if (!currentConnectorConfig.equals(connectorConfig))
+                     if (connectorConfig != null && !currentConnectorConfig.equals(connectorConfig))
                      {
                         ConnectorFactory originalConnectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
-                        Connector originalConnector = originalConnectorFactory.createConnector(connectorConfig.getParams(), handler, this, closeExecutor, threadPool, scheduledThreadPool);
-                        if (originalConnector != null)
+                        Connector lastConnector = originalConnectorFactory.createConnector(connectorConfig.getParams(), handler, this, closeExecutor, threadPool, scheduledThreadPool);
+                        if (lastConnector != null)
                         {
-                           originalConnector.start();
-                           tc = originalConnector.createConnection();
+                           lastConnector.start();
+                           tc = lastConnector.createConnection();
                            if (tc == null)
                            {
                               if (ClientSessionFactoryImpl.isDebug)
@@ -1360,7 +1360,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                               }
                               try
                               {
-                                 originalConnector.close();
+                                 lastConnector.close();
                               }
                               catch (Throwable t)
                               {
@@ -1370,11 +1370,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                            {
                               if (ClientSessionFactoryImpl.isDebug)
                               {
-                                 HornetQClientLogger.LOGGER.debug("Returning into original connector");
-                                 connector = originalConnector;
-                                 backupConfig = null;
-                                 currentConnectorConfig = connectorConfig;
+                                 HornetQClientLogger.LOGGER.debug("Returning into last connector");
                               }
+                              connector = lastConnector;
+                              TransportConfiguration temp = currentConnectorConfig;
+                              currentConnectorConfig = connectorConfig;
+                              connectorConfig = temp;
                            }
                         }
                      }
@@ -1872,7 +1873,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       return "ClientSessionFactoryImpl [serverLocator=" + serverLocator +
          ", connectorConfig=" +
-         connectorConfig +
+         currentConnectorConfig +
          ", backupConfig=" +
          backupConfig +
          "]";

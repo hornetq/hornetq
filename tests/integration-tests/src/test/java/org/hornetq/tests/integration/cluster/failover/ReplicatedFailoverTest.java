@@ -13,8 +13,12 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ReplicatedFailoverTest extends FailoverTest
@@ -128,4 +132,86 @@ public class ReplicatedFailoverTest extends FailoverTest
       }
       super.crash(sessions);
    }
+
+   @Override
+   @Test(timeout = 10000)
+   public void testFailLiveTooSoon() throws Exception
+   {
+      backupServer.getServer().getConfiguration().setFailbackDelay(2000);
+      backupServer.getServer().getConfiguration().setMaxSavedReplicatedJournalSize(2);
+      ServerLocator locator = getServerLocator();
+
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(10);
+
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      waitForBackupConfig(sf);
+
+      TransportConfiguration initialLive = getFieldFromSF(sf, "currentConnectorConfig");
+      TransportConfiguration initialBackup = getFieldFromSF(sf, "backupConfig");
+
+      System.out.println("initlive: " + initialLive);
+      System.out.println("initback: " + initialBackup);
+
+      TransportConfiguration last = getFieldFromSF(sf, "connectorConfig");
+      TransportConfiguration current = getFieldFromSF(sf, "currentConnectorConfig");
+
+      System.out.println("now last: " + last);
+      System.out.println("now current: " + current);
+      assertTrue(current.equals(initialLive));
+
+      ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, true);
+
+      //crash 1
+      crash();
+
+      //make sure failover is ok
+      createSession(sf, true, true).close();
+
+      last = getFieldFromSF(sf, "connectorConfig");
+      current = getFieldFromSF(sf, "currentConnectorConfig");
+
+      System.out.println("now after live crashed last: " + last);
+      System.out.println("now current: " + current);
+
+      assertTrue(current.equals(initialBackup));
+
+      //fail back
+      //beforeRestart(liveServer);
+      liveServer.getServer().getConfiguration().setCheckForLiveServer(true);
+      liveServer.getServer().start();
+
+      waitForRemoteBackupSynchronization(liveServer.getServer());
+
+      waitForRemoteBackupSynchronization(backupServer.getServer());
+
+      waitForServer(liveServer.getServer());
+
+      //make sure failover is ok
+      createSession(sf, true, true).close();
+
+      last = getFieldFromSF(sf, "connectorConfig");
+      current = getFieldFromSF(sf, "currentConnectorConfig");
+
+      System.out.println("now after live back again last: " + last);
+      System.out.println("now current: " + current);
+
+      assertTrue(current.equals(initialLive));
+
+      //now manually corrupt the backup in sf
+      setSFFieldValue(sf, "backupConfig", null);
+
+      //crash 2
+      crash();
+
+      createSession(sf, true, true).close();
+
+      sf.close();
+      Assert.assertEquals(0, sf.numSessions());
+      Assert.assertEquals(0, sf.numConnections());
+   }
+
 }

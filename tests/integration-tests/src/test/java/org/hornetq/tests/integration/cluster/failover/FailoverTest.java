@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.transaction.impl.XidImpl;
@@ -605,6 +607,7 @@ public class FailoverTest extends FailoverTestBase
 
       backupServer.getServer().stop();
 
+      beforeRestart(liveServer);
       liveServer.start();
 
       consumer.close();
@@ -618,6 +621,104 @@ public class FailoverTest extends FailoverTestBase
       sf.close();
       Assert.assertEquals(0, sf.numSessions());
       Assert.assertEquals(0, sf.numConnections());
+   }
+
+   @Test(timeout = 10000)
+   public void testFailLiveTooSoon() throws Exception
+   {
+      ServerLocator locator = getServerLocator();
+
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(10);
+
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      waitForBackupConfig(sf);
+
+      TransportConfiguration initialLive = getFieldFromSF(sf, "currentConnectorConfig");
+      TransportConfiguration initialBackup = getFieldFromSF(sf, "backupConfig");
+
+      System.out.println("initlive: " + initialLive);
+      System.out.println("initback: " + initialBackup);
+
+      TransportConfiguration last = getFieldFromSF(sf, "connectorConfig");
+      TransportConfiguration current = getFieldFromSF(sf, "currentConnectorConfig");
+
+      System.out.println("now last: " + last);
+      System.out.println("now current: " + current);
+      assertTrue(current.equals(initialLive));
+
+      ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, true);
+
+      //crash 1
+      crash();
+
+      //make sure failover is ok
+      createSession(sf, true, true).close();
+
+      last = getFieldFromSF(sf, "connectorConfig");
+      current = getFieldFromSF(sf, "currentConnectorConfig");
+
+      System.out.println("now after live crashed last: " + last);
+      System.out.println("now current: " + current);
+
+      assertTrue(current.equals(initialBackup));
+
+      //fail back
+      beforeRestart(liveServer);
+      liveServer.getServer().start();
+
+      //make sure failover is ok
+      createSession(sf, true, true).close();
+
+      last = getFieldFromSF(sf, "connectorConfig");
+      current = getFieldFromSF(sf, "currentConnectorConfig");
+
+      System.out.println("now after live back again last: " + last);
+      System.out.println("now current: " + current);
+
+      assertTrue(current.equals(initialLive));
+
+      //now manually corrupt the backup in sf
+      setSFFieldValue(sf, "backupConfig", null);
+
+      //crash 2
+      crash();
+
+      beforeRestart(backupServer);
+      createSession(sf, true, true).close();
+
+      sf.close();
+      Assert.assertEquals(0, sf.numSessions());
+      Assert.assertEquals(0, sf.numConnections());
+   }
+
+   protected void waitForBackupConfig(ClientSessionFactoryInternal sf) throws NoSuchFieldException, IllegalAccessException, InterruptedException
+   {
+      TransportConfiguration initialBackup = getFieldFromSF(sf, "backupConfig");
+      int cnt = 50;
+      while (initialBackup == null && cnt > 0)
+      {
+         cnt--;
+         Thread.sleep(200);
+         initialBackup = getFieldFromSF(sf, "backupConfig");
+      }
+   }
+
+   protected void setSFFieldValue(ClientSessionFactoryInternal sf, String tcName, Object value) throws NoSuchFieldException, IllegalAccessException
+   {
+      Field tcField = ClientSessionFactoryImpl.class.getDeclaredField(tcName);
+      tcField.setAccessible(true);
+      tcField.set(sf, value);
+   }
+
+   protected TransportConfiguration getFieldFromSF(ClientSessionFactoryInternal sf, String tcName) throws NoSuchFieldException, IllegalAccessException
+   {
+      Field tcField = ClientSessionFactoryImpl.class.getDeclaredField(tcName);
+      tcField.setAccessible(true);
+      return (TransportConfiguration) tcField.get(sf);
    }
 
    /**
