@@ -64,7 +64,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.BackupReplicationStartFail
 import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.server.cluster.Bridge;
-import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerSessionImpl;
@@ -208,7 +207,7 @@ public interface HornetQServerLogger extends BasicLogger
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221027, value =  "Bridge {0} is connected", format = Message.Format.MESSAGE_FORMAT)
-   void bridgeConnected(BridgeImpl name);
+   void bridgeConnected(String name);
 
    @LogMessage(level = Logger.Level.INFO)
    @Message(id = 221028, value =  "Bridge is stopping, will not retry", format = Message.Format.MESSAGE_FORMAT)

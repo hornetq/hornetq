@@ -25,6 +25,7 @@ package org.hornetq.core.client;
 import org.hornetq.api.core.HornetQAddressFullException;
 import org.hornetq.api.core.HornetQConnectionTimedOutException;
 import org.hornetq.api.core.HornetQDisconnectedException;
+import org.hornetq.api.core.HornetQIOErrorException;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInterceptorRejectedPacketException;
 import org.hornetq.api.core.HornetQInternalErrorException;
@@ -248,5 +249,9 @@ public interface HornetQClientMessageBundle
    @Message(id = 119060, value = "Large Message Transmission interrupted on consumer shutdown."
          , format = Message.Format.MESSAGE_FORMAT)
    HornetQLargeMessageInterruptedException largeMessageInterrupted();
+
+   @Message(id = 119061, value = "TCP Connection Is Probably Blocked. Can't get a lock before the timeout specified at org.hornetq.core.remoting.impl.netty.NettyConnection.LOCK_TIMEOUT"
+      , format = Message.Format.MESSAGE_FORMAT)
+   HornetQIOErrorException tcpBlocked();
 
 }

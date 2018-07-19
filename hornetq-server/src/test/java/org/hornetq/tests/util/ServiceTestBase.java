@@ -260,7 +260,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return params;
    }
 
-   protected static final TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
+   protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
    {
       if (live)
       {
@@ -275,7 +275,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
    }
 
-   protected static final TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
+   protected TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
    {
       if (live)
       {
@@ -289,7 +289,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
    }
 
-   protected static final TransportConfiguration createTransportConfiguration(boolean netty, boolean acceptor,
+   protected TransportConfiguration createTransportConfiguration(boolean netty, boolean acceptor,
                                                                               Map<String, Object> params)
    {
       String className;

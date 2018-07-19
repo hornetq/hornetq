@@ -1057,7 +1057,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             queue.addConsumer(BridgeImpl.this);
             queue.deliverAsync();
 
-            HornetQServerLogger.LOGGER.bridgeConnected(this);
+            HornetQServerLogger.LOGGER.bridgeConnected("" + this.getName());
 
             // We only do this on plain core bridges
             if (isPlainCoreBridge())

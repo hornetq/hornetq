@@ -16,12 +16,15 @@ package org.hornetq.core.remoting.impl.netty;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
+import org.hornetq.core.client.HornetQClientMessageBundle;
 import org.hornetq.core.security.HornetQPrincipal;
 import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.spi.core.remoting.Connection;
@@ -37,12 +40,31 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public class NettyConnection implements Connection
 {
    // Constants -----------------------------------------------------
    private static final int BATCHING_BUFFER_SIZE = 8192;
+
+   private static final int LOCK_TIMEOUT;
+
+   static
+   {
+      String strTimeout = System.getProperty("org.hornetq.core.remoting.impl.netty.NettyConnection.LOCK_TIMEOUT", "30000");
+      int intTimeout;
+      try
+      {
+         intTimeout = Integer.parseInt(strTimeout);
+      }
+      catch (Exception e)
+      {
+         intTimeout = 30000;
+      }
+
+      LOCK_TIMEOUT = intTimeout;
+
+
+   }
 
    // Attributes ----------------------------------------------------
 
@@ -69,10 +91,10 @@ public class NettyConnection implements Connection
    // Constructors --------------------------------------------------
 
    public NettyConnection(final Map<String, Object> configuration,
-                           final Channel channel,
-                           final ConnectionLifeCycleListener listener,
-                           boolean batchingEnabled,
-                           boolean directDeliver)
+                          final Channel channel,
+                          final ConnectionLifeCycleListener listener,
+                          boolean batchingEnabled,
+                          boolean directDeliver)
    {
       this.configuration = configuration;
 
@@ -116,7 +138,7 @@ public class NettyConnection implements Connection
          return;
       }
 
-      SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
+      SslHandler sslHandler = (SslHandler) channel.getPipeline().get("ssl");
       if (sslHandler != null)
       {
          try
@@ -192,10 +214,23 @@ public class NettyConnection implements Connection
 
       try
       {
-         writeLock.acquire();
+         while (!writeLock.tryAcquire(LOCK_TIMEOUT, TimeUnit.MILLISECONDS))
+         {
+            HornetQException exception = HornetQClientMessageBundle.BUNDLE.tcpBlocked();
+            listener.connectionException(getID(), exception);
+            if (closed)
+            {
+               return;
+            }
+         }
 
          try
          {
+            if (closed)
+            {
+               return;
+            }
+
             if (batchBuffer == null && batchingEnabled && batched && !flush)
             {
                // Lazily create batch buffer
@@ -293,7 +328,7 @@ public class NettyConnection implements Connection
 
    void fireReady(final boolean ready)
    {
-      for (ReadyListener listener: readyListeners)
+      for (ReadyListener listener : readyListeners)
       {
          listener.readyForWriting(ready);
       }

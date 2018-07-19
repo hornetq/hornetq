@@ -79,7 +79,6 @@ import org.hornetq.utils.VersionLoader;
 
 /**
  * @author Tim Fox
- * @see ClientSessionFactory
  */
 public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, ConnectionLifeCycleListener
 {
