@@ -58,6 +58,7 @@ import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.ReusableLatch;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * A Core BridgeImpl
@@ -73,7 +74,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 {
    // Constants -----------------------------------------------------
 
-   private static final boolean isTrace = HornetQServerLogger.LOGGER.isTraceEnabled();
+   private static final Logger logger = Logger.getLogger(BridgeImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -343,14 +344,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          refs.clear();
       }
 
-      if (isTrace)
+      if (logger.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("BridgeImpl::cancelRefs cancelling " + list.size() + " references");
+         logger.trace("BridgeImpl::cancelRefs cancelling " + list.size() + " references");
       }
 
-      if (isTrace && list.isEmpty())
+      if (logger.isTraceEnabled() && list.isEmpty())
       {
-         HornetQServerLogger.LOGGER.trace("didn't have any references to cancel on bridge " + this);
+         logger.trace("didn't have any references to cancel on bridge " + this);
          return;
       }
 
@@ -366,9 +367,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          MessageReference ref = listIterator.previous();
 
-         if (isTrace)
+         if (logger.isTraceEnabled())
          {
-            HornetQServerLogger.LOGGER.trace("BridgeImpl::cancelRefs Cancelling reference " + ref + " on bridge " + this);
+            logger.trace("BridgeImpl::cancelRefs Cancelling reference " + ref + " on bridge " + this);
          }
 
          refqueue = ref.getQueue();
@@ -414,7 +415,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                }
                catch (Exception dontcare)
                {
-                  HornetQServerLogger.LOGGER.debug(dontcare.getMessage(), dontcare);
+                  logger.debug(dontcare.getMessage(), dontcare);
                }
                session = null;
             }
@@ -426,7 +427,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                }
                catch (Exception dontcare)
                {
-                  HornetQServerLogger.LOGGER.debug(dontcare.getMessage(), dontcare);
+                  logger.debug(dontcare.getMessage(), dontcare);
                }
                sessionConsumer = null;
             }
@@ -457,9 +458,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       stopping = true;
 
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      if (logger.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("Bridge " + this.name + " being stopped");
+         logger.debug("Bridge " + this.name + " being stopped");
       }
 
       if (futureScheduledReconnection != null)
@@ -487,9 +488,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void pause() throws Exception
    {
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      if (logger.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("Bridge " + this.name + " being paused");
+         logger.debug("Bridge " + this.name + " being paused");
       }
 
       executor.execute(new PauseRunnable());
@@ -568,9 +569,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void sendAcknowledged(final Message message)
    {
-      if (HornetQServerLogger.LOGGER.isTraceEnabled())
+      if (logger.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("BridgeImpl::sendAcknowledged received confirmation for message " + message);
+         logger.trace("BridgeImpl::sendAcknowledged received confirmation for message " + message);
       }
       if (active)
       {
@@ -586,18 +587,18 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             if (ref != null)
             {
-               if (isTrace)
+               if (logger.isTraceEnabled())
                {
-                  HornetQServerLogger.LOGGER.trace("BridgeImpl::sendAcknowledged bridge " + this + " Acking " + ref + " on queue " + ref.getQueue());
+                  logger.trace("BridgeImpl::sendAcknowledged bridge " + this + " Acking " + ref + " on queue " + ref.getQueue());
                }
                ref.getQueue().acknowledge(ref);
                pendingAcks.countDown();
             }
             else
             {
-               if (isTrace)
+               if (logger.isTraceEnabled())
                {
-                  HornetQServerLogger.LOGGER.trace("BridgeImpl::sendAcknowledged bridge " + this + " could not find reference for message " + message);
+                  logger.trace("BridgeImpl::sendAcknowledged bridge " + this + " could not find reference for message " + message);
                }
             }
          }
@@ -629,9 +630,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          final ServerMessage transformedMessage = transformer.transform(message);
          if (transformedMessage != message)
          {
-            if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-               HornetQServerLogger.LOGGER.debug("The transformer " + transformer +
+               logger.debug("The transformer " + transformer +
                                                    " made a copy of the message " +
                                                    message +
                                                    " as transformedMessage");
@@ -656,9 +657,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          if (!active)
          {
-            if (HornetQServerLogger.LOGGER.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-               HornetQServerLogger.LOGGER.debug(this + "::Ignoring reference on bridge as it is set to inactive ref=" + ref);
+               logger.debug(this + "::Ignoring reference on bridge as it is set to inactive ref=" + ref);
             }
             return HandleStatus.BUSY;
          }
@@ -668,9 +669,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             return HandleStatus.BUSY;
          }
 
-         if (isTrace)
+         if (logger.isTraceEnabled())
          {
-            HornetQServerLogger.LOGGER.trace("Bridge " + this + " is handling reference=" + ref);
+            logger.trace("Bridge " + this + " is handling reference=" + ref);
          }
 
          ref.handled();
@@ -819,7 +820,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       if (HornetQServerLogger.LOGGER.isTraceEnabled())
       {
-         HornetQServerLogger.LOGGER.trace("going to send message " + message);
+         logger.trace("going to send message " + message);
       }
 
       try
@@ -881,21 +882,21 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    protected void fail(final boolean permanently)
    {
-      HornetQServerLogger.LOGGER.debug(this + "\n\t::fail being called, permanently=" + permanently);
+      logger.debug(this + "\n\t::fail being called, permanently=" + permanently);
 
       if (queue != null)
       {
          try
          {
-            if (isTrace)
+            if (logger.isTraceEnabled())
             {
-               HornetQServerLogger.LOGGER.trace("Removing consumer on fail " + this + " from queue " + queue);
+               logger.trace("Removing consumer on fail " + this + " from queue " + queue);
             }
             queue.removeConsumer(this);
          }
          catch (Exception dontcare)
          {
-            HornetQServerLogger.LOGGER.debug(dontcare);
+            logger.debug(dontcare);
          }
       }
 
@@ -987,7 +988,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          if (!keepConnecting) return;
 
-         HornetQServerLogger.LOGGER.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
+         logger.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
 
          retryCount++;
 
@@ -1083,9 +1084,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             else
             {
-               if (HornetQServerLogger.LOGGER.isDebugEnabled())
+               if (logger.isDebugEnabled())
                {
-                  HornetQServerLogger.LOGGER.debug("Bridge " + this + " is unable to connect to destination. Retrying", e);
+                  logger.debug("Bridge " + this + " is unable to connect to destination. Retrying", e);
                }
 
                scheduleRetryConnect();
@@ -1142,7 +1143,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          timeout = maxRetryInterval;
       }
 
-      HornetQServerLogger.LOGGER.debug("Bridge " + this +
+      logger.debug("Bridge " + this +
                                           " retrying connection #" +
                                           retryCount +
                                           ", maxRetry=" +
@@ -1169,9 +1170,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (stopping)
          return;
 
-      if (HornetQServerLogger.LOGGER.isDebugEnabled())
+      if (logger.isDebugEnabled())
       {
-         HornetQServerLogger.LOGGER.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
+         logger.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
       }
 
       futureScheduledReconnection =
@@ -1239,7 +1240,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          try
          {
-            HornetQServerLogger.LOGGER.debug("stopping bridge " + BridgeImpl.this);
+            logger.debug("stopping bridge " + BridgeImpl.this);
             queue.removeConsumer(BridgeImpl.this);
 
             if (!pendingAcks.await(10, TimeUnit.SECONDS))
@@ -1250,7 +1251,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             synchronized (BridgeImpl.this)
             {
-               HornetQServerLogger.LOGGER.debug("Closing Session for bridge " + BridgeImpl.this.name);
+               logger.debug("Closing Session for bridge " + BridgeImpl.this.name);
 
                started = false;
 
@@ -1260,7 +1261,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             if (session != null)
             {
-               HornetQServerLogger.LOGGER.debug("Cleaning up session " + session);
+               logger.debug("Cleaning up session " + session);
                session.removeFailureListener(BridgeImpl.this);
                try
                {
@@ -1274,7 +1275,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             if (sessionConsumer != null)
             {
-               HornetQServerLogger.LOGGER.debug("Cleaning up session " + session);
+               logger.debug("Cleaning up session " + session);
                try
                {
                   sessionConsumer.close();
@@ -1297,9 +1298,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                keepConnecting = true;
             }
 
-            if (isTrace)
+            if (logger.isTraceEnabled())
             {
-               HornetQServerLogger.LOGGER.trace("Removing consumer on stopRunnable " + this + " from queue " + queue);
+               logger.trace("Removing consumer on stopRunnable " + this + " from queue " + queue);
             }
             HornetQServerLogger.LOGGER.bridgeStopped(name);
          }
