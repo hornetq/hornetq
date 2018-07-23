@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -31,54 +30,37 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.hornetq.core.server.NetworkHealthCheck;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.NetUtil;
+import org.hornetq.tests.util.NetUtilResource;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 
-public class NettyManualFailoverTest extends FailoverTestBase
+public class NetworkFailureFailoverTest extends FailoverTestBase
 {
+   @Rule
+   public NetUtilResource netUtilResource = new NetUtilResource();
 
-   // TYPE this command in Linux:
-   // sudo ifconfig lo:1 192.0.2.0 netmask 255.0.0.0 up
+   @BeforeClass
+   public static void start()
+   {
+      NetUtil.assumeSudo();
+   }
 
    // 192.0.2.0 is reserved for documentation, so I'm pretty sure this won't exist on any system. (It shouldn't at least)
    private static final String LIVE_IP = "192.0.2.0";
 
-   private static final InetAddress inetAddress;
-
-   private final NetworkHealthCheck healthCheck = new NetworkHealthCheck(null, 100, 100);
-
-   static
-   {
-      InetAddress addressLookup = null;
-      try
-      {
-         addressLookup = InetAddress.getByName(LIVE_IP);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace(); // not supposed to happen
-      }
-
-      inetAddress = addressLookup;
-   }
-
    @BeforeClass
-   public static void validateIP()
+   public static void setupDevices() throws Exception
    {
-      NetworkHealthCheck healthCheck = new NetworkHealthCheck(null, 100, 100);
-      if (!healthCheck.check(inetAddress))
-      {
-         System.err.println("Network for this test is down, type the following command:\nsudo ifconfig lo:1 192.0.2.0 netmask 255.0.0.0 up");
-         Assume.assumeTrue(false);
-      }
+      NetUtil.netUp(LIVE_IP);
    }
 
    @Override
@@ -160,11 +142,12 @@ public class NettyManualFailoverTest extends FailoverTestBase
 
 
    @Test
-   public void testManualFailover() throws Exception
+   public void testFailoverAfterNetFailure() throws Exception
    {
+      final AtomicInteger sentMessages = new AtomicInteger(0);
+      final AtomicInteger blockedAt = new AtomicInteger(0);
 
-
-      Assert.assertTrue(healthCheck.check(inetAddress));
+      Assert.assertTrue(NetUtil.checkIP(LIVE_IP));
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.HOST_PROP_NAME, LIVE_IP);
       TransportConfiguration tc = createTransportConfiguration(true, false, params);
@@ -182,19 +165,17 @@ public class NettyManualFailoverTest extends FailoverTestBase
 
                if (countSent.incrementAndGet() == 500)
                {
-                  while (healthCheck.check(inetAddress))
+                  try
                   {
-                     System.out.println("Type the following command on Linux:\nsudo ifconfig lo:1 down");
-                     try
-                     {
-                        Thread.sleep(1000);
-                     }
-                     catch (Exception e)
-                     {
-                        e.printStackTrace();
-                     }
+                     NetUtil.netDown(LIVE_IP);
+                     System.out.println("Blocking traffic");
+                     Thread.sleep(3000); // this is important to let stuff to block
+                     blockedAt.set(sentMessages.get());
                   }
-
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                  }
                   new Thread()
                   {
                      public void run()
@@ -226,8 +207,22 @@ public class NettyManualFailoverTest extends FailoverTestBase
       locator.setConfirmationWindowSize(-1);
       locator.setProducerWindowSize(-1);
       locator.setClientFailureCheckPeriod(100);
-      locator.setConnectionTTL(5000);
+      locator.setConnectionTTL(1000);
       ClientSessionFactoryInternal sfProducer = createSessionFactoryAndWaitForTopology(locator, 2);
+      sfProducer.addFailureListener(new SessionFailureListener()
+      {
+         @Override
+         public void beforeReconnect(HornetQException exception)
+         {
+            new Exception("producer before reconnect", exception).printStackTrace();
+         }
+
+         @Override
+         public void connectionFailed(HornetQException exception, boolean failedOver)
+         {
+
+         }
+      });
 
       ClientSession sessionProducer = createSession(sfProducer, true, true, 0);
 
@@ -236,7 +231,7 @@ public class NettyManualFailoverTest extends FailoverTestBase
       ClientProducer producer = sessionProducer.createProducer(FailoverTestBase.ADDRESS);
 
       final int numMessages = 10000;
-      final CountDownLatch latchReceived = new CountDownLatch(numMessages - 1000);
+      final CountDownLatch latchReceived = new CountDownLatch(numMessages);
 
 
       ClientSessionFactoryInternal sfConsumer = createSessionFactoryAndWaitForTopology(locator, 2);
@@ -287,24 +282,31 @@ public class NettyManualFailoverTest extends FailoverTestBase
 
       t.start();
 
-      for (int i = 0; i < numMessages; i++)
+      for (sentMessages.set(0); sentMessages.get() < numMessages; sentMessages.incrementAndGet())
       {
          do
          {
             try
             {
-               if (i % 100 == 0)
+               if (sentMessages.get() % 100 == 0)
                {
-                  System.out.println("Sent " + i);
+                  System.out.println("Sent " + sentMessages.get());
                }
-               producer.send(createMessage(sessionProducer, i, true));
+               producer.send(createMessage(sessionProducer, sentMessages.get(), true));
                break;
             }
             catch (Exception e)
             {
                new Exception("Exception on ending", e).printStackTrace();
             }
-         } while (true);
+         }
+         while (true);
+      }
+
+      // these may never be received. doing the count down where we blocked.
+      for (int i = 0; i < blockedAt.get(); i++)
+      {
+         latchReceived.countDown();
       }
 
       Assert.assertTrue(latchReceived.await(1, TimeUnit.MINUTES));
