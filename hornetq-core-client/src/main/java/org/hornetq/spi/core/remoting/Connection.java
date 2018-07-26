@@ -14,6 +14,7 @@
 package org.hornetq.spi.core.remoting;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.HornetQPrincipal;
 
@@ -38,6 +39,9 @@ public interface Connection
     * @return the id
     */
    Object getID();
+
+   /** This will force an exception down the stream */
+   void failed(HornetQException exception);
 
    /**
     * writes the buffer to the connection and if flush is true returns only when the buffer has been physically written to the connection.

@@ -76,6 +76,7 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
+import org.jboss.logging.Logger;
 
 /**
  * @author Tim Fox
@@ -85,9 +86,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final boolean isTrace = HornetQClientLogger.LOGGER.isTraceEnabled();
-
-   private static final boolean isDebug = HornetQClientLogger.LOGGER.isDebugEnabled();
+   private static final Logger logger = Logger.getLogger(ClientSessionFactoryImpl.class);
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -178,6 +177,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final PacketDecoder packetDecoder;
 
+   private volatile String debugInfo;
+
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -242,6 +243,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       this.packetDecoder = packetDecoder;
    }
 
+   @Override
+   public ClientSessionFactoryImpl setDebugReconnects(String message)
+   {
+      this.debugInfo = message;
+      return this;
+   }
+
    public void disableFinalizeCheck()
    {
       finalizeCheck = false;
@@ -272,6 +280,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void setBackupConnector(final TransportConfiguration live, final TransportConfiguration backUp)
    {
+      if (debugInfo != null)
+      {
+         debugInfo("setBackupConnector", "Receiving backupInfo " + live + " / " + backUp);
+      }
       Connector localConnector = connector;
 
       // if the connector has never been used (i.e. the getConnection hasn't been called yet), we will need
@@ -289,21 +301,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       if (localConnector.isEquivalent(live.getParams()) && backUp != null && !localConnector.isEquivalent(backUp.getParams()))
       {
-         if (ClientSessionFactoryImpl.isDebug)
+         if (logger.isDebugEnabled())
          {
-            HornetQClientLogger.LOGGER.debug("Setting up backup config = " + backUp + " for live = " + live);
+            logger.debug("Setting up backup config = " + backUp + " for live = " + live + ", debug= " + debugInfo);
          }
          backupConfig = backUp;
       }
       else
       {
-         if (ClientSessionFactoryImpl.isDebug)
+         if (logger.isDebugEnabled())
          {
-            HornetQClientLogger.LOGGER.debug("ClientSessionFactoryImpl received backup update for live/backup pair = " + live +
+            logger.debug("ClientSessionFactoryImpl received backup update for live/backup pair = " + live +
                                                 " / " +
                                                 backUp +
                                                 " but it didn't belong to " +
-                                                currentConnectorConfig);
+                                                currentConnectorConfig + ", debug= " + debugInfo);
          }
       }
    }
@@ -420,6 +432,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void connectionDestroyed(final Object connectionID)
    {
+      if (debugInfo != null)
+      {
+         debugInfo("connectionDestroyed", "calling connection destroyed", new Exception("trace"));
+      }
+
       // The exception has to be created in the same thread where it's being caleld
       // as to avoid a different stack trace cause
       final HornetQException ex = HornetQClientMessageBundle.BUNDLE.channelDisconnected();
@@ -487,6 +504,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void causeExit()
    {
+      if (debugInfo != null)
+      {
+         debugInfo("causeExit", "causeExit called", new Exception("trace"));
+      }
       exitLoop = true;
       waitLatch.countDown();
    }
@@ -580,16 +601,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       stopPingingAfterOne = true;
    }
 
+   private void debugInfo(final String methodName, final String message)
+   {
+      if (debugInfo != null)
+      {
+         logger.info(debugInfo + "::" + methodName + "  :> " + message);
+      }
+   }
+   private void debugInfo(final String methodName, final String message, Exception ex)
+   {
+      if (debugInfo != null)
+      {
+         logger.info(debugInfo + "::" + methodName + "  :> " + message, ex);
+      }
+   }
+
    private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
+      if (debugInfo != null)
+      {
+         debugInfo("handleConnectionFailure ", "connectionID=" + connectionID, me);
+      }
       try
       {
          failoverOrReconnect(connectionID, me);
       }
       catch (HornetQInterruptedException e1)
       {
+         debugInfo("handleConnectionFailure", "InterruptedException on handleConnectionFailure", e1);
          // this is just a debug, since an interrupt is an expected event (in case of a shutdown)
-         HornetQClientLogger.LOGGER.debug(e1.getMessage(), e1);
+         logger.debug(e1.getMessage() + ", debug= " + debugInfo, e1);
       }
    }
 
@@ -599,11 +640,20 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       Set<ClientSessionInternal> sessionsToClose = null;
       if (exitLoop)
+      {
+         logger.trace("exitLoop=true" + ", debug= " + debugInfo + ", debug= " + debugInfo);
+         debugInfo("failoverOrReconnect","exitLoop=true");
          return;
+      }
       synchronized (failoverLock)
       {
          if (connection == null || connection.getID() != connectionID || exitLoop)
          {
+            if (debugInfo != null)
+            {
+               Object localID = connection != null ? connection.getID() : "null";
+               debugInfo("failoverOrReconnect", "connection=" + localID + " connectionID=" + connectionID + " exitLoop=" + exitLoop + ", cancelling failoverOrReconnect");
+            }
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
             // over then a async connection exception or disconnect
             // came in for one of the already exitLoop connections, so we return true - we don't want to call the
@@ -612,9 +662,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             return;
          }
 
-         if (ClientSessionFactoryImpl.isTrace)
+         if (logger.isTraceEnabled())
          {
-            HornetQClientLogger.LOGGER.trace("Client Connection failed, calling failure listeners and trying to reconnect, reconnectAttempts=" + reconnectAttempts);
+            logger.trace("Client Connection failed, calling failure listeners and trying to reconnect, reconnectAttempts=" + reconnectAttempts + ", debug= " + debugInfo);
+         }
+
+         if (debugInfo != null)
+         {
+            debugInfo("failoverOrReconnect ","calling failoverListener");
          }
 
          callFailoverListeners(FailoverEventType.FAILURE_DETECTED);
@@ -648,14 +703,30 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          // failoverLock
          // until failover is complete
 
+         if (debugInfo != null)
+         {
+            debugInfo("failoverOrReconnect", "reconnectAttempts=" + reconnectAttempts);
+         }
          if (reconnectAttempts != 0)
          {
+            if (debugInfo != null)
+            {
+               debugInfo("failoverOrReconnect", "locking channel 1");
+            }
             if (lockChannel1())
             {
+               if (debugInfo != null)
+               {
+                  debugInfo("failoverOrReconnect", "locked channel 1");
+               }
 
                final boolean needToInterrupt;
 
                CountDownLatch exitLockLatch;
+               if (debugInfo != null)
+               {
+                  debugInfo("failoverOrReconnect", " channel 1");
+               }
                synchronized (inCreateSessionGuard)
                {
                   needToInterrupt = inCreateSession;
@@ -666,6 +737,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                if (needToInterrupt)
                {
+                  debugInfo("failoverOrReconnect", "NeedToInterrupt");
+                  if (logger.isTraceEnabled())
+                  {
+                     logger.trace("need to interrupt, debug=" + debugInfo);
+                  }
                   // Forcing return all channels won't guarantee that any blocked thread will return
                   // immediately
                   // So we need to wait for it
@@ -699,6 +775,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                connection = null;
 
+               if (logger.isTraceEnabled())
+               {
+                  logger.trace("Closing old connector, debug=" + debugInfo);
+               }
+
                Connector localConnector = connector;
                if (localConnector != null)
                {
@@ -712,10 +793,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
                }
 
+               if (logger.isTraceEnabled())
+               {
+                  logger.trace("cancelScheduledTasks, debug=" + debugInfo);
+               }
+
                cancelScheduledTasks();
 
                connector = null;
 
+               debugInfo("failoverOrReconnect", "calling reconnectSessions");
                reconnectSessions(oldConnection, reconnectAttempts, me);
 
                if (oldConnection != null)
@@ -731,6 +818,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
          else
          {
+            debugInfo("failoverOrReconnect", "connectionToDestroy.destroy");
+            logger.tracef("Destroy connection debugInfo=%s", debugInfo);
             CoreRemotingConnection connectionToDestory = connection;
             if (connectionToDestory != null)
             {
@@ -749,6 +838,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             callSessionFailureListeners(me, true, false);
          }
       }
+
 
       // This needs to be outside the failover lock to prevent deadlock
       if (connection != null)
@@ -1036,6 +1126,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
     */
    private void reconnectSessions(final CoreRemotingConnection oldConnection, final int reconnectAttempts, final HornetQException cause)
    {
+      debugInfo("reconnectSessions", "trying itself");
       HashSet<ClientSessionInternal> sessionsToFailover;
       synchronized (sessions)
       {
@@ -1052,7 +1143,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       if (connection == null)
       {
          if (!exitLoop)
+         {
+            debugInfo("reconnectSessions", "failed to connect to server");
             HornetQClientLogger.LOGGER.failedToConnectToServer();
+         }
 
          return;
       }
@@ -1074,6 +1168,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       for (ClientSessionInternal session : sessionsToFailover)
       {
+         debugInfo("reconnectSessions", "handleFailover session ");
+         logger.trace("handleFailover on session ");
          session.handleFailover(connection, cause);
       }
    }
@@ -1084,11 +1180,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          return;
       if (HornetQClientLogger.LOGGER.isTraceEnabled())
       {
-         HornetQClientLogger.LOGGER.trace("getConnectionWithRetry::" + reconnectAttempts +
+         logger.trace("getConnectionWithRetry::" + reconnectAttempts +
                                              " with retryInterval = " +
                                              retryInterval +
                                              " multiplier = " +
-                                             retryIntervalMultiplier, new Exception("trace"));
+                                             retryIntervalMultiplier + ", debug= " + debugInfo, new Exception("trace"));
       }
 
       long interval = retryInterval;
@@ -1097,9 +1193,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       while (!exitLoop)
       {
-         if (ClientSessionFactoryImpl.isDebug)
+         if (logger.isDebugEnabled())
          {
-            HornetQClientLogger.LOGGER.debug("Trying reconnection attempt " + count + "/" + reconnectAttempts);
+            logger.debug("Trying reconnection attempt " + count + "/" + reconnectAttempts + ", debug= " + debugInfo);
          }
 
          getConnection();
@@ -1120,13 +1216,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
                   else if (reconnectAttempts == 1)
                   {
-                     HornetQClientLogger.LOGGER.debug("Trying to connect towards " + this);
+                     logger.debug("Trying to connect towards " + this + ", debug= " + debugInfo);
                   }
 
                   return;
                }
 
-               if (ClientSessionFactoryImpl.isTrace)
+               if (logger.isTraceEnabled())
                {
                   HornetQClientLogger.LOGGER.waitingForRetry(interval, retryInterval, retryIntervalMultiplier);
                }
@@ -1153,15 +1249,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             }
             else
             {
-               HornetQClientLogger.LOGGER.debug("Could not connect to any server. Didn't have reconnection configured on the ClientSessionFactory");
+               logger.debug("Could not connect to any server. Didn't have reconnection configured on the ClientSessionFactory" + ", debug= " + debugInfo);
                return;
             }
          }
          else
          {
-            if (HornetQClientLogger.LOGGER.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-               HornetQClientLogger.LOGGER.debug("Reconnection successfull");
+               logger.debug("Reconnection successfull" + ", debug= " + debugInfo);
             }
             return;
          }
@@ -1242,31 +1338,31 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                             threadPool,
                                                             scheduledThreadPool);
 
-               if (HornetQClientLogger.LOGGER.isDebugEnabled())
+               if (logger.isDebugEnabled())
                {
-                  HornetQClientLogger.LOGGER.debug("Trying to connect with connector = " + connectorFactory +
+                  logger.debug("Trying to connect with connector = " + connectorFactory +
                                                       ", parameters = " +
                                                       currentConnectorConfig.getParams() +
                                                       " connector = " +
-                                                      connector);
+                                                      connector + ", debug= " + debugInfo);
                }
 
                if (connector != null)
                {
                   connector.start();
 
-                  if (ClientSessionFactoryImpl.isDebug)
+                  if (logger.isDebugEnabled())
                   {
-                     HornetQClientLogger.LOGGER.debug("Trying to connect at the main server using connector :" + currentConnectorConfig);
+                     logger.debug("Trying to connect at the main server using connector :" + currentConnectorConfig + ", debug= " + debugInfo);
                   }
 
                   tc = connector.createConnection();
 
                   if (tc == null)
                   {
-                     if (ClientSessionFactoryImpl.isDebug)
+                     if (logger.isDebugEnabled())
                      {
-                        HornetQClientLogger.LOGGER.debug("Main server is not up. Hopefully there's a backup configured now!");
+                        logger.debug("Main server is not up. Hopefully there's a backup configured now!, debug= " + debugInfo);
                      }
 
                      try
@@ -1285,9 +1381,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                {
                   if (backupConfig != null)
                   {
-                     if (ClientSessionFactoryImpl.isDebug)
+                     if (logger.isDebugEnabled())
                      {
-                        HornetQClientLogger.LOGGER.debug("Trying backup config = " + backupConfig);
+                        logger.debug("Trying backup config = " + backupConfig + ", debug= " + debugInfo);
                      }
                      ConnectorFactory backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
                      connector = backupConnectorFactory.createConnector(backupConfig.getParams(),
@@ -1304,9 +1400,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                         if (tc == null)
                         {
-                           if (ClientSessionFactoryImpl.isDebug)
+                           if (logger.isDebugEnabled())
                            {
-                              HornetQClientLogger.LOGGER.debug("Backup is not active yet");
+                              logger.debug("Backup is not active yet, debug= " + debugInfo);
                            }
 
                            try
@@ -1323,9 +1419,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                         {
                         /*looks like the backup is now live, lets use that*/
 
-                           if (ClientSessionFactoryImpl.isDebug)
+                           if (logger.isDebugEnabled())
                            {
-                              HornetQClientLogger.LOGGER.debug("Connected to the backup at " + backupConfig);
+                              logger.debug("Connected to the backup at " + backupConfig + ", debug= " + debugInfo);
                            }
 
                            connectorConfig = currentConnectorConfig;
@@ -1338,9 +1434,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   if (tc == null)
                   {
-                     if (ClientSessionFactoryImpl.isDebug)
+                     if (logger.isDebugEnabled())
                      {
-                        HornetQClientLogger.LOGGER.debug("Backup is not active, trying original connection configuration now.");
+                        logger.debug("Backup is not active, trying original connection configuration now., debug= " + debugInfo);
                      }
 
                      if (connectorConfig != null && !currentConnectorConfig.equals(connectorConfig))
@@ -1353,9 +1449,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                            tc = lastConnector.createConnection();
                            if (tc == null)
                            {
-                              if (ClientSessionFactoryImpl.isDebug)
+                              if (logger.isDebugEnabled())
                               {
-                                 HornetQClientLogger.LOGGER.debug("Connector towards " + connector + " failed");
+                                 logger.debug("Connector towards " + connector + " failed, debug= " + debugInfo);
                               }
                               try
                               {
@@ -1367,9 +1463,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                            }
                            else
                            {
-                              if (ClientSessionFactoryImpl.isDebug)
+                              if (logger.isDebugEnabled())
                               {
-                                 HornetQClientLogger.LOGGER.debug("Returning into last connector");
+                                 logger.debug("Returning into last connector, debug= " + debugInfo);
                               }
                               connector = lastConnector;
                               TransportConfiguration temp = currentConnectorConfig;
@@ -1416,9 +1512,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             if (tc == null)
             {
-               if (ClientSessionFactoryImpl.isTrace)
+               if (logger.isTraceEnabled())
                {
-                  HornetQClientLogger.LOGGER.trace("returning connection = " + connection + " as tc == null");
+                  logger.trace("returning connection = " + connection + " as tc == null, debug= " + debugInfo);
                }
                return connection;
             }
@@ -1454,9 +1550,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             if (serverLocator.getTopology() != null)
             {
-               if (ClientSessionFactoryImpl.isTrace)
+               if (logger.isTraceEnabled())
                {
-                  HornetQClientLogger.LOGGER.trace(this + "::Subscribing Topology");
+                  logger.trace(this + "::Subscribing Topology, debug= " + debugInfo);
                }
 
                channel0.send(new SubscribeClusterTopologyUpdatesMessageV2(serverLocator.isClusterConnection(),
@@ -1472,7 +1568,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
          if (HornetQClientLogger.LOGGER.isTraceEnabled())
          {
-            HornetQClientLogger.LOGGER.trace("returning " + connection);
+            logger.trace("returning " + connection + ", debug= " + debugInfo);
          }
 
          return connection;
@@ -1487,9 +1583,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                 TransportConfiguration backupConfig)
    {
       Channel channel0 = connection.getChannel(0, -1);
-      if (ClientSessionFactoryImpl.isDebug)
+      if (logger.isDebugEnabled())
       {
-         HornetQClientLogger.LOGGER.debug("Announcing node " + serverLocator.getNodeID() + ", isBackup=" + isBackup);
+         logger.debug("Announcing node " + serverLocator.getNodeID() + ", isBackup=" + isBackup);
       }
       channel0.send(new NodeAnnounceMessage(currentEventID, nodeID, nodeName, isBackup, config, backupConfig));
    }
@@ -1529,10 +1625,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          return false;
       try
       {
+         long nanoTime = System.nanoTime();
          while (!channel1.getLock().tryLock(200, TimeUnit.MILLISECONDS))
          {
             if (exitLoop)
+            {
+               debugInfo("lockChannel1", "exitLoop=true");
                return false;
+            }
+            if (System.nanoTime() - nanoTime > TimeUnit.SECONDS.toNanos(30))
+            {
+               logger.warn("we have not been able to lock on channel1 for failover for 30 seconds");
+               HornetQException ex = new HornetQException("Was not able to lock channel1");
+               channel1.getConnection().getTransportConnection().failed(ex);
+               forceReturnChannel1(ex);
+            }
          }
          return true;
       }
@@ -1548,6 +1655,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          Channel channel1 = connection.getChannel(1, -1);
 
+         debugInfo("unlockChannel1", "Unlocking channel1");
+
          if (channel1 != null)
          {
             channel1.getLock().unlock();
@@ -1560,6 +1669,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       if (connection != null)
       {
          Channel channel1 = connection.getChannel(1, -1);
+
+         debugInfo("unlockChannel1", "forceReturnChannel1", cause);
 
          if (channel1 != null)
          {
@@ -1606,12 +1717,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             if (HornetQClientLogger.LOGGER.isTraceEnabled())
             {
-               HornetQClientLogger.LOGGER.trace("Disconnect being called on client:" + msg +
+               logger.trace("Disconnect being called on client:" + msg +
                                                    " server locator = " +
                                                    serverLocator +
                                                    " notifying node " +
                                                    nodeID +
-                                                   " as down", new Exception("trace"));
+                                                   " as down" + ", debug= " + debugInfo, new Exception("trace"));
             }
 
             if (nodeID != null)
@@ -1657,23 +1768,23 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                if (topMessage.isExit())
                {
-                  if (HornetQClientLogger.LOGGER.isDebugEnabled())
+                  if (logger.isDebugEnabled())
                   {
-                     HornetQClientLogger.LOGGER.debug("Notifying " + topMessage.getNodeID() + " going down");
+                     logger.debug("Notifying " + topMessage.getNodeID() + " going down" + ", debug= " + debugInfo);
                   }
 
                   serverLocator.notifyNodeDown(eventUID, topMessage.getNodeID());
                   return;
                }
-               if (ClientSessionFactoryImpl.isTrace)
+               if (logger.isTraceEnabled())
                {
-                  HornetQClientLogger.LOGGER.trace("Node " + topMessage.getNodeID() +
+                  logger.trace("Node " + topMessage.getNodeID() +
                                                       " going up, connector = " +
                                                       topMessage.getPair() +
                                                       ", isLast=" +
                                                       topMessage.isLast() +
                                                       " csf created at\nserverLocator=" +
-                                                      serverLocator, e);
+                                                      serverLocator + ", debug= " + debugInfo, e);
                }
 
                Pair<TransportConfiguration, TransportConfiguration> transportConfig = topMessage.getPair();
@@ -1763,6 +1874,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       public void connectionFailed(final HornetQException me, final boolean failedOver)
       {
+         debugInfo("Delegate/connectionFailed", "calling exception", me);
          handleConnectionFailure(connectionID, me);
       }
 

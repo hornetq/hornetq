@@ -36,6 +36,13 @@ public interface ClientSessionFactory
    ClientSession createXASession() throws HornetQException;
 
    /**
+    * If you set message to != null the system will show log info messages when there are reconnects happening.
+    * @param message
+    * @return
+    */
+   ClientSessionFactory setDebugReconnects(String message);
+
+   /**
     * Creates a <em>transacted</em> session.
     * <p/>
     * It is up to the client to commit when sending and acknowledging messages.

@@ -206,6 +206,8 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private TransportConfiguration clusterTransportConfiguration;
 
+   private String debugReconnects;
+
    /*
    * *************WARNING***************
    * remember that when adding any new classes that we have to support serialization with previous clients.
@@ -223,6 +225,12 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    // To be called when there are ServerLocator being finalized.
    // To be used on test assertions
    public static Runnable finalizeCallback = null;
+
+   public ServerLocatorImpl setDebugReconnects(String debug)
+   {
+      this.debugReconnects = debug;
+      return this;
+   }
 
    public static synchronized void clearThreadPools()
    {
@@ -886,7 +894,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                                                       scheduledThreadPool,
                                                       incomingInterceptors,
                                                       outgoingInterceptors,
-                                                      packetDecoder);
+                                                      packetDecoder).setDebugReconnects(debugReconnects);
                try
                {
                   addToConnecting(factory);

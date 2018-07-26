@@ -116,6 +116,12 @@ public class NettyConnection implements Connection
    // Connection implementation ----------------------------
 
 
+   @Override
+   public void failed(HornetQException exception)
+   {
+      listener.connectionException(getID(), exception);
+   }
+
    public void forceClose()
    {
       if (channel != null)

@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.activemq.artemis.utils.ThreadDumpUtil;
 import org.apache.activemq.artemis.utils.critical.CriticalAction;
 import org.apache.activemq.artemis.utils.critical.CriticalAnalyzer;
 import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerImpl;
@@ -696,30 +697,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public void threadDump(final String reason)
    {
-      StringWriter str = new StringWriter();
-      PrintWriter out = new PrintWriter(str);
-
-      Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
-
-      out.println(HornetQMessageBundle.BUNDLE.generatingThreadDump(reason));
-      out.println("*******************************************************************************");
-
-      for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
-      {
-         out.println("===============================================================================");
-         out.println(HornetQMessageBundle.BUNDLE.threadDump(el.getKey(), el.getKey().getName(), el.getKey().getId(), el.getKey().getThreadGroup()));
-         out.println();
-         for (StackTraceElement traceEl : el.getValue())
-         {
-            out.println(traceEl);
-         }
-      }
-
-      out.println("===============================================================================");
-      out.println(HornetQMessageBundle.BUNDLE.endThreadDump());
-      out.println("*******************************************************************************");
-
-      HornetQServerLogger.LOGGER.warn(str.toString());
+      HornetQServerLogger.LOGGER.warn(ThreadDumpUtil.threadDump(reason));
    }
 
    public final void stop(boolean failoverOnServerShutdown) throws Exception

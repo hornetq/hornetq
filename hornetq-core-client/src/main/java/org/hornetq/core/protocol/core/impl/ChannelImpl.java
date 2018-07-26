@@ -387,7 +387,8 @@ public final class ChannelImpl implements Channel
 
             if (response == null)
             {
-               throw HornetQClientMessageBundle.BUNDLE.timedOutSendingPacket(packet.getType());
+               HornetQException ex = HornetQClientMessageBundle.BUNDLE.timedOutSendingPacket(packet.getType());
+               throw ex;
             }
 
             if (response.getType() == PacketImpl.EXCEPTION)

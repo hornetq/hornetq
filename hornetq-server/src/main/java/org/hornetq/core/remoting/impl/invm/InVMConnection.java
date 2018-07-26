@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.HornetQPrincipal;
@@ -96,6 +97,11 @@ public class InVMConnection implements Connection
       this.defaultHornetQPrincipal = defaultHornetQPrincipal;
    }
 
+   @Override
+   public void failed(HornetQException exception)
+   {
+      listener.connectionException(getID(), exception);
+   }
 
    public void forceClose()
    {

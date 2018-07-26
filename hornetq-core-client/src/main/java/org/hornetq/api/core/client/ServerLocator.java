@@ -33,6 +33,7 @@ import org.hornetq.core.client.impl.Topology;
  */
 public interface ServerLocator
 {
+   ServerLocator setDebugReconnects(String debug);
 
    /**
     * Returns true if close was already called

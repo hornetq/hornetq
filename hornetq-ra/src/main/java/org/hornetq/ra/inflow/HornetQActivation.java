@@ -52,6 +52,7 @@ import org.hornetq.ra.HornetQRaUtils;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.FutureLatch;
 import org.hornetq.utils.SensitiveDataCodec;
+import org.jboss.logging.Logger;
 
 /**
  * The activation.
@@ -62,11 +63,7 @@ import org.hornetq.utils.SensitiveDataCodec;
  */
 public class HornetQActivation
 {
-   /**
-    * Trace enabled
-    */
-   private static boolean trace = HornetQRALogger.LOGGER.isTraceEnabled();
-
+   private static final Logger logger = Logger.getLogger(HornetQActivation.class);
    /**
     * The onMessage method
     */
@@ -149,9 +146,9 @@ public class HornetQActivation
    {
       spec.validate();
 
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
+         logger.trace("constructor(" + ra + ", " + endpointFactory + ", " + spec + ")");
       }
 
       if (ra.isUseMaskedPassword())
@@ -192,9 +189,9 @@ public class HornetQActivation
     */
    public HornetQActivationSpec getActivationSpec()
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("getActivationSpec()");
+         logger.trace("getActivationSpec()");
       }
 
       return spec;
@@ -207,9 +204,9 @@ public class HornetQActivation
     */
    public MessageEndpointFactory getMessageEndpointFactory()
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("getMessageEndpointFactory()");
+         logger.trace("getMessageEndpointFactory()");
       }
 
       return endpointFactory;
@@ -222,9 +219,9 @@ public class HornetQActivation
     */
    public boolean isDeliveryTransacted()
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("isDeliveryTransacted()");
+         logger.trace("isDeliveryTransacted()");
       }
 
       return isDeliveryTransacted;
@@ -237,9 +234,9 @@ public class HornetQActivation
     */
    public WorkManager getWorkManager()
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("getWorkManager()");
+         logger.trace("getWorkManager()");
       }
 
       return ra.getWorkManager();
@@ -252,9 +249,9 @@ public class HornetQActivation
     */
    public boolean isTopic()
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("isTopic()");
+         logger.trace("isTopic()");
       }
 
       return isTopic;
@@ -267,9 +264,9 @@ public class HornetQActivation
     */
    public void start() throws ResourceException
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("start()");
+         logger.trace("start()");
       }
       deliveryActive.set(true);
       ra.getWorkManager().scheduleWork(new SetupActivation());
@@ -313,9 +310,9 @@ public class HornetQActivation
     */
    public void stop()
    {
-      if (HornetQActivation.trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("stop()");
+         logger.trace("stop()");
       }
 
       deliveryActive.set(false);
@@ -329,7 +326,7 @@ public class HornetQActivation
     */
    protected synchronized void setup() throws Exception
    {
-      HornetQRALogger.LOGGER.debug("Setting up " + spec);
+      logger.debug("Setting up " + spec);
 
       setupCF();
 
@@ -345,6 +342,10 @@ public class HornetQActivation
          try
          {
             cf = factory.getServerLocator().createSessionFactory();
+            if (HornetQResourceAdapter.DEBUG_RECONNECTS)
+            {
+               cf.setDebugReconnects("HornetQActivation::" + this.endpointFactory);
+            }
             session = setupSession(cf);
             HornetQMessageHandler handler = new HornetQMessageHandler(factory, this, ra.getTM(), (ClientSessionInternal)session, cf, i);
             handler.setup();
@@ -389,7 +390,7 @@ public class HornetQActivation
          factory.getServerLocator().addClusterTopologyListener(new RebalancingListener());
       }
 
-      HornetQRALogger.LOGGER.debug("Setup complete " + this);
+      logger.debug("Setup complete " + this);
    }
 
    /**
@@ -397,7 +398,7 @@ public class HornetQActivation
     */
    protected synchronized void teardown()
    {
-      HornetQRALogger.LOGGER.debug("Tearing down " + spec);
+      logger.debug("Tearing down " + spec);
 
       if (resourceRecovery != null)
       {
@@ -509,7 +510,7 @@ public class HornetQActivation
       nodes.clear();
       lastReceived = false;
 
-      HornetQRALogger.LOGGER.debug("Tearing down complete " + this);
+      logger.debug("Tearing down complete " + this);
    }
 
    protected void setupCF() throws Exception
@@ -549,7 +550,7 @@ public class HornetQActivation
             result.addMetaData("jms-client-id", clientID);
          }
 
-         HornetQRALogger.LOGGER.debug("Using queue connection " + result);
+         logger.debug("Using queue connection " + result);
 
          return result;
       }
@@ -564,7 +565,7 @@ public class HornetQActivation
          }
          catch (Exception e)
          {
-            HornetQRALogger.LOGGER.trace("Ignored error closing connection", e);
+            logger.trace("Ignored error closing connection", e);
          }
          if (t instanceof Exception)
          {
@@ -595,16 +596,16 @@ public class HornetQActivation
          {
             ctx = new InitialContext(spec.getParsedJndiParams());
          }
-         HornetQRALogger.LOGGER.debug("Using context " + ctx.getEnvironment() + " for " + spec);
-         if (HornetQActivation.trace)
+         logger.debug("Using context " + ctx.getEnvironment() + " for " + spec);
+         if (logger.isTraceEnabled())
          {
-            HornetQRALogger.LOGGER.trace("setupDestination(" + ctx + ")");
+            logger.trace("setupDestination(" + ctx + ")");
          }
 
          String destinationTypeString = spec.getDestinationType();
          if (destinationTypeString != null && !destinationTypeString.trim().equals(""))
          {
-            HornetQRALogger.LOGGER.debug("Destination type defined as " + destinationTypeString);
+            logger.debug("Destination type defined as " + destinationTypeString);
 
             Class<?> destinationType;
             if (Topic.class.getName().equals(destinationTypeString))
@@ -617,7 +618,7 @@ public class HornetQActivation
                destinationType = Queue.class;
             }
 
-            HornetQRALogger.LOGGER.debug("Retrieving " + destinationType.getName() + " \"" + destinationName + "\" from JNDI");
+            logger.debug("Retrieving " + destinationType.getName() + " \"" + destinationName + "\" from JNDI");
 
             try
             {
@@ -632,7 +633,7 @@ public class HornetQActivation
 
                String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
 
-               HornetQRALogger.LOGGER.debug("Unable to retrieve " + destinationName +
+               logger.debug("Unable to retrieve " + destinationName +
                                                " from JNDI. Creating a new " + destinationType.getName() +
                                                " named " + calculatedDestinationName + " to be used by the MDB.");
 
@@ -649,8 +650,8 @@ public class HornetQActivation
          }
          else
          {
-            HornetQRALogger.LOGGER.debug("Destination type not defined in MDB activation configuration.");
-            HornetQRALogger.LOGGER.debug("Retrieving " + Destination.class.getName() + " \"" + destinationName + "\" from JNDI");
+            logger.debug("Destination type not defined in MDB activation configuration.");
+            logger.debug("Retrieving " + Destination.class.getName() + " \"" + destinationName + "\" from JNDI");
 
             destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
@@ -699,9 +700,9 @@ public class HornetQActivation
 
    public void startReconnectThread(final String threadName)
    {
-      if (trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("Starting reconnect Thread " + threadName + " on MDB activation " + this);
+         logger.trace("Starting reconnect Thread " + threadName + " on MDB activation " + this);
       }
       Runnable runnable = new Runnable()
       {
@@ -722,9 +723,9 @@ public class HornetQActivation
     */
    public void reconnect(Throwable failure)
    {
-      if (trace)
+      if (logger.isTraceEnabled())
       {
-         HornetQRALogger.LOGGER.trace("reconnecting activation " + this);
+         logger.trace("reconnecting activation " + this);
       }
       if (failure != null)
       {
@@ -761,7 +762,7 @@ public class HornetQActivation
             }
             catch (InterruptedException e)
             {
-               HornetQRALogger.LOGGER.debug("Interrupted trying to reconnect " + spec, e);
+               logger.debug("Interrupted trying to reconnect " + spec, e);
                break;
             }
 
