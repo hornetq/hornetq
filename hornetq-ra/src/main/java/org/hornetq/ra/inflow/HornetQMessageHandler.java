@@ -219,6 +219,16 @@ public class HornetQMessageHandler implements MessageHandler
       return useXA ? session : null;
    }
 
+   public Thread getCurrentThread()
+   {
+      if (consumer == null)
+      {
+         return null;
+      }
+
+      return consumer.getCurrentThread();
+   }
+
    public Thread interruptConsumer(FutureLatch future)
    {
       try

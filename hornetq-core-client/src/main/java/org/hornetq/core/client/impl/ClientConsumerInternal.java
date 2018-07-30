@@ -50,6 +50,8 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    void clear(boolean waitForOnMessage) throws HornetQException;
 
+   Thread getCurrentThread();
+
    /**
     * To be called by things like MDBs during shutdown of the server
     *

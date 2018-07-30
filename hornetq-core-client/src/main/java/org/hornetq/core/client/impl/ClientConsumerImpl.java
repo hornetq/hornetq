@@ -426,6 +426,17 @@ public final class ClientConsumerImpl implements ClientConsumerInternal
       return handler;
    }
 
+
+   @Override
+   public Thread getCurrentThread()
+   {
+      if (onMessageThread != null)
+      {
+         return onMessageThread;
+      }
+      return receiverThread;
+   }
+
    // Must be synchronized since messages may be arriving while handler is being set and might otherwise end
    // up not queueing enough executors - so messages get stranded
    public synchronized void setMessageHandler(final MessageHandler theHandler) throws HornetQException

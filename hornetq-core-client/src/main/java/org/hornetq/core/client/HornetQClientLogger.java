@@ -103,7 +103,7 @@ public interface HornetQClientLogger extends BasicLogger
       id = 212007,
       value = "connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we will deal with it anyway."
       , format = Message.Format.MESSAGE_FORMAT)
-   void createConnectorException(@Cause Exception e);
+   void createConnectorException(@Cause Throwable e);
 
    @LogMessage(level = Logger.Level.WARN)
    @Message(

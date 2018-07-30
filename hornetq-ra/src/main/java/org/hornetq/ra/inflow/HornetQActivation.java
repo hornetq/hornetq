@@ -418,14 +418,9 @@ public class HornetQActivation
       handlers.clear();
 
       FutureLatch future = new FutureLatch(handlersCopy.length);
-      List<Thread> interruptThreads = new ArrayList<Thread>();
       for (HornetQMessageHandler handler : handlersCopy)
       {
-         Thread thread = handler.interruptConsumer(future);
-         if (thread != null)
-         {
-            interruptThreads.add(thread);
-         }
+         handler.interruptConsumer(future);
       }
 
       //wait for all the consumers to complete any onmessage calls
@@ -433,15 +428,19 @@ public class HornetQActivation
       //if any are stuck then we need to interrupt them
       if (stuckThreads)
       {
-         for (Thread interruptThread : interruptThreads)
+         for (HornetQMessageHandler handler : handlersCopy)
          {
-            try
+            Thread interruptThread = handler.getCurrentThread();
+            if (interruptThread != null)
             {
-               interruptThread.interrupt();
-            }
-            catch (Exception e)
-            {
-               //ok
+               try
+               {
+                  interruptThread.interrupt();
+               }
+               catch (Throwable e)
+               {
+                  //ok
+               }
             }
          }
       }

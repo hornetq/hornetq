@@ -828,6 +828,12 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       }
 
+      @Override
+      public Thread getCurrentThread()
+      {
+         return null;
+      }
+
       public void acknowledge(final ClientMessage message) throws HornetQException
       {
       }

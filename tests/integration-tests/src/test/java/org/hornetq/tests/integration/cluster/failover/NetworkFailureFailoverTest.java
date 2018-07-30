@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.NetUtil;
@@ -57,11 +59,24 @@ public class NetworkFailureFailoverTest extends FailoverTestBase
    // 192.0.2.0 is reserved for documentation, so I'm pretty sure this won't exist on any system. (It shouldn't at least)
    private static final String LIVE_IP = "192.0.2.0";
 
-   @BeforeClass
-   public static void setupDevices() throws Exception
+   private int beforeTime;
+
+   @Override
+   public void setUp() throws Exception
    {
+      beforeTime = NettyConnection.getLockTimeout();
+      NettyConnection.setLockTimeout(1000);
       NetUtil.netUp(LIVE_IP);
+      super.setUp();
    }
+
+   @Override
+   public void tearDown() throws Exception
+   {
+      super.tearDown();
+      NettyConnection.setLockTimeout(beforeTime);
+   }
+
 
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
@@ -310,6 +325,159 @@ public class NetworkFailureFailoverTest extends FailoverTestBase
       }
 
       Assert.assertTrue(latchReceived.await(1, TimeUnit.MINUTES));
+
+      running.set(false);
+
+      t.join();
+   }
+
+
+   @Test
+   public void testInterruptFailingThread() throws Exception
+   {
+      final AtomicInteger sentMessages = new AtomicInteger(0);
+      final AtomicInteger blockedAt = new AtomicInteger(0);
+
+      Assert.assertTrue(NetUtil.checkIP(LIVE_IP));
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.HOST_PROP_NAME, LIVE_IP);
+      TransportConfiguration tc = createTransportConfiguration(true, false, params);
+
+      final AtomicInteger countSent = new AtomicInteger(0);
+
+      final CountDownLatch latchBlocked = new CountDownLatch(1);
+
+      liveServer.addInterceptor(new Interceptor()
+      {
+         @Override
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+            //System.out.println("Received " + packet);
+            if (packet instanceof SessionSendMessage)
+            {
+
+               if (countSent.incrementAndGet() == 50)
+               {
+                  try
+                  {
+                     NetUtil.netDown(LIVE_IP);
+                     System.out.println("Blocking traffic");
+                     Thread.sleep(3000); // this is important to let stuff to block
+                     blockedAt.set(sentMessages.get());
+                     latchBlocked.countDown();
+                  }
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                  }
+//                  new Thread()
+//                  {
+//                     public void run()
+//                     {
+//                        try
+//                        {
+//                           System.err.println("Stopping server");
+//                           // liveServer.stop();
+//                           liveServer.crash(true, false);
+//                        }
+//                        catch (Exception e)
+//                        {
+//                           e.printStackTrace();
+//                        }
+//                     }
+//                  }.start();
+               }
+            }
+            return true;
+         }
+      });
+
+      final CountDownLatch failing = new CountDownLatch(1);
+      final HashSet<Thread> setThread = new HashSet<Thread>();
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithHA(tc));
+
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
+      locator.setReconnectAttempts(-1);
+      locator.setConfirmationWindowSize(-1);
+      locator.setProducerWindowSize(-1);
+      locator.setClientFailureCheckPeriod(100);
+      locator.setConnectionTTL(1000);
+      ClientSessionFactoryInternal sfProducer = createSessionFactoryAndWaitForTopology(locator, 2);
+      sfProducer.addFailureListener(new SessionFailureListener()
+      {
+         @Override
+         public void beforeReconnect(HornetQException exception)
+         {
+            setThread.add(Thread.currentThread());
+            failing.countDown();
+         }
+
+         @Override
+         public void connectionFailed(HornetQException exception, boolean failedOver)
+         {
+
+         }
+      });
+
+      final ClientSession sessionProducer = createSession(sfProducer, true, true, 0);
+
+      sessionProducer.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = sessionProducer.createProducer(FailoverTestBase.ADDRESS);
+
+      final int numMessages = 10000;
+
+      final AtomicBoolean running = new AtomicBoolean(true);
+      final CountDownLatch messagesSentlatch = new CountDownLatch(numMessages);
+
+      Thread t = new Thread("sendingThread")
+      {
+         @Override
+         public void run()
+         {
+
+            while (sentMessages.get() < numMessages && running.get())
+            {
+               try
+               {
+                  if (sentMessages.get() % 10 == 0)
+                  {
+                     System.out.println("Sent " + sentMessages.get());
+                  }
+                  producer.send(createMessage(sessionProducer, sentMessages.get(), true));
+                  sentMessages.incrementAndGet();
+                  messagesSentlatch.countDown();
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+               }
+            }
+
+         }
+      };
+
+      t.start();
+
+      Assert.assertTrue(latchBlocked.await(1, TimeUnit.MINUTES));
+
+      Assert.assertTrue(failing.await(1, TimeUnit.MINUTES));
+
+      for (int i = 0; i < 5; i++)
+      {
+         for (Thread tint : setThread)
+         {
+            tint.interrupt();
+         }
+         Thread.sleep(500);
+      }
+
+      liveServer.crash(true, false);
+
+      Assert.assertTrue(messagesSentlatch.await(3, TimeUnit.MINUTES));
 
       running.set(false);
 

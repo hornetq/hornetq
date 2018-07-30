@@ -46,7 +46,18 @@ public class NettyConnection implements Connection
    // Constants -----------------------------------------------------
    private static final int BATCHING_BUFFER_SIZE = 8192;
 
-   private static final int LOCK_TIMEOUT;
+   private static int LOCK_TIMEOUT;
+
+   public static void setLockTimeout(int timeout)
+   {
+      LOCK_TIMEOUT = timeout;
+   }
+
+   public static int getLockTimeout()
+   {
+      return LOCK_TIMEOUT;
+   }
+
 
    static
    {

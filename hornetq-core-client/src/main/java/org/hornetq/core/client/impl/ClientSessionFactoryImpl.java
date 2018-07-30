@@ -1198,68 +1198,78 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             logger.debug("Trying reconnection attempt " + count + "/" + reconnectAttempts + ", debug= " + debugInfo);
          }
 
-         getConnection();
-
-         if (connection == null)
+         try
          {
-            // Failed to get connection
+            getConnection();
 
-            if (reconnectAttempts != 0)
+
+            if (connection == null)
             {
-               count++;
+               // Failed to get connection
 
-               if (reconnectAttempts != -1 && count == reconnectAttempts)
+               if (reconnectAttempts != 0)
                {
-                  if (reconnectAttempts != 1)
+                  count++;
+
+                  if (reconnectAttempts != -1 && count == reconnectAttempts)
                   {
-                     HornetQClientLogger.LOGGER.failedToConnectToServer(reconnectAttempts);
-                  }
-                  else if (reconnectAttempts == 1)
-                  {
-                     logger.debug("Trying to connect towards " + this + ", debug= " + debugInfo);
+                     if (reconnectAttempts != 1)
+                     {
+                        HornetQClientLogger.LOGGER.failedToConnectToServer(reconnectAttempts);
+                     }
+                     else if (reconnectAttempts == 1)
+                     {
+                        logger.debug("Trying to connect towards " + this + ", debug= " + debugInfo);
+                     }
+
+                     return;
                   }
 
+                  if (logger.isTraceEnabled())
+                  {
+                     HornetQClientLogger.LOGGER.waitingForRetry(interval, retryInterval, retryIntervalMultiplier);
+                  }
+
+                  try
+                  {
+                     if (waitLatch.await(interval, TimeUnit.MILLISECONDS))
+                        return;
+                  }
+                  catch (InterruptedException ignore)
+                  {
+                     throw new HornetQInterruptedException(e);
+                  }
+
+                  // Exponential back-off
+                  long newInterval = (long) (interval * retryIntervalMultiplier);
+
+                  if (newInterval > maxRetryInterval)
+                  {
+                     newInterval = maxRetryInterval;
+                  }
+
+                  interval = newInterval;
+               }
+               else
+               {
+                  logger.debug("Could not connect to any server. Didn't have reconnection configured on the ClientSessionFactory" + ", debug= " + debugInfo);
                   return;
                }
-
-               if (logger.isTraceEnabled())
-               {
-                  HornetQClientLogger.LOGGER.waitingForRetry(interval, retryInterval, retryIntervalMultiplier);
-               }
-
-               try
-               {
-                  if (waitLatch.await(interval, TimeUnit.MILLISECONDS))
-                     return;
-               }
-               catch (InterruptedException ignore)
-               {
-                  throw new HornetQInterruptedException(e);
-               }
-
-               // Exponential back-off
-               long newInterval = (long)(interval * retryIntervalMultiplier);
-
-               if (newInterval > maxRetryInterval)
-               {
-                  newInterval = maxRetryInterval;
-               }
-
-               interval = newInterval;
             }
             else
             {
-               logger.debug("Could not connect to any server. Didn't have reconnection configured on the ClientSessionFactory" + ", debug= " + debugInfo);
+               if (logger.isDebugEnabled())
+               {
+                  logger.debug("Reconnection successfull" + ", debug= " + debugInfo);
+               }
                return;
             }
          }
-         else
+         catch (HornetQInterruptedException e)
          {
-            if (logger.isDebugEnabled())
-            {
-               logger.debug("Reconnection successfull" + ", debug= " + debugInfo);
-            }
-            return;
+            logger.warn(e.getMessage(), e);
+            connection = null;
+            continue;
          }
       }
    }
@@ -1477,7 +1487,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
                }
             }
-            catch (Exception e)
+            catch (Throwable e)
             {
                // Sanity catch for badly behaved remoting plugins
 
@@ -1519,45 +1529,61 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                return connection;
             }
 
-            connection = new RemotingConnectionImpl(packetDecoder, tc, callTimeout, callFailoverTimeout, incomingInterceptors, outgoingInterceptors);
-
-            connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
-
-            Channel channel0 = connection.getChannel(0, -1);
-
-            channel0.setHandler(new Channel0Handler(connection));
-
-            if (clientFailureCheckPeriod != -1)
+            try
             {
-               if (pingerFuture == null)
-               {
-                  pingRunnable = new PingRunnable();
 
-                  pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduledPinger(pingRunnable),
-                                                                            0,
-                                                                            clientFailureCheckPeriod,
-                                                                            TimeUnit.MILLISECONDS);
-                  // To make sure the first ping will be sent
-                  pingRunnable.send();
-               }
-               // send a ping every time we create a new remoting connection
-               // to set up its TTL on the server side
-               else
+               connection = new RemotingConnectionImpl(packetDecoder, tc, callTimeout, callFailoverTimeout, incomingInterceptors, outgoingInterceptors);
+
+               connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
+
+               Channel channel0 = connection.getChannel(0, -1);
+
+               channel0.setHandler(new Channel0Handler(connection));
+
+               if (clientFailureCheckPeriod != -1)
                {
-                  pingRunnable.run();
+                  if (pingerFuture == null)
+                  {
+                     pingRunnable = new PingRunnable();
+
+                     pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduledPinger(pingRunnable),
+                                                                               0,
+                                                                               clientFailureCheckPeriod,
+                                                                               TimeUnit.MILLISECONDS);
+                     // To make sure the first ping will be sent
+                     pingRunnable.send();
+                  }
+                  // send a ping every time we create a new remoting connection
+                  // to set up its TTL on the server side
+                  else
+                  {
+                     pingRunnable.run();
+                  }
+               }
+
+               if (serverLocator.getTopology() != null)
+               {
+                  if (logger.isTraceEnabled())
+                  {
+                     logger.trace(this + "::Subscribing Topology, debug= " + debugInfo);
+                  }
+
+                  channel0.send(new SubscribeClusterTopologyUpdatesMessageV2(serverLocator.isClusterConnection(),
+                                                                             VersionLoader.getVersion()
+                                                                                .getIncrementingVersion()));
                }
             }
-
-            if (serverLocator.getTopology() != null)
+            catch (HornetQInterruptedException ex)
             {
-               if (logger.isTraceEnabled())
+               try
                {
-                  logger.trace(this + "::Subscribing Topology, debug= " + debugInfo);
+                  connection.getTransportConnection().forceClose();
+               }
+               catch (Exception dontcare)
+               {
                }
 
-               channel0.send(new SubscribeClusterTopologyUpdatesMessageV2(serverLocator.isClusterConnection(),
-                                                                          VersionLoader.getVersion()
-                                                                             .getIncrementingVersion()));
+               throw ex;
             }
          }
 
