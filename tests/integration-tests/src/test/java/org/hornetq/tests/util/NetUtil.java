@@ -193,10 +193,8 @@ public class NetUtil
    public static int runCommand(long timeout, TimeUnit timeoutUnit, String... command) throws Exception
    {
 
-      for (String c: command)
-      {
-         System.out.println(".." + c + "..");
-      }
+      logCommand(command);
+
       // it did not work with a simple isReachable, it could be because there's no root access, so we will try ping executable
       ProcessBuilder processBuilder = new ProcessBuilder(command);
       final Process process = processBuilder.start();
@@ -238,6 +236,16 @@ public class NetUtil
       t2.join(timeoutUnit.toMillis(timeout));
 
       return value;
+   }
+
+   private static void logCommand(String[] command)
+   {
+      StringBuffer logCommand = new StringBuffer();
+      for (String c : command)
+      {
+         logCommand.append(c + " ");
+      }
+      System.out.println("NetUTIL command::" + logCommand.toString());
    }
 
    public static boolean canSudo()
