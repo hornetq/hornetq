@@ -626,11 +626,25 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          failoverOrReconnect(connectionID, me);
       }
-      catch (HornetQInterruptedException e1)
+      catch (final HornetQInterruptedException e1)
       {
          debugInfo("handleConnectionFailure", "InterruptedException on handleConnectionFailure", e1);
          // this is just a debug, since an interrupt is an expected event (in case of a shutdown)
          logger.debug(e1.getMessage() + ", debug= " + debugInfo, e1);
+         if (!exitLoop)
+         {
+            logger.warn(e.getMessage() + ", re-issuing reconnect", e);
+            closeExecutor.execute(new Runnable()
+            {
+               @Override
+               public void run()
+               {
+                  HornetQException ex = new HornetQException(e1.getMessage());
+                  ex.initCause(me);
+                  handleConnectionFailure(connectionID, ex);
+               }
+            });
+         }
       }
    }
 
@@ -1671,7 +1685,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
       catch (InterruptedException e)
       {
-         return false;
+         throw new HornetQInterruptedException(e);
       }
    }
 

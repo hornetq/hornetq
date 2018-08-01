@@ -34,6 +34,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.remoting.impl.netty.NettyConnection;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
@@ -329,6 +330,136 @@ public class NetworkFailureFailoverTest extends FailoverTestBase
       running.set(false);
 
       t.join();
+   }
+
+
+   @Test
+   public void testFailoverCreateSessionOnFailure() throws Exception
+   {
+      final AtomicInteger sentMessages = new AtomicInteger(0);
+      final AtomicInteger blockedAt = new AtomicInteger(0);
+
+      Assert.assertTrue(NetUtil.checkIP(LIVE_IP));
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.HOST_PROP_NAME, LIVE_IP);
+      TransportConfiguration tc = createTransportConfiguration(true, false, params);
+
+      final AtomicInteger countSent = new AtomicInteger(0);
+
+      final CountDownLatch latchDown = new CountDownLatch(1);
+
+      liveServer.addInterceptor(new Interceptor()
+      {
+         @Override
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+            //System.out.println("Received " + packet);
+            if (packet instanceof CreateSessionMessage)
+            {
+
+               if (countSent.incrementAndGet() == 50)
+               {
+                  try
+                  {
+                     NetUtil.netDown(LIVE_IP);
+                     System.out.println("Blocking traffic");
+                     Thread.sleep(3000); // this is important to let stuff to block
+                     blockedAt.set(sentMessages.get());
+                     latchDown.countDown();
+                  }
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                  }
+               }
+            }
+            return true;
+         }
+      });
+
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithHA(tc));
+      locator.setDebugReconnects("CF_retry");
+
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
+      locator.setReconnectAttempts(-1);
+      locator.setConfirmationWindowSize(-1);
+      locator.setProducerWindowSize(-1);
+      locator.setClientFailureCheckPeriod(100);
+      locator.setConnectionTTL(1000);
+      final ClientSessionFactoryInternal sessionFactory = createSessionFactoryAndWaitForTopology(locator, 2);
+      final AtomicInteger failed = new AtomicInteger(0);
+      sessionFactory.addFailureListener(new SessionFailureListener()
+      {
+         @Override
+         public void beforeReconnect(HornetQException exception)
+         {
+            if (failed.incrementAndGet() == 1)
+            {
+               Thread.currentThread().interrupt();
+            }
+            new Exception("producer before reconnect", exception).printStackTrace();
+         }
+
+         @Override
+         public void connectionFailed(HornetQException exception, boolean failedOver)
+         {
+
+         }
+      });
+      final int numSessions = 100;
+      final CountDownLatch latchCreated = new CountDownLatch(numSessions);
+
+      final AtomicBoolean running = new AtomicBoolean(true);
+      final
+
+
+      Thread t = new Thread("session-creator")
+      {
+         public void run()
+         {
+            int received = 0;
+            int errors = 0;
+            while (running.get() && received < numSessions)
+            {
+               try
+               {
+                  ClientSession session = sessionFactory.createSession();
+                  System.out.println("Creating session, currentLatch = " + latchCreated.getCount());
+                  session.close();
+                  latchCreated.countDown();
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors++;
+               }
+            }
+         }
+      };
+
+      t.start();
+
+      Assert.assertTrue(latchDown.await(1, TimeUnit.MINUTES));
+
+      Thread.sleep(1000);
+
+      System.out.println("Server crashed now!!!");
+
+      liveServer.crash(true, false);
+
+      try
+      {
+         Assert.assertTrue(latchCreated.await(5, TimeUnit.MINUTES));
+
+      }
+      finally
+      {
+         running.set(false);
+
+         t.join(TimeUnit.SECONDS.toMillis(30));
+      }
    }
 
 
