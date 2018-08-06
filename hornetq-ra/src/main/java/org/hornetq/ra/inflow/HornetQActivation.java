@@ -25,6 +25,8 @@ import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +53,7 @@ import org.hornetq.ra.HornetQRALogger;
 import org.hornetq.ra.HornetQRaUtils;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.FutureLatch;
+import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.SensitiveDataCodec;
 import org.jboss.logging.Logger;
 
@@ -347,7 +350,7 @@ public class HornetQActivation
                cf.setDebugReconnects("HornetQActivation::" + this.endpointFactory);
             }
             session = setupSession(cf);
-            HornetQMessageHandler handler = new HornetQMessageHandler(factory, this, ra.getTM(), (ClientSessionInternal)session, cf, i);
+            HornetQMessageHandler handler = new HornetQMessageHandler(factory, this, ra.getTM(), (ClientSessionInternal) session, cf, i);
             handler.setup();
             handlers.add(handler);
          }
@@ -428,25 +431,29 @@ public class HornetQActivation
       //if any are stuck then we need to interrupt them
       if (stuckThreads)
       {
-         for (HornetQMessageHandler handler : handlersCopy)
+         if (spec.getInterruptOnTearDown())
          {
-            Thread interruptThread = handler.getCurrentThread();
-            if (interruptThread != null)
+            for (HornetQMessageHandler handler : handlersCopy)
             {
-               try
+               Thread interruptThread = handler.getCurrentThread();
+               if (interruptThread != null)
                {
-                  interruptThread.interrupt();
-               }
-               catch (Throwable e)
-               {
-                  //ok
+                  try
+                  {
+                     interruptThread.interrupt();
+                  }
+                  catch (Throwable e)
+                  {
+                     //ok
+                  }
                }
             }
          }
       }
 
-      Thread threadTearDown = new Thread("TearDown/HornetQActivation")
+      Runnable runTearDown = new Runnable()
       {
+         @Override
          public void run()
          {
             for (HornetQMessageHandler handler : handlersCopy)
@@ -455,6 +462,8 @@ public class HornetQActivation
             }
          }
       };
+
+      Thread threadTearDown = newThread("TearDown/HornetQActivation", runTearDown);
 
       // We will first start a new thread that will call tearDown on all the instances, trying to graciously shutdown everything.
       // We will then use the call-timeout to determine a timeout.
@@ -568,7 +577,7 @@ public class HornetQActivation
          }
          if (t instanceof Exception)
          {
-            throw (Exception)t;
+            throw (Exception) t;
          }
          throw new RuntimeException("Error configuring connection", t);
       }
@@ -621,7 +630,7 @@ public class HornetQActivation
 
             try
             {
-               destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, destinationType);
+               destination = (HornetQDestination) HornetQRaUtils.lookup(ctx, destinationName, destinationType);
             }
             catch (Exception e)
             {
@@ -633,17 +642,17 @@ public class HornetQActivation
                String calculatedDestinationName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
 
                logger.debug("Unable to retrieve " + destinationName +
-                                               " from JNDI. Creating a new " + destinationType.getName() +
-                                               " named " + calculatedDestinationName + " to be used by the MDB.");
+                               " from JNDI. Creating a new " + destinationType.getName() +
+                               " named " + calculatedDestinationName + " to be used by the MDB.");
 
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
                {
-                  destination = (HornetQDestination)HornetQJMSClient.createTopic(calculatedDestinationName);
+                  destination = (HornetQDestination) HornetQJMSClient.createTopic(calculatedDestinationName);
                }
                else
                {
-                  destination = (HornetQDestination)HornetQJMSClient.createQueue(calculatedDestinationName);
+                  destination = (HornetQDestination) HornetQJMSClient.createQueue(calculatedDestinationName);
                }
             }
          }
@@ -652,7 +661,7 @@ public class HornetQActivation
             logger.debug("Destination type not defined in MDB activation configuration.");
             logger.debug("Retrieving " + Destination.class.getName() + " \"" + destinationName + "\" from JNDI");
 
-            destination = (HornetQDestination)HornetQRaUtils.lookup(ctx, destinationName, Destination.class);
+            destination = (HornetQDestination) HornetQRaUtils.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
             {
                isTopic = true;
@@ -665,12 +674,12 @@ public class HornetQActivation
 
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
-            destination = (HornetQDestination)HornetQJMSClient.createTopic(spec.getDestination());
+            destination = (HornetQDestination) HornetQJMSClient.createTopic(spec.getDestination());
             isTopic = true;
          }
          else
          {
-            destination = (HornetQDestination)HornetQJMSClient.createQueue(spec.getDestination());
+            destination = (HornetQDestination) HornetQJMSClient.createQueue(spec.getDestination());
          }
       }
    }
@@ -711,8 +720,24 @@ public class HornetQActivation
             reconnect(null);
          }
       };
-      Thread t = new Thread(runnable, threadName);
+
+      Thread t = newThread(threadName, runnable);
       t.start();
+   }
+
+
+   private static Thread newThread(String name, Runnable run)
+   {
+      ClassLoader tccl = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return Thread.currentThread().getContextClassLoader();
+         }
+      });
+
+      HornetQThreadFactory factory = new HornetQThreadFactory(name, true, tccl);
+      return factory.newThread(run);
    }
 
    /**
@@ -777,7 +802,7 @@ public class HornetQActivation
             }
             catch (Throwable t)
             {
-               if (failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
+               if (failure instanceof HornetQException && ((HornetQException) failure).getType() == HornetQExceptionType.QUEUE_DOES_NOT_EXIST)
                {
                   if (lastException == null || !(t instanceof HornetQNonExistentQueueException))
                   {
@@ -785,7 +810,7 @@ public class HornetQActivation
                      HornetQRALogger.LOGGER.awaitingTopicQueueCreation(getActivationSpec().getDestination());
                   }
                }
-               else if (failure instanceof HornetQException && ((HornetQException)failure).getType() == HornetQExceptionType.NOT_CONNECTED)
+               else if (failure instanceof HornetQException && ((HornetQException) failure).getType() == HornetQExceptionType.NOT_CONNECTED)
                {
                   if (lastException == null || !(t instanceof HornetQNotConnectedException))
                   {

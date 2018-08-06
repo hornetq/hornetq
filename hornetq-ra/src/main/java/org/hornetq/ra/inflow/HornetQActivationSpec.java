@@ -111,6 +111,8 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    private Boolean useJNDI = true;
 
+   private Boolean interruptOnTearDown;
+
    private String jndiParams = null;
 
    private Hashtable parsedJndiParams;
@@ -856,6 +858,20 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    public void setMaxMessages(final Integer value)
    {
+   }
+
+   public Boolean getInterruptOnTearDown()
+   {
+      if (interruptOnTearDown == null)
+      {
+         return ra.getInterruptOnTearDown();
+      }
+      return interruptOnTearDown;
+   }
+
+   public void setInterruptOnTearDown(Boolean interruptOnTearDown)
+   {
+      this.interruptOnTearDown = interruptOnTearDown;
    }
 
    @Override

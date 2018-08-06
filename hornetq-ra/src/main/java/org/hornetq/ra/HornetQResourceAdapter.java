@@ -429,6 +429,16 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setJgroupsChannelName(jgroupsChannelName);
    }
 
+   public boolean getInterruptOnTearDown()
+   {
+      return raProperties.getInterruptOnTearDown();
+   }
+
+   public void setInterruptOnTearDown(Boolean interruptOnTearDown)
+   {
+      raProperties.setInterruptOnTearDown(interruptOnTearDown);
+   }
+
    /**
     * Set the discovery group name
     *

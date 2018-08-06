@@ -19,6 +19,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.utils.DefaultSensitiveStringCodec;
 import org.hornetq.utils.PasswordMaskingUtil;
 import org.hornetq.utils.SensitiveDataCodec;
+import org.jboss.logging.Logger;
 
 
 /**
@@ -30,6 +31,24 @@ import org.hornetq.utils.SensitiveDataCodec;
  */
 public class HornetQRAProperties extends ConnectionFactoryProperties implements Serializable
 {
+
+   private static final Logger logger = Logger.getLogger(HornetQRAProperties.class);
+
+   private static boolean defaultInterruptOnTearDown;
+
+   static
+   {
+
+      String property = System.getProperty("org.apache.activemq.artemis.ra.ActiveMQRAProperties.interruptOnTearDown", "true");
+      try
+      {
+         defaultInterruptOnTearDown = Boolean.parseBoolean(property);
+      }
+      catch (Throwable e)
+      {
+         logger.warn(e.getMessage(), e);
+      }
+   }
    /**
     * Serial version UID
     */
@@ -53,6 +72,11 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
     * Use Local TX instead of XA
     */
    private Boolean localTx = false;
+
+   /**
+    * should interrupt threads on tearDown
+    */
+   private boolean interruptOnTearDown = defaultInterruptOnTearDown;
 
 
    /**
@@ -355,4 +379,13 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       this.jgroupsChannelRefName = jgroupsChannelRefName;
    }
 
+   public boolean getInterruptOnTearDown()
+   {
+      return interruptOnTearDown;
+   }
+
+   public void setInterruptOnTearDown(boolean interruptOnTearDown)
+   {
+      this.interruptOnTearDown = interruptOnTearDown;
+   }
 }
