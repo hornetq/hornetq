@@ -5,7 +5,7 @@
    <parent>
       <groupId>org.hornetq.examples.jms</groupId>
       <artifactId>jms-examples</artifactId>
-     <version>2.3.25.x.Final</version>
+     <version>2.3.25.SP28.Final</version>
    </parent>
 
    <artifactId>hornetq-jms-stomp1.1-example</artifactId>
