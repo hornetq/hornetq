@@ -22,6 +22,7 @@ import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkException;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 import java.lang.reflect.Method;
@@ -272,7 +273,7 @@ public class HornetQActivation
          logger.trace("start()");
       }
       deliveryActive.set(true);
-      ra.getWorkManager().scheduleWork(new SetupActivation());
+      scheduleWork(new SetupActivation());
    }
 
    /**
@@ -319,7 +320,7 @@ public class HornetQActivation
       }
 
       deliveryActive.set(false);
-      teardown();
+      teardown(true);
    }
 
    /**
@@ -399,7 +400,7 @@ public class HornetQActivation
    /**
     * Teardown the activation
     */
-   protected synchronized void teardown()
+   protected synchronized void teardown(boolean useInterrupt)
    {
       logger.debug("Tearing down " + spec);
 
@@ -431,7 +432,7 @@ public class HornetQActivation
       //if any are stuck then we need to interrupt them
       if (stuckThreads)
       {
-         if (spec.getInterruptOnTearDown())
+         if (useInterrupt && spec.getInterruptOnTearDown())
          {
             for (HornetQMessageHandler handler : handlersCopy)
             {
@@ -463,12 +464,7 @@ public class HornetQActivation
          }
       };
 
-      Thread threadTearDown = newThread("TearDown/HornetQActivation", runTearDown);
-
-      // We will first start a new thread that will call tearDown on all the instances, trying to graciously shutdown everything.
-      // We will then use the call-timeout to determine a timeout.
-      // if that failed we will then close the connection factory, and interrupt the thread
-      threadTearDown.start();
+      Thread threadTearDown = startThread("TearDown/HornetQActivation", runTearDown);
 
       try
       {
@@ -706,38 +702,54 @@ public class HornetQActivation
       return buffer.toString();
    }
 
-   public void startReconnectThread(final String threadName)
+   public void startReconnectThread(final String cause)
    {
       if (logger.isTraceEnabled())
       {
-         logger.trace("Starting reconnect Thread " + threadName + " on MDB activation " + this);
+         logger.trace("Starting reconnect Thread " + cause + " on MDB activation " + this);
       }
-      Runnable runnable = new Runnable()
+      try
       {
-         @Override
-         public void run()
-         {
-            reconnect(null);
-         }
-      };
-
-      Thread t = newThread(threadName, runnable);
-      t.start();
+         scheduleWork(new ReconnectWork(cause));
+      }
+      catch (Exception e)
+      {
+         logger.warn("Could not reconnect because worker is down", e);
+      }
    }
 
 
-   private static Thread newThread(String name, Runnable run)
+
+   private static Thread startThread(String name, Runnable run)
    {
-      ClassLoader tccl = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      ClassLoader tccl;
+
+      try
       {
-         public ClassLoader run()
+         tccl = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
          {
-            return Thread.currentThread().getContextClassLoader();
-         }
-      });
+            public ClassLoader run()
+            {
+               return HornetQActivation.class.getClassLoader();
+            }
+         });
+      }
+      catch (Throwable e)
+      {
+         logger.warn(e.getMessage(), e);
+         tccl = null;
+      }
 
       HornetQThreadFactory factory = new HornetQThreadFactory(name, true, tccl);
-      return factory.newThread(run);
+      Thread t = factory.newThread(run);
+      t.start();
+      return t;
+   }
+
+
+   private void scheduleWork(Work run) throws WorkException
+   {
+      ra.getWorkManager().scheduleWork(run);
    }
 
    /**
@@ -745,7 +757,7 @@ public class HornetQActivation
     *
     * @param failure if reconnecting in the event of a failure
     */
-   public void reconnect(Throwable failure)
+   public void reconnect(Throwable failure, boolean useInterrupt)
    {
       if (logger.isTraceEnabled())
       {
@@ -778,7 +790,7 @@ public class HornetQActivation
          Throwable lastException = failure;
          while (deliveryActive.get() && (setupAttempts == -1 || reconnectCount < setupAttempts))
          {
-            teardown();
+            teardown(useInterrupt);
 
             try
             {
@@ -851,7 +863,7 @@ public class HornetQActivation
          }
          catch (Throwable t)
          {
-            reconnect(t);
+            reconnect(t, false);
          }
       }
 
@@ -859,6 +871,34 @@ public class HornetQActivation
       {
       }
    }
+
+
+   /**
+    * Handles reconnecting
+    */
+   private class ReconnectWork implements Work
+   {
+      final String cause;
+
+      ReconnectWork(String cause)
+      {
+         this.cause = cause;
+      }
+      @Override
+      public void release()
+      {
+
+      }
+
+      @Override
+      public void run()
+      {
+         logger.tracef("Starting reconnect for %s", cause);
+         reconnect(null, false);
+      }
+
+   }
+
 
    private class RebalancingListener implements ClusterTopologyListener
    {
