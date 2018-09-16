@@ -599,7 +599,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       clusterTransportConfiguration = locator.clusterTransportConfiguration;
    }
 
-   private synchronized TransportConfiguration selectConnector()
+   private synchronized Pair<TransportConfiguration, TransportConfiguration> selectConnector(boolean useInitConnector)
    {
       Pair<TransportConfiguration, TransportConfiguration>[] usedTopology;
 
@@ -609,7 +609,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
 
       // if the topologyArray is null, we will use the initialConnectors
-      if (usedTopology != null)
+      if (usedTopology != null && !useInitConnector)
       {
          if (logger.isTraceEnabled())
          {
@@ -618,7 +618,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          int pos = loadBalancingPolicy.select(usedTopology.length);
          Pair<TransportConfiguration, TransportConfiguration> pair = usedTopology[pos];
 
-         return pair.getA();
+         return pair;
       }
       else
       {
@@ -630,7 +630,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          int pos = loadBalancingPolicy.select(initialConnectors.length);
 
-         return initialConnectors[pos];
+         return new Pair(initialConnectors[pos], null);
       }
    }
 
@@ -866,11 +866,18 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          boolean retry;
          int attempts = 0;
+         boolean topologyArrayTried = topologyArray == null || topologyArray.length == 0;
+         boolean staticTried = false;
+         boolean shouldTryStatic = !receivedTopology || topologyArray == null || topologyArray.length == 0;
          do
          {
             retry = false;
 
-            TransportConfiguration tc = selectConnector();
+            /*
+             * The logic is: If receivedTopology is false, try static first.
+             * if receivedTopology is true, try topologyArray first
+             */
+            Pair<TransportConfiguration, TransportConfiguration> tc = selectConnector(shouldTryStatic);
             if (tc == null)
             {
                throw HornetQClientMessageBundle.BUNDLE.noTCForSessionFactory();
@@ -915,14 +922,42 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
                   synchronized (topologyArrayGuard)
                   {
-
-                     if (topologyArray != null && attempts == topologyArray.length)
+                     if (shouldTryStatic)
                      {
-                        throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
+                        //we know static is used
+                        if (attempts >= this.getNumInitialConnectors())
+                        {
+                           if (topologyArrayTried)
+                           {
+                              //stop retry and throw exception
+                              throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
+                           }
+                           else
+                           {
+                              //lets try topologyArray
+                              staticTried = true;
+                              shouldTryStatic = false;
+                              attempts = 0;
+                           }
+                        }
                      }
-                     if (topologyArray == null && attempts == this.getNumInitialConnectors())
+                     else
                      {
-                        throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
+                        //we know topologyArray is used
+                        if (attempts >= topologyArray.length)
+                        {
+                           if (staticTried)
+                           {
+                              //now failed to create connection, throw exception
+                              throw HornetQClientMessageBundle.BUNDLE.cannotConnectToServers();
+                           }
+                           else
+                           {
+                              topologyArrayTried = true;
+                              shouldTryStatic = true;
+                              attempts = 0;
+                           }
+                        }
                      }
                   }
                   retry = true;
@@ -1581,7 +1616,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             {
                // Resetting the topology to its original condition as it was brand new
                receivedTopology = false;
-               topologyArray = null;
             }
             else
             {
@@ -1667,6 +1701,13 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          Collection<TopologyMemberImpl> membersCopy = topology.getMembers();
 
+         if (membersCopy.size() == 0)
+         {
+            //it could happen when live is down, in that case we keeps the old copy
+            //and don't update
+            return;
+         }
+
          Pair<TransportConfiguration, TransportConfiguration>[] topologyArrayLocal =
             (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
                                                                                       membersCopy.size());
@@ -1747,8 +1788,6 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             synchronized (topologyArrayGuard)
             {
                receivedTopology = false;
-
-               topologyArray = null;
             }
          }
       }

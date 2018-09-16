@@ -201,16 +201,38 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                             final List<Interceptor> outgoingInterceptors,
                             PacketDecoder packetDecoder)
    {
+      this(serverLocator, new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig, null),
+               callTimeout, callFailoverTimeout, clientFailureCheckPeriod, connectionTTL,
+               retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, threadPool,
+               scheduledThreadPool, incomingInterceptors, outgoingInterceptors, packetDecoder);
+   }
+
+   ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
+                            final Pair<TransportConfiguration, TransportConfiguration> connectorConfig,
+                            final long callTimeout,
+                            final long callFailoverTimeout,
+                            final long clientFailureCheckPeriod,
+                            final long connectionTTL,
+                            final long retryInterval,
+                            final double retryIntervalMultiplier,
+                            final long maxRetryInterval,
+                            final int reconnectAttempts,
+                            final Executor threadPool,
+                            final ScheduledExecutorService scheduledThreadPool,
+                            final List<Interceptor> incomingInterceptors,
+                            final List<Interceptor> outgoingInterceptors,
+                            PacketDecoder packetDecoder)
+   {
 
       e.fillInStackTrace();
 
       this.serverLocator = serverLocator;
 
-      this.currentConnectorConfig = connectorConfig;
+      this.currentConnectorConfig = connectorConfig.getA();
 
-      connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+      connectorFactory = instantiateConnectorFactory(connectorConfig.getA().getFactoryClassName());
 
-      checkTransportKeys(connectorFactory, connectorConfig.getParams());
+      checkTransportKeys(connectorFactory, connectorConfig.getA().getParams());
 
       this.callTimeout = callTimeout;
 
@@ -241,6 +263,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       this.outgoingInterceptors = outgoingInterceptors;
 
       this.packetDecoder = packetDecoder;
+
+      if (connectorConfig.getB() != null)
+      {
+         this.backupConfig = connectorConfig.getB();
+      }
+
    }
 
    @Override

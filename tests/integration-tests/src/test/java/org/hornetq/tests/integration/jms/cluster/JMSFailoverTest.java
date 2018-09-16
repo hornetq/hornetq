@@ -23,6 +23,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -31,12 +33,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMemberImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
@@ -485,6 +491,85 @@ public class JMSFailoverTest extends ServiceTestBase
       spoilerThread.join();
 
 
+   }
+
+   @Test
+   public void testCreateNewConnectionAfterFailover() throws Exception
+   {
+      HornetQConnectionFactory jbcf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, livetc);
+      jbcf.setInitialConnectAttempts(5);
+      jbcf.setRetryInterval(1000);
+      jbcf.setReconnectAttempts(-1);
+
+      Connection conn1 = null, conn2 = null, conn3 = null;
+
+      try
+      {
+         conn1 = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
+
+         conn2 = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
+
+         Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         ClientSession coreSession1 = ((HornetQSession)sess1).getCoreSession();
+         ClientSession coreSession2 = ((HornetQSession)sess2).getCoreSession();
+
+         Topology fullTopology = jbcf.getServerLocator().getTopology();
+         Collection<TopologyMemberImpl> members = fullTopology.getMembers();
+         assertEquals(1, members.size());
+         TopologyMemberImpl member = members.iterator().next();
+         TransportConfiguration tcLive = member.getLive();
+         TransportConfiguration tcBackup = member.getBackup();
+
+         System.out.println("live tc: " + tcLive);
+         System.out.println("Backup tc: " + tcBackup);
+
+         JMSUtil.crash(liveService, coreSession1, coreSession2);
+
+         waitForServer(backupService);
+
+         //now pretending that the live down event hasn't been propagated to client
+         simulateLiveDownHasNotReachClient((ServerLocatorImpl) jbcf.getServerLocator(), tcLive, tcBackup);
+
+         //now create a new connection after live is down
+         try
+         {
+            conn3 = jbcf.createConnection();
+         }
+         catch (Exception e)
+         {
+            fail("The new connection should be established successfully after failover");
+         }
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+         if (conn3 != null)
+         {
+            conn3.close();
+         }
+      }
+   }
+
+   private void simulateLiveDownHasNotReachClient(ServerLocatorImpl locator, TransportConfiguration tcLive, TransportConfiguration tcBackup) throws NoSuchFieldException, IllegalAccessException
+   {
+      Field f = locator.getClass().getDeclaredField("topologyArray");
+      f.setAccessible(true);
+
+      Pair<TransportConfiguration, TransportConfiguration>[] value = (Pair<TransportConfiguration, TransportConfiguration>[]) f.get(locator);
+      assertEquals(1, value.length);
+      Pair<TransportConfiguration, TransportConfiguration> member = value[0];
+      member.setA(tcLive);
+      member.setB(tcBackup);
+      f.set(locator, value);
    }
 
 
