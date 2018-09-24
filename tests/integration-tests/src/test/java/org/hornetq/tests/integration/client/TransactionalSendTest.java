@@ -19,6 +19,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.tests.unit.util.Wait;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,15 +57,27 @@ public class TransactionalSendTest extends ServiceTestBase
       ClientSession session = cf.createSession(false, false, false);
       session.createQueue(addressA, queueA, false);
       ClientProducer cp = session.createProducer(addressA);
-      int numMessages = 100;
+      final int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
          cp.send(session.createMessage(false));
       }
-      Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
+      final Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
       Assert.assertEquals(q.getMessageCount(), 0);
       session.commit();
-      Assert.assertEquals(q.getMessageCount(), numMessages);
+      if (q.getMessageCount() != numMessages)
+      {
+         boolean result = Wait.waitFor(new Wait.Condition()
+         {
+            @Override
+            public boolean isSatisfied() throws Exception
+            {
+               return numMessages == q.getMessageCount();
+            }
+         }, 5000);
+         assertTrue(result);
+      }
+
       // now send some more
       for (int i = 0; i < numMessages; i++)
       {
@@ -72,7 +85,19 @@ public class TransactionalSendTest extends ServiceTestBase
       }
       Assert.assertEquals(q.getMessageCount(), numMessages);
       session.commit();
-      Assert.assertEquals(q.getMessageCount(), numMessages * 2);
+      if (q.getMessageCount() != numMessages * 2)
+      {
+         System.out.println("unexpected message count: " + q.getMessageCount());
+         boolean result1 = Wait.waitFor(new Wait.Condition()
+         {
+            @Override
+            public boolean isSatisfied()
+            {
+               return numMessages * 2 == q.getMessageCount();
+            }
+         }, 5000);
+         assertTrue(result1);
+      }
       session.close();
    }
 

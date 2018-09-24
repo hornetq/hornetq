@@ -410,8 +410,13 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
       "         <config-property-name>DeserializationBlackList</config-property-name>" +
       "         <config-property-type>java.lang.String</config-property-type>" +
       "         <config-property-value></config-property-value>" +
+      "      </config-property>" +
+      "      <config-property>" +
+      "         <description>Enable/disable interrupts on shutdown</description>" +
+      "         <config-property-name>InterruptOnTearDown</config-property-name>" +
+      "         <config-property-type>boolean</config-property-type>" +
+      "         <config-property-value></config-property-value>" +
       "      </config-property>";
-
 
    private static String rootConfig = "<root>" + config + commentedOutConfigs + "</root>";
 

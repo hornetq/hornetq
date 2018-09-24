@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.SimpleString;
@@ -154,13 +155,51 @@ public class DiscoveryBaseTest extends UnitTestCase
 
 
    /**
-    * @param discoveryGroup
-    * @throws Exception
+    * Kicking off a thread to broadcast repeatedly and then
+    * wait until the broadcast arrives or time out.
     */
-   protected static void verifyBroadcast(BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup) throws Exception
+   protected static void verifyBroadcast(final BroadcastGroup broadcastGroup, DiscoveryGroup discoveryGroup) throws Exception
    {
-      broadcastGroup.broadcastConnectors();
-      Assert.assertTrue("broadcast received", discoveryGroup.waitForBroadcast(2000));
+      final AtomicBoolean stop = new AtomicBoolean(false);
+      Thread brthr = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            while (!stop.get())
+            {
+               try
+               {
+                  broadcastGroup.broadcastConnectors();
+                  log.info("broadcast done.");
+                  try
+                  {
+                     Thread.sleep(50);
+                  }
+                  catch (InterruptedException e)
+                  {
+                  }
+               }
+               catch (Exception e)
+               {
+                  System.out.println("broadcast stops because of exception: " + e.getMessage());
+                  e.printStackTrace();
+                  stop.set(true);
+               }
+            }
+         }
+      };
+
+      brthr.start();
+      try
+      {
+         Assert.assertTrue("broadcast not received", discoveryGroup.waitForBroadcast(5000));
+      }
+      finally
+      {
+         stop.set(true);
+         brthr.join();
+      }
    }
 
    /**

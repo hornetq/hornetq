@@ -50,76 +50,94 @@ public class NetworkIsolationReplicationTest extends FailoverTestBase
    @Test
    public void testDoNotActivateOnIsolation() throws Exception
    {
-      ServerLocator locator = getServerLocator();
-      backupServer.getServer().getConfiguration().setFailbackDelay(2000);
-      backupServer.getServer().getConfiguration().setMaxSavedReplicatedJournalSize(2);
-
-      backupServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("203.0.113.1"));
-
-      ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
-
-      ClientSession session = createSession(sf, false, true, true);
-
-      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
-
-      Assert.assertFalse(backupServer.getServer().getNetworkHealthCheck().check());
-
-      crash(false, true, session);
-
-      for (int i = 0; i < 1000 && backupServer.isStarted(); i++)
+      try
       {
-         Thread.sleep(10);
+         ServerLocator locator = getServerLocator();
+         backupServer.getServer().getConfiguration().setFailbackDelay(2000);
+         backupServer.getServer().getConfiguration().setMaxSavedReplicatedJournalSize(2);
+
+         backupServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("203.0.113.1"));
+
+         ClientSessionFactory sf = addSessionFactory(locator.createSessionFactory());
+
+         ClientSession session = createSession(sf, false, true, true);
+
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+         Assert.assertFalse(backupServer.getServer().getNetworkHealthCheck().check());
+
+         crash(false, true, session);
+
+         for (int i = 0; i < 1000 && backupServer.isStarted(); i++)
+         {
+            Thread.sleep(10);
+         }
+
+         Assert.assertFalse(backupServer.isStarted());
+         Assert.assertFalse(backupServer.isActive());
+
+         liveServer.start();
+
+         backupServer.getServer().getNetworkHealthCheck().clearAddresses();
+
+         for (int i = 0; i < 1000 && (backupServer.getServer().getReplicationEndpoint() == null || !backupServer.getServer().getReplicationEndpoint().isStarted()); i++)
+         {
+            Thread.sleep(10);
+         }
+
+         // This will make sure the backup got synchronized after the network was activated again
+         Assert.assertTrue(backupServer.getServer().getReplicationEndpoint().isStarted());
+      }
+      finally
+      {
+         backupServer.stop();
+         liveServer.stop();
       }
 
-      Assert.assertFalse(backupServer.isStarted());
-      Assert.assertFalse(backupServer.isActive());
-
-      liveServer.start();
-
-      backupServer.getServer().getNetworkHealthCheck().clearAddresses();
-
-      for (int i = 0; i < 1000 && (backupServer.getServer().getReplicationEndpoint() == null || !backupServer.getServer().getReplicationEndpoint().isStarted()); i++)
-      {
-         Thread.sleep(10);
-      }
-
-      // This will make sure the backup got synchronized after the network was activated again
-      Assert.assertTrue(backupServer.getServer().getReplicationEndpoint().isStarted());
    }
 
    @Test
    public void testLiveIsolated() throws Exception
    {
-      backupServer.stop();
-
-      liveServer.stop();
-      liveServer.getServer().getConfiguration().setNetworkCheckList("203.0.113.1");
-      liveServer.getServer().getConfiguration().setNetworkCheckPeriod(100);
-      liveServer.start();
-
-      Assert.assertEquals(100L, liveServer.getServer().getNetworkHealthCheck().getPeriod());
-
-      liveServer.getServer().getNetworkHealthCheck().setTimeUnit(TimeUnit.MILLISECONDS);
-
-      Assert.assertFalse(liveServer.getServer().getNetworkHealthCheck().check());
-
-      long timeout = System.currentTimeMillis() + 30000;
-      while (liveServer.isStarted() && System.currentTimeMillis() < timeout)
+      try
       {
-         Thread.sleep(100);
+         backupServer.stop();
+
+         liveServer.stop();
+         liveServer.getServer().getConfiguration().setNetworkCheckList("203.0.113.1");
+         liveServer.getServer().getConfiguration().setNetworkCheckPeriod(100);
+         liveServer.start();
+
+         Assert.assertEquals(100L, liveServer.getServer().getNetworkHealthCheck().getPeriod());
+
+         liveServer.getServer().getNetworkHealthCheck().setTimeUnit(TimeUnit.MILLISECONDS);
+
+         Assert.assertFalse(liveServer.getServer().getNetworkHealthCheck().check());
+
+         long timeout = System.currentTimeMillis() + 30000;
+         while (liveServer.isStarted() && System.currentTimeMillis() < timeout)
+         {
+            Thread.sleep(100);
+         }
+
+         Assert.assertFalse(liveServer.isStarted());
+
+         liveServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("127.0.0.1"));
+
+         timeout = System.currentTimeMillis() + 30000;
+         while (!liveServer.isStarted() && System.currentTimeMillis() < timeout)
+         {
+            Thread.sleep(100);
+         }
+
+         Assert.assertTrue(liveServer.isStarted());
+      }
+      finally
+      {
+         backupServer.stop();
+         liveServer.stop();
       }
 
-      Assert.assertFalse(liveServer.isStarted());
-
-      liveServer.getServer().getNetworkHealthCheck().addAddress(InetAddress.getByName("127.0.0.1"));
-
-      timeout = System.currentTimeMillis() + 30000;
-      while (!liveServer.isStarted() && System.currentTimeMillis() < timeout)
-      {
-         Thread.sleep(100);
-      }
-
-      Assert.assertTrue(liveServer.isStarted());
    }
 
    @Override

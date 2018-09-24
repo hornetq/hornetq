@@ -336,7 +336,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       if (server == null)
          return;
-      final long wait = 5000;
+      final long wait = 10000;
       long timetowait = System.currentTimeMillis() + wait;
       while (!server.isStarted() && System.currentTimeMillis() < timetowait)
       {

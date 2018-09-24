@@ -90,6 +90,8 @@ public class DiscoveryTest extends DiscoveryBaseTest
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
+      log.info("group address: " + groupAddress + " port: " + groupPort);
+
       final String nodeID = RandomUtil.randomString();
 
       bg = new BroadcastGroupImpl(new FakeNodeManager(nodeID),

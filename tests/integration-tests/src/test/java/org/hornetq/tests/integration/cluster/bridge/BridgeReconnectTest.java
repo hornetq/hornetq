@@ -45,6 +45,7 @@ import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.IntegrationTestLogger;
+import org.hornetq.tests.unit.util.Wait;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -757,9 +758,19 @@ public class BridgeReconnectTest extends BridgeTestBase
          }
       }
 
-      System.out.println("Check.. DeliveringCount: " + queue.getDeliveringCount());
-      Assert.assertEquals("Delivering count of a source queue should be zero on connection failure",
-                          0, queue.getDeliveringCount());
+      if (queue.getDeliveringCount() != 0)
+      {
+         System.out.println("delivering count unexpected: " + queue.getDeliveringCount());
+         boolean result = Wait.waitFor(new Wait.Condition()
+         {
+            @Override
+            public boolean isSatisfied()
+            {
+               return 0 == queue.getDeliveringCount();
+            }
+         }, 5000);
+         assertTrue("Delivering count of a source queue should be zero on connection failure: " + queue.getDeliveringCount(), result);
+      }
 
       closeServers();
 

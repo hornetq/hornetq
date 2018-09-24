@@ -70,6 +70,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.IntegrationTestLogger;
 import org.hornetq.tests.logging.AssertionLoggerHandler;
+import org.hornetq.tests.unit.util.Wait;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Assert;
@@ -756,7 +757,7 @@ public class PagingTest extends ServiceTestBase
       session.createQueue("EXP", "EXP", null, true);
 
       Queue queue1 = server.locateQueue(ADDRESS);
-      Queue qEXP = server.locateQueue(new SimpleString("EXP"));
+      final Queue qEXP = server.locateQueue(new SimpleString("EXP"));
 
       ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -801,7 +802,16 @@ public class PagingTest extends ServiceTestBase
          Thread.sleep(100);
       }
 
-      assertEquals(1000, qEXP.getMessageCount());
+      boolean result = Wait.waitFor(new Wait.Condition()
+      {
+         @Override
+         public boolean isSatisfied()
+         {
+            return 1000 == qEXP.getMessageCount();
+         }
+      }, 20000);
+
+      assertTrue(result);
 
       session.start();
 
@@ -5370,7 +5380,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < 500; i++)
          {
             log.info("Received message " + i);
-            message = cons.receive(10000);
+            message = cons.receive(30000);
             assertNotNull(message);
             message.acknowledge();
 
@@ -5647,9 +5657,17 @@ public class PagingTest extends ServiceTestBase
       producer.send(message);
       producer.send(message);
 
-      Queue q = (Queue) server.getPostOffice().getBinding(ADDRESS).getBindable();
-      Assert.assertEquals(3, q.getMessageCount());
+      final Queue q = (Queue) server.getPostOffice().getBinding(ADDRESS).getBindable();
+      boolean result = Wait.waitFor(new Wait.Condition()
+      {
+         @Override
+         public boolean isSatisfied()
+         {
+            return 3 == q.getMessageCount();
+         }
+      }, 5000);
 
+      assertTrue(result);
       // send a message with a dup ID that should fail b/c the address is full
       SimpleString dupID1 = new SimpleString("abcdefg");
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID1.getData());
@@ -5657,7 +5675,16 @@ public class PagingTest extends ServiceTestBase
 
       validateExceptionOnSending(producer, message);
 
-      Assert.assertEquals(3, q.getMessageCount());
+      result = Wait.waitFor(new Wait.Condition()
+      {
+         @Override
+         public boolean isSatisfied() throws Exception
+         {
+            return q.getMessageCount() == 3;
+         }
+      }, 5000);
+
+      assertTrue(result);
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -5670,11 +5697,28 @@ public class PagingTest extends ServiceTestBase
       session.commit(); // to make sure it's on the server (roundtrip)
       consumer.close();
 
-      Assert.assertEquals(2, q.getMessageCount());
+      result = Wait.waitFor(new Wait.Condition()
+      {
+         @Override
+         public boolean isSatisfied()
+         {
+            return q.getMessageCount() == 2;
+         }
+      }, 5000);
+
+      assertTrue(result);
 
       producer.send(message);
 
-      Assert.assertEquals(3, q.getMessageCount());
+      result = Wait.waitFor(new Wait.Condition()
+      {
+         @Override
+         public boolean isSatisfied()
+         {
+            return q.getMessageCount() == 3;
+         }
+      }, 5000);
+      assertTrue(result);
 
       consumer = session.createConsumer(ADDRESS);
 

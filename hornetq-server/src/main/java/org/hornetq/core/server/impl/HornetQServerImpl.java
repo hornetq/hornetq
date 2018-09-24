@@ -2717,7 +2717,7 @@ public class HornetQServerImpl implements HornetQServer
                }
             } while (true);
 
-            if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPED)
+            if (state == SERVER_STATE.STOPPED || state == SERVER_STATE.STOPPING)
             {
                // This will avoid a few NPEs after the server is stopped
                return;
@@ -2800,10 +2800,14 @@ public class HornetQServerImpl implements HornetQServer
                stopComponent(replicationEndpoint);
                // time to give up
                if (!isStarted() || signal == STOP)
+               {
                   return;
+               }
                   // time to fail over
                else if (signal == FAIL_OVER)
+               {
                   break;
+               }
                   // something has gone badly run restart from scratch
                else if (signal == BACKUP_ACTIVATION.FAILURE_REPLICATING)
                {
@@ -2837,7 +2841,6 @@ public class HornetQServerImpl implements HornetQServer
                }
             }
             while (signal == BACKUP_ACTIVATION.ALREADY_REPLICATING);
-
 
             if (!isRemoteBackupUpToDate())
             {
