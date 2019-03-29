@@ -475,7 +475,8 @@ public final class ClusterConnectionImpl implements ClusterConnection, AfterConn
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeManager.getNodeId().toString(),
+         SimpleString nodeId = nodeManager.getNodeId();
+         Notification notification = new Notification(nodeId == null ? null : nodeId.toString(),
                                                       CoreNotificationType.CLUSTER_CONNECTION_STOPPED,
                                                       props);
          managementService.sendNotification(notification);
