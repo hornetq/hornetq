@@ -1382,4 +1382,7 @@ public interface HornetQServerLogger extends BasicLogger
    @Message(id = 224081, value = "The component {0} is not responsive", format = Message.Format.MESSAGE_FORMAT)
    void criticalSystemLog(Object component);
 
+   @LogMessage(level = Logger.Level.WARN)
+   @Message(id = 224082, value = "Connecting to cluster failed")
+   void failedConnectingToCluster(@Cause Exception e);
 }
