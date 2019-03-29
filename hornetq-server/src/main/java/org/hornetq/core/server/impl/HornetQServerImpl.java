@@ -3061,6 +3061,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             catch (Exception notConnected)
             {
+               HornetQServerLogger.LOGGER.serverFailedToConnectTopology(notConnected);
                return false;
             }
 
