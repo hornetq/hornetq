@@ -53,6 +53,7 @@ import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQAlreadyReplicatingException;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
 import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.Pair;
@@ -3061,6 +3062,12 @@ public class HornetQServerImpl implements HornetQServer
             }
             catch (Exception notConnected)
             {
+               if (!(notConnected instanceof HornetQException)
+                       || HornetQExceptionType.INTERNAL_ERROR.equals(((HornetQException) notConnected).getType()))
+               {
+                  // report all exceptions that aren't HornetQException and all INTERNAL_ERRORs
+                  HornetQServerLogger.LOGGER.failedConnectingToCluster(notConnected);
+               }
                return false;
             }
 
