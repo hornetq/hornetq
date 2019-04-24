@@ -125,6 +125,12 @@ public class LastValueQueue extends QueueImpl
    @Override
    public synchronized void addHead(final MessageReference ref)
    {
+      // we first need to check redelivery-delay, as we can't put anything on headers if redelivery-delay
+      if (scheduledDeliveryHandler.checkAndSchedule(ref, false))
+      {
+         return;
+      }
+
       SimpleString prop = getLastValueProp(ref);
 
       if (prop != null)
