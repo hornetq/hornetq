@@ -156,7 +156,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue
 
    private final List<ConsumerHolder> consumerList = new CopyOnWriteArrayList<ConsumerHolder>();
 
-   private final ScheduledDeliveryHandler scheduledDeliveryHandler;
+   protected final ScheduledDeliveryHandler scheduledDeliveryHandler;
 
    private volatile long messagesAdded;
 
