@@ -504,7 +504,7 @@ public class JournalFilesRepository
    /**
     * Open a file and place it into the openedFiles queue
     */
-   public void pushOpenedFile() throws Exception
+   public synchronized void pushOpenedFile() throws Exception
    {
       JournalFile nextOpenedFile = takeFile(true, true, true, false);
 

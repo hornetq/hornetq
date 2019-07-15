@@ -366,6 +366,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       latch.await();
    }
 
+   public JournalFilesRepository getFilesRepository()
+   {
+      return filesRepository;
+   }
+
    public Map<Long, JournalRecord> getRecords()
    {
       return records;
