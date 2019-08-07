@@ -118,14 +118,24 @@ public final class Page implements Comparable<Page>
 
       size.set((int)file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
-      ByteBuffer directBuffer = storage.allocateDirectBuffer((int)file.size());
+      ByteBuffer directBuffer = ByteBuffer.allocate((int)file.size());
+
+      ByteBuffer temporaryBuffer = ByteBuffer.allocate(10 * 1024);
+
+      file.position(0);
+
+      while (true)
+      {
+         temporaryBuffer.clear();
+         if (file.read(temporaryBuffer) <= 0)
+         {
+            break;
+         }
+         directBuffer.put(temporaryBuffer);
+      }
 
       try
       {
-
-         file.position(0);
-         file.read(directBuffer);
-
          directBuffer.rewind();
 
          HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(directBuffer);
@@ -179,7 +189,7 @@ public final class Page implements Comparable<Page>
       }
       finally
       {
-         storage.freeDirectBuffer(directBuffer);
+         // storage.freeDirectBuffer(directBuffer);
       }
 
       numberOfMessages.set(messages.size());
