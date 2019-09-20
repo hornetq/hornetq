@@ -256,7 +256,7 @@ public abstract class MessageImpl implements MessageInternal
       expiration = msg.getExpiration();
       timestamp = msg.getTimestamp();
       priority = msg.getPriority();
-      properties = msg.getTypedProperties();
+      properties = new TypedProperties(msg.getTypedProperties());
    }
 
    public HornetQBuffer getBodyBuffer()

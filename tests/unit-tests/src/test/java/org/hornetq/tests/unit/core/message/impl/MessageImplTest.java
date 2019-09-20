@@ -25,6 +25,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.UUID;
+import org.hornetq.utils.UUIDGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -235,6 +237,66 @@ public class MessageImplTest extends UnitTestCase
          if (i % 10 == 0) System.out.println("#test " + i);
          internalMessageCopy();
       }
+   }
+
+   @Test
+   public void testMessageCopyHeadersAndProperties()
+   {
+      ServerMessageImpl msg1 = new ServerMessageImpl(123, 18);
+      SimpleString address = new SimpleString("address");
+      msg1.setAddress(address);
+      UUID uid = UUIDGenerator.getInstance().generateUUID();
+      msg1.setUserID(uid);
+      byte type = 3;
+      msg1.setType(type);
+      boolean durable = true;
+      msg1.setDurable(durable);
+      long expiration = System.currentTimeMillis();
+      msg1.setExpiration(expiration);
+      long timestamp = System.currentTimeMillis();
+      msg1.setTimestamp(timestamp);
+      byte priority = 9;
+      msg1.setPriority(priority);
+
+      String routeTo = "_HQ_ROUTE_TOsomething";
+      String value = "Byte array substitute";
+      msg1.putStringProperty(routeTo, value);
+
+      ServerMessageImpl msg2 = new ServerMessageImpl(456, 18);
+
+      msg2.copyHeadersAndProperties(msg1);
+
+      assertEquals(msg1.getAddress(), msg2.getAddress());
+      assertEquals(msg1.getUserID(), msg2.getUserID());
+      assertEquals(msg1.getType(), msg2.getType());
+      assertEquals(msg1.isDurable(), msg2.isDurable());
+      assertEquals(msg1.getExpiration(), msg2.getExpiration());
+      assertEquals(msg1.getTimestamp(), msg2.getTimestamp());
+      assertEquals(msg1.getPriority(), msg2.getPriority());
+
+      assertEquals(value, msg2.getStringProperty(routeTo));
+
+      //now change the property on msg2 shouldn't affect msg1
+      msg2.setAddress(address.concat("new"));
+      msg2.setUserID(UUIDGenerator.getInstance().generateUUID());
+      msg2.setType(--type);
+      msg2.setDurable(!durable);
+      msg2.setExpiration(expiration + 1000);
+      msg2.setTimestamp(timestamp + 1000);
+      msg2.setPriority(--priority);
+
+      msg2.putStringProperty(routeTo, value + "new");
+
+      assertNotEquals(msg1.getAddress(), msg2.getAddress());
+      assertNotEquals(msg1.getUserID(), msg2.getUserID());
+      assertNotEquals(msg1.getType(), msg2.getType());
+      assertNotEquals(msg1.isDurable(), msg2.isDurable());
+      assertNotEquals(msg1.getExpiration(), msg2.getExpiration());
+      assertNotEquals(msg1.getTimestamp(), msg2.getTimestamp());
+      assertNotEquals(msg1.getPriority(), msg2.getPriority());
+
+      assertNotEquals(msg1.getStringProperty(routeTo), msg2.getStringProperty(routeTo));
+
    }
 
    private void internalMessageCopy() throws Exception
