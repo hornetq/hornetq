@@ -21,13 +21,22 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.impl.AbstractSequentialFile;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 
 /**
  * A ServerLargeMessageTest
@@ -115,6 +124,48 @@ public class ServerLargeMessageTest extends ServiceTestBase
       }
    }
 
+   @Test
+   public void testLargeServerMessageCopyIsolation() throws Exception
+   {
+      HornetQServer server = createServer(true);
+
+      server.start();
+
+      try
+      {
+         LargeServerMessageImpl largeMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
+
+         largeMessage.setMessageID(23456);
+
+         for (int i = 0; i < 2 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
+         {
+            largeMessage.addBytes(new byte[]{UnitTestCase.getSamplebyte(i)});
+         }
+
+         //now replace the underlying file with a fake
+         replaceFile(largeMessage);
+
+         ServerMessage copied = largeMessage.copy(99999);
+
+         assertEquals(99999, copied.getMessageID());
+      }
+      finally
+      {
+         server.stop();
+      }
+
+   }
+
+   private void replaceFile(LargeServerMessageImpl largeMessage) throws Exception
+   {
+      SequentialFile originalFile = largeMessage.getFile();
+      MockSequentialFile mockFile = new MockSequentialFile(originalFile);
+
+      Field fileField = LargeServerMessageImpl.class.getDeclaredField("file");
+      fileField.setAccessible(true);
+      fileField.set(largeMessage, mockFile);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -123,4 +174,100 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
    // Inner classes -------------------------------------------------
 
+   private class MockSequentialFile extends AbstractSequentialFile
+   {
+      private SequentialFile originalFile;
+
+      public MockSequentialFile(SequentialFile originalFile)
+      {
+         super(originalFile.getJavaFile().getParent(), originalFile.getJavaFile(), new FakeSequentialFileFactory(), null);
+         this.originalFile = originalFile;
+      }
+
+      @Override
+      public void open() throws Exception
+      {
+         //open and close it right away to simulate failure condition
+         originalFile.open();
+         originalFile.close();
+      }
+
+      @Override
+      public boolean isOpen()
+      {
+         return originalFile.isOpen();
+      }
+
+      @Override
+      public int getAlignment() throws Exception
+      {
+         return originalFile.getAlignment();
+      }
+
+      @Override
+      public int calculateBlockStart(int position) throws Exception
+      {
+         return originalFile.calculateBlockStart(position);
+      }
+
+      @Override
+      public void fill(int position, int size, byte fillCharacter) throws Exception
+      {
+         originalFile.fill(position, size, fillCharacter);
+      }
+
+      @Override
+      public void writeDirect(ByteBuffer bytes, boolean sync, IOAsyncTask callback)
+      {
+         originalFile.writeDirect(bytes, sync, callback);
+      }
+
+      @Override
+      public void writeDirect(ByteBuffer bytes, boolean sync) throws Exception
+      {
+         originalFile.writeDirect(bytes, sync);
+      }
+
+      @Override
+      public void writeInternal(ByteBuffer bytes) throws Exception
+      {
+         originalFile.writeInternal(bytes);
+      }
+
+      @Override
+      public int read(ByteBuffer bytes, IOAsyncTask callback) throws Exception
+      {
+         return originalFile.read(bytes, callback);
+      }
+
+      @Override
+      public int read(ByteBuffer bytes) throws Exception
+      {
+         return originalFile.read(bytes);
+      }
+
+      @Override
+      public void waitForClose() throws Exception
+      {
+         originalFile.waitForClose();
+      }
+
+      @Override
+      public void sync() throws IOException
+      {
+         originalFile.sync();
+      }
+
+      @Override
+      public long size() throws Exception
+      {
+         return originalFile.size();
+      }
+
+      @Override
+      public SequentialFile cloneFile()
+      {
+         return originalFile.cloneFile();
+      }
+   }
 }
