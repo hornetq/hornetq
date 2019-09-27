@@ -310,60 +310,54 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
       {
          LargeServerMessage newMessage = storageManager.createLargeMessage(newID, this);
 
-         boolean originallyOpen = file != null && file.isOpen();
+         //clone a SequentialFile to avoid concurrent access
+         ensureFileExists(false);
+         SequentialFile cloneFile = file.cloneFile();
 
-         validateFile();
-
-
-         byte[] bufferBytes = new byte[100 * 1024];
-
-         ByteBuffer buffer = ByteBuffer.wrap(bufferBytes);
-
-         long oldPosition = file.position();
-
-         file.open();
-         file.position(0);
-
-         for (;;)
+         try
          {
-            // The buffer is reused...
-            // We need to make sure we clear the limits and the buffer before reusing it
-            buffer.clear();
-            int bytesRead = file.read(buffer);
 
-            byte[] bufferToWrite;
-            if (bytesRead <= 0)
-            {
-               break;
-            }
-            else if (bytesRead == bufferBytes.length)
-            {
-               bufferToWrite = bufferBytes;
-            }
-            else
-            {
-               bufferToWrite = new byte[bytesRead];
-               System.arraycopy(bufferBytes, 0, bufferToWrite, 0, bytesRead);
-            }
+            byte[] bufferBytes = new byte[100 * 1024];
 
-            newMessage.addBytes(bufferToWrite);
+            ByteBuffer buffer = ByteBuffer.wrap(bufferBytes);
+            cloneFile.open();
+            cloneFile.position(0);
 
-            if (bytesRead < bufferBytes.length)
+            for (;;)
             {
-               break;
+               // The buffer is reused...
+               // We need to make sure we clear the limits and the buffer before reusing it
+               buffer.clear();
+               int bytesRead = cloneFile.read(buffer);
+
+               byte[] bufferToWrite;
+               if (bytesRead <= 0)
+               {
+                  break;
+               }
+               else if (bytesRead == bufferBytes.length)
+               {
+                  bufferToWrite = bufferBytes;
+               }
+               else
+               {
+                  bufferToWrite = new byte[bytesRead];
+                  System.arraycopy(bufferBytes, 0, bufferToWrite, 0, bytesRead);
+               }
+
+               newMessage.addBytes(bufferToWrite);
+
+               if (bytesRead < bufferBytes.length)
+               {
+                  break;
+               }
             }
          }
-
-         file.position(oldPosition);
-
-         if (!originallyOpen)
+         finally
          {
-            file.close();
+            cloneFile.close();
          }
-
          return newMessage;
-
-
       }
       catch (Exception e)
       {
@@ -400,7 +394,7 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
    // Private -------------------------------------------------------
 
-   public synchronized void validateFile() throws HornetQException
+   public synchronized void ensureFileExists(boolean toOpen) throws HornetQException
    {
       try
       {
@@ -413,7 +407,10 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
 
             file = createFile();
 
-            openFile();
+            if (toOpen)
+            {
+               openFile();
+            }
 
             bodySize = file.size();
          }
@@ -423,6 +420,11 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
          // TODO: There is an IO_ERROR on trunk now, this should be used here instead
          throw new HornetQInternalErrorException(e.getMessage(), e);
       }
+   }
+
+   public synchronized void validateFile() throws HornetQException
+   {
+      this.ensureFileExists(true);
    }
 
    /**
