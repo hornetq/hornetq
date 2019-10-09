@@ -11,10 +11,14 @@
  * permissions and limitations under the License.
  */
 package org.hornetq.tests.integration.client;
+import com.sun.management.UnixOperatingSystemMXBean;
+import org.junit.Assume;
 import org.junit.Before;
 
 import org.junit.Test;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -506,6 +510,48 @@ public class DeadLetterAddressTest extends ServiceTestBase
       Assert.assertNotNull(specificDeadLetterConsumer.receive(500));
    }
 
+   @Test
+   public void testLargeMessageFileLeak() throws Exception
+   {
+      OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+
+      // only run this on *nix systems which will have the com.sun.management.UnixOperatingSystemMXBean (needed to check open file count)
+      Assume.assumeTrue(os instanceof UnixOperatingSystemMXBean);
+
+      long fdBaseline = ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
+      final int SIZE = 2 * 1024;
+      SimpleString dla = new SimpleString("DLA");
+      SimpleString qName = new SimpleString("q1");
+      SimpleString adName = new SimpleString("ad1");
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setMaxDeliveryAttempts(1);
+      addressSettings.setDeadLetterAddress(dla);
+      server.getAddressSettingsRepository().addMatch(adName.toString(), addressSettings);
+      SimpleString dlq = new SimpleString("DLQ1");
+      clientSession.createQueue(dla, dlq, null, false);
+      clientSession.createQueue(adName, qName, null, false);
+      for (int i = 0; i < 10; i++)
+      {
+         ClientProducer producer = clientSession.createProducer(adName);
+         ClientMessage clientFile = clientSession.createMessage(true);
+         clientFile.setBodyInputStream(ServiceTestBase.createFakeLargeStream(SIZE));
+         producer.send(clientFile);
+         clientSession.start();
+         ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+         ClientMessage m = clientConsumer.receive(500);
+         m.acknowledge();
+         Assert.assertNotNull(m);
+
+         // force a cancel
+         clientSession.rollback();
+         m = clientConsumer.receiveImmediate();
+         Assert.assertNull(m);
+         clientConsumer.close();
+      }
+      assertTrue("File descriptors are leaking", ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount() - fdBaseline <= 0);
+   }
+
    @Override
    @Before
    public void setUp() throws Exception
@@ -516,7 +562,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = addServer(HornetQServers.newHornetQServer(configuration, false));
+      server = addServer(HornetQServers.newHornetQServer(configuration, true));
       // start the server
       server.start();
       // then we create a client as normal
