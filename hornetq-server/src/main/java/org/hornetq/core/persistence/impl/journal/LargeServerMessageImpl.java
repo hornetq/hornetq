@@ -355,6 +355,10 @@ public final class LargeServerMessageImpl extends ServerMessageImpl implements L
          }
          finally
          {
+            if (!file.isOpen())
+            {
+               newMessage.getFile().close();
+            }
             cloneFile.close();
          }
          return newMessage;
