@@ -785,28 +785,6 @@
                <failOnError>false</failOnError>
             </configuration>
          </plugin>
-
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <version>2.10</version>
-            <configuration>
-               <skip>${skipStyleCheck}</skip>
-               <configLocation>${hornetq.basedir}/etc/checkstyle.xml</configLocation>
-               <failsOnError>false</failsOnError>
-               <failOnViolation>true</failOnViolation>
-               <consoleOutput>true</consoleOutput>
-               <includeTestSourceDirectory>true</includeTestSourceDirectory>
-            </configuration>
-            <executions>
-               <execution>
-                  <phase>compile</phase>
-                  <goals>
-                     <goal>check</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
       </plugins>
    </build>
 
@@ -822,15 +800,6 @@
                   <format>html</format>
                   <format>xml</format>
                </formats>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <version>2.10</version>
-            <configuration>
-               <configLocation>${user.dir}/checkstyle.xml</configLocation>
-               <failsOnError>false</failsOnError>
             </configuration>
          </plugin>
          <plugin>
