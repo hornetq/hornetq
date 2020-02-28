@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.hornetq.examples.jms</groupId>
         <artifactId>jms-examples</artifactId>
-       <version>2.3.25.SP30.Final</version>
+       <version>2.3.25.x.Final</version>
     </parent>
     <groupId>org.hornetq.rest.examples</groupId>
     <artifactId>push</artifactId>
