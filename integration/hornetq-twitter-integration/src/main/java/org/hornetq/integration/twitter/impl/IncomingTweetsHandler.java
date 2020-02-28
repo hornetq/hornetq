@@ -118,7 +118,7 @@ public class IncomingTweetsHandler implements ConnectorService
       // If I used annotations here, it won't compile under JDK 1.7
       ResponseList res = this.twitter.getHomeTimeline(paging);
       this.paging.setSinceId(((Status)res.get(0)).getId());
-      HornetQTwitterLogger.LOGGER.debug(connectorName + " initialise(): got latest ID: " + this.paging.getSinceId());
+      HornetQTwitterLogger.LOGGER.debug(connectorName + " initialize(): got latest ID: " + this.paging.getSinceId());
 
       // TODO make page size configurable
       this.paging.setCount(TwitterConstants.DEFAULT_PAGE_SIZE);

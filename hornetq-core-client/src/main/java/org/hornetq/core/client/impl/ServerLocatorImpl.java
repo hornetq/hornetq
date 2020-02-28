@@ -36,10 +36,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.activemq.artemis.utils.ThreadDumpUtil;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.HornetQIllegalStateException;
+import org.hornetq.api.core.HornetQInternalErrorException;
 import org.hornetq.api.core.HornetQInterruptedException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
@@ -114,6 +116,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private boolean compressLargeMessage;
 
+   /** This specifies serverLocator.connect was used,
+    *  which means it's a cluster connection.
+    *  We should not use retries */
+   private volatile transient boolean disableDiscoveryRetries = false;
+
    // if the system should shutdown the pool when shutting down
    private transient boolean shutdownPool;
 
@@ -124,6 +131,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    private transient DiscoveryGroup discoveryGroup;
 
    private transient ConnectionLoadBalancingPolicy loadBalancingPolicy;
+
+   /** This was supposed to be final however, because serialization is in use here,
+    *  This should be initialized during initialize method. */
+   private volatile Object discoveryGroupGuardian;
 
    // Settable attributes:
 
@@ -219,6 +230,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    * we use the client decoder by default but there are times when we want to use the server packet decoder
    */
    private transient PacketDecoder packetDecoder = ClientPacketDecoder.INSTANCE;
+
+   /** For tests only */
+   public DiscoveryGroup getDiscoveryGroup() {
+      return discoveryGroup;
+   }
 
    private final Exception traceException = new Exception();
 
@@ -347,7 +363,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          public ClassLoader run()
          {
-            return ClientSessionFactoryImpl.class.getClassLoader();
+            return ServerLocatorImpl.class.getClassLoader();
          }
       });
 
@@ -370,7 +386,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       });
    }
 
-   private synchronized void initialise() throws HornetQException
+   public synchronized void initialize() throws HornetQException
    {
       if (state == STATE.INITIALIZED)
          return;
@@ -381,20 +397,14 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          try
          {
             state = STATE.INITIALIZED;
+            discoveryGroupGuardian = new Object();
             latch = new CountDownLatch(1);
 
             setThreadPools();
 
             instantiateLoadBalancingPolicy();
 
-            if (discoveryGroupConfiguration != null)
-            {
-               discoveryGroup = createDiscoveryGroup(nodeID, discoveryGroupConfiguration);
-
-               discoveryGroup.registerListener(this);
-
-               discoveryGroup.start();
-            }
+            startDiscovery();
          }
          catch (Exception e)
          {
@@ -403,6 +413,22 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          }
       }
    }
+
+
+   private void startDiscovery() throws HornetQException {
+      if (discoveryGroupConfiguration != null) {
+         try {
+            discoveryGroup = createDiscoveryGroup(nodeID, discoveryGroupConfiguration);
+
+            discoveryGroup.registerListener(this);
+
+            discoveryGroup.start();
+         } catch (Exception e) {
+            throw new HornetQInternalErrorException(e.getMessage(), e);
+         }
+      }
+   }
+
 
    private static DiscoveryGroup createDiscoveryGroup(String nodeID, DiscoveryGroupConfiguration config) throws Exception
    {
@@ -636,7 +662,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    public void start(Executor executor) throws Exception
    {
-      initialise();
+      initialize();
 
       this.startExecutor = executor;
 
@@ -675,6 +701,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
    private ClientSessionFactoryInternal connect(final boolean skipWarnings) throws HornetQException
    {
+      // if we used connect, we should control UDP reconnections at a different path.
+      // and this belongs to a cluster connection, not client
+      disableDiscoveryRetries = true;
       synchronized (this)
       {
          // static list of initial connectors
@@ -741,7 +770,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    {
       assertOpen();
 
-      initialise();
+      initialize();
 
       ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
                                                                           transportConfiguration,
@@ -785,7 +814,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    {
       assertOpen();
 
-      initialise();
+      initialize();
 
       ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
                                                                           transportConfiguration,
@@ -846,18 +875,10 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
    {
       assertOpen();
 
-      initialise();
+      initialize();
 
-      if (this.getNumInitialConnectors() == 0 && discoveryGroup != null)
-      {
-         // Wait for an initial broadcast to give us at least one node in the cluster
-         long timeout = clusterConnection ? 0 : discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout();
-         boolean ok = discoveryGroup.waitForBroadcast(timeout);
-
-         if (!ok)
-         {
-            throw HornetQClientMessageBundle.BUNDLE.connectionTimedOutInInitialBroadcast();
-         }
+      if (discoveryGroupConfiguration != null) {
+         executeDiscovery();
       }
 
       ClientSessionFactoryInternal factory = null;
@@ -1006,6 +1027,77 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          return factory;
       }
 
+   }
+
+   private void executeDiscovery() throws HornetQException {
+      boolean discoveryOK = false;
+      boolean retryDiscovery = false;
+      int tryNumber = 0;
+
+      do {
+
+         discoveryOK = checkOnDiscovery();
+
+         retryDiscovery = (initialConnectAttempts > 0 && tryNumber++ < initialConnectAttempts) && !disableDiscoveryRetries;
+
+         if (!discoveryOK) {
+
+            if (retryDiscovery) {
+               HornetQClientLogger.LOGGER.broadcastTimeout(tryNumber, initialConnectAttempts);
+            } else {
+               throw HornetQClientMessageBundle.BUNDLE.connectionTimedOutInInitialBroadcast();
+            }
+         }
+      }
+      while (!discoveryOK && retryDiscovery);
+
+      if (!discoveryOK) {
+         // I don't think the code would ever get to this situation, since there's an exception thrown on the previous loop
+         // however I will keep this just in case
+         throw HornetQClientMessageBundle.BUNDLE.connectionTimedOutInInitialBroadcast();
+      }
+
+   }
+
+   private boolean checkOnDiscovery() throws HornetQException {
+
+      synchronized (discoveryGroupGuardian) {
+
+         // notice: in case you have many threads waiting to get on checkOnDiscovery, only one will perform the actual discovery
+         //         while subsequent calls will have numberOfInitialConnectors > 0
+         if (this.getNumInitialConnectors() == 0 && discoveryGroupConfiguration != null) {
+            try {
+
+               long timeout = clusterConnection ? 0 : discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout();
+               if (!discoveryGroup.waitForBroadcast(timeout)) {
+
+                  if (logger.isDebugEnabled()) {
+                     String threadDump = ThreadDumpUtil.threadDump("Discovery timeout, printing thread dump");
+                     logger.debug(threadDump);
+                  }
+
+                  // if disableDiscoveryRetries = true, it means this is a Bridge or a Cluster Connection Bridge
+                  // which has a different mechanism of retry
+                  // and we should ignore UDP restarts here.
+                  if (!disableDiscoveryRetries) {
+                     if (discoveryGroup != null) {
+                        discoveryGroup.stop();
+                     }
+
+                     logger.debug("Restarting discovery");
+
+                     startDiscovery();
+                  }
+
+                  return false;
+               }
+            } catch (Exception e) {
+               throw new HornetQInternalErrorException(e.getMessage(), e);
+            }
+         }
+      }
+
+      return true;
    }
 
    public boolean isHA()
@@ -1465,9 +1557,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          if (state == STATE.CLOSED)
          {
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-               logger.debug(this + " is already closed when calling closed");
+               logger.trace(this + " is already closed when calling closed");
             }
             return;
          }
@@ -1867,7 +1959,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       {
          assertOpen();
 
-         initialise();
+         initialize();
 
          ClientSessionFactory csf = null;
 
@@ -1882,9 +1974,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                retryNumber++;
                for (Connector conn : connectors)
                {
-                  if (logger.isDebugEnabled())
+                  if (logger.isTraceEnabled())
                   {
-                     logger.debug(this + "::Submitting connect towards " + conn);
+                     logger.trace(this + "::Submitting connect towards " + conn);
                   }
 
                   csf = conn.tryConnect();
@@ -1918,9 +2010,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
                         }
                      });
 
-                     if (logger.isDebugEnabled())
+                     if (logger.isTraceEnabled())
                      {
-                        logger.debug("Returning " + csf +
+                        logger.trace("Returning " + csf +
                                                             " after " +
                                                             retryNumber +
                                                             " retries on StaticConnector " +
@@ -2048,9 +2140,9 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
 
          public ClientSessionFactory tryConnect() throws HornetQException
          {
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-               logger.debug(this + "::Trying to connect to " + factory);
+               logger.trace(this + "::Trying to connect to " + factory);
             }
             try
             {
@@ -2072,7 +2164,7 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
             }
             catch (HornetQException e)
             {
-               logger.debug(this + "::Exception on establish connector initial connection", e);
+               logger.trace(this + "::Exception on establish connector initial connection", e);
                return null;
             }
          }

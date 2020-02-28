@@ -13,12 +13,15 @@
 
 package org.hornetq.core.cluster;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadFactory;
 
 import org.hornetq.api.core.BroadcastEndpoint;
 import org.hornetq.api.core.BroadcastEndpointFactory;
@@ -32,7 +35,9 @@ import org.hornetq.core.client.HornetQClientLogger;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.TypedProperties;
+import org.jboss.logging.Logger;
 
 /**
  * This class is used to search for members on the cluster through the opaque interface {@link BroadcastEndpoint}.
@@ -49,6 +54,9 @@ import org.hornetq.utils.TypedProperties;
  */
 public final class DiscoveryGroup implements HornetQComponent
 {
+
+   private static final Logger logger = Logger.getLogger(DiscoveryGroup.class);
+
    private static final boolean isTrace = HornetQClientLogger.LOGGER.isTraceEnabled();
 
    private final List<DiscoveryListener> listeners = new ArrayList<DiscoveryListener>();
@@ -103,13 +111,23 @@ public final class DiscoveryGroup implements HornetQComponent
          return;
       }
 
+      if (logger.isDebugEnabled()) logger.debug("Starting Discovery Group for " + name);
+
+
       endpoint.openClient();
 
       started = true;
 
-      thread = new Thread(new DiscoveryRunnable(), "hornetq-discovery-group-thread-" + name);
+      ThreadFactory tfactory = AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
+         @Override
+         public ThreadFactory run() {
+            return new HornetQThreadFactory("DiscoveryGroup-" + System.identityHashCode(this), "activemq-discovery-group-thread-" + name, true, DiscoveryGroup.class.getClassLoader());
+         }
+      });
 
-      thread.setDaemon(true);
+      thread = tfactory.newThread(new DiscoveryRunnable());
+
+      if (logger.isDebugEnabled()) logger.debug("Starting daemon thread");
 
       thread.start();
 
@@ -139,6 +157,10 @@ public final class DiscoveryGroup implements HornetQComponent
 
    public void stop()
    {
+
+      if (logger.isDebugEnabled()) {
+         logger.debug("Stopping discovery. There's an exception just as a trace where it happened", new Exception("trace"));
+      }
       synchronized (this)
       {
          if (!started)
@@ -157,6 +179,9 @@ public final class DiscoveryGroup implements HornetQComponent
       try
       {
          endpoint.close(false);
+         if (logger.isDebugEnabled()) {
+            logger.debug("endpoing closed");
+         }
       }
       catch (Exception e1)
       {
@@ -181,6 +206,7 @@ public final class DiscoveryGroup implements HornetQComponent
       }
 
       thread = null;
+      received = false;
 
       if (notificationService != null)
       {
@@ -298,7 +324,15 @@ public final class DiscoveryGroup implements HornetQComponent
                         // a log entry for that
                         HornetQClientLogger.LOGGER.warn("Unexpected null data received from DiscoveryEndpoint");
                      }
+
+                     if (logger.isDebugEnabled()) {
+                        logger.debug("Received broadcast data as null");
+                     }
                      break;
+                  }
+
+                  if (logger.isDebugEnabled()) {
+                     logger.debug("receiving " + data.length);
                   }
                }
                catch (Exception e)
@@ -323,6 +357,10 @@ public final class DiscoveryGroup implements HornetQComponent
 
                if (nodeID.equals(originatingNodeID))
                {
+
+                  if (logger.isDebugEnabled()) {
+                     logger.debug("ignoring original NodeID" + originatingNodeID + " receivedID = " + nodeID);
+                  }
                   if (checkExpiration())
                   {
                      callListeners();
@@ -330,6 +368,11 @@ public final class DiscoveryGroup implements HornetQComponent
                   // Ignore traffic from own node
                   continue;
                }
+
+               if (logger.isDebugEnabled()) {
+                  logger.debug("Received nodeID " + nodeID + " with originatingID = " + originatingNodeID);
+               }
+
 
                int size = buffer.readInt();
 

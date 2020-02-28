@@ -34,15 +34,24 @@ public final class HornetQThreadFactory implements ThreadFactory
 
    private final boolean daemon;
 
+   private final String prefix;
+
    private final ClassLoader tccl;
 
    public HornetQThreadFactory(final String groupName, final boolean daemon, final ClassLoader tccl)
+   {
+      this (groupName, "Thread-", daemon, tccl);
+   }
+
+   public HornetQThreadFactory(final String groupName, final String prefix, final boolean daemon, final ClassLoader tccl)
    {
       group = new ThreadGroup(groupName + "-" + System.identityHashCode(this));
 
       this.threadPriority = Thread.NORM_PRIORITY;
 
       this.tccl = tccl;
+
+      this.prefix = prefix;
 
       this.daemon = daemon;
    }
@@ -54,11 +63,11 @@ public final class HornetQThreadFactory implements ThreadFactory
       // when sandboxed, the code does not have the RuntimePermission modifyThreadGroup
       if (System.getSecurityManager() == null)
       {
-         t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() + " (" + group.getName() + ")");
+         t = new Thread(group, command, prefix + threadCount.getAndIncrement() + " (" + group.getName() + ")");
       }
       else
       {
-         t = new Thread(command, "Thread-" + threadCount.getAndIncrement());
+         t = new Thread(command, prefix + threadCount.getAndIncrement());
       }
 
       AccessController.doPrivileged(new PrivilegedAction<Object>()

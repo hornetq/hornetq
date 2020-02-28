@@ -73,7 +73,7 @@ public interface HornetQClientMessageBundle
    @Message(id = 119003, value = "Queue can not be both durable and temporary", format = Message.Format.MESSAGE_FORMAT)
    HornetQInternalErrorException queueMisConfigured();
 
-   @Message(id = 119004, value = "Failed to initialise session factory", format = Message.Format.MESSAGE_FORMAT)
+   @Message(id = 119004, value = "Failed to initialize session factory", format = Message.Format.MESSAGE_FORMAT)
    HornetQInternalErrorException failedToInitialiseSessionFactory(@Cause Exception e);
 
    @Message(id = 119005, value = "Exception in Netty transport", format = Message.Format.MESSAGE_FORMAT)

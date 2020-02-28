@@ -155,7 +155,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    public synchronized void reset()
    {
-      // Any pendingCredits credits from before failover won't arrive, so we re-initialise
+      // Any pendingCredits credits from before failover won't arrive, so we re-initialize
 
       semaphore.drainPermits();
 
