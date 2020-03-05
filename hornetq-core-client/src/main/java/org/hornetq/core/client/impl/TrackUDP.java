@@ -192,14 +192,14 @@ public class TrackUDP {
                   if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
                      break;
                   } else {
-                     log("WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId + " thread = " + Thread.currentThread().getName());
+                     log(Thread.currentThread().getName() + "::WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId);
                      if (retryNR == 1 && script != null) {
                         callScript(script, runnerId, retryNR);
                      }
                   }
 
                   if (retryNR > 0 && retryNR >= retries) {
-                     log("Giving up retry loop, trying a new connection now");
+                     log(Thread.currentThread().getName() + "::Giving up retry loop, trying a new connection now");
                      break;
                   }
                }
