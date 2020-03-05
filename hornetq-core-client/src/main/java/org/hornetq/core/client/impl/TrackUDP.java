@@ -17,6 +17,10 @@
 
 package org.hornetq.core.client.impl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -79,12 +83,11 @@ public class TrackUDP {
       }
       System.out.println();
 
-      if (arg.length != 8) {
-         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries script");
+      if (arg.length < 7) {
+         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries script...");
          System.out.println("");
          System.out.println("retries:: 0 or <0 means retry forever");
-         System.out.println("script:: the word 'null' means no script to run");
-         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 null");
+         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 bash netstat -nu");
          System.exit(-1);
       }
 
@@ -96,7 +99,20 @@ public class TrackUDP {
       int timeout = Integer.parseInt(arg[4]);
       int sleep = Integer.parseInt(arg[5]);
       int retries = Integer.parseInt(arg[6]);
-      String script = arg[7];
+
+      String script[] = null;
+      if (arg.length > 7) {
+         script = new String[arg.length - 7];
+         int pos = 0;
+         for (int i = 7; i < arg.length; i++) {
+            script[pos++] = arg[i];
+         }
+
+         for (String str : script) {
+            System.out.println("Script:: " + str);
+         }
+      }
+
 
       log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " script:: " + script);
 
@@ -140,10 +156,10 @@ public class TrackUDP {
       private final int timeout;
       private final int sleep;
       private int retries;
-      private final String script;
+      private final String[] script;
       private final int runnerId;
 
-      public ActiveConnectionThread(String group, int port, int timeout, int sleep, int retries, String script, int id) {
+      public ActiveConnectionThread(String group, int port, int timeout, int sleep, int retries, String[] script, int id) {
          super("ActiveConnection::" + id);
          this.group = group;
          this.port = port;
@@ -176,10 +192,10 @@ public class TrackUDP {
                   if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
                      break;
                   } else {
+                     log("WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId + " thread = " + Thread.currentThread().getName());
                      if (retryNR == 1 && script != null) {
-                        callScript(script, retryNR);
+                        callScript(script, runnerId, retryNR);
                      }
-                     log("DANGER DANGER! Brand new connector did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId + " thread = " + Thread.currentThread().getName());
                   }
 
                   if (retryNR > 0 && retryNR >= retries) {
@@ -207,8 +223,65 @@ public class TrackUDP {
       }
    }
 
-   private static void callScript(String script, long retryNR) {
-      System.out.println("I'm calling a new script " + script);
+   private static void callScript(String[] script, long id, long retryNR) {
+
+      if (script != null) {
+         try {
+            ProcessBuilder builder = new ProcessBuilder(script);
+            builder.command().add("" + id);
+            builder.command().add("" + retryNR);
+            Process process = builder.start();
+            ProcessLogger logger = new ProcessLogger(true, process.getErrorStream(), "script err");
+            logger.start();
+            ProcessLogger loggerOut = new ProcessLogger(true, process.getInputStream(), "script out");
+            loggerOut.start();
+         } catch (Exception e) {
+            e.printStackTrace(System.out);
+         }
+      }
    }
 
+
+
+   /**
+    * Redirect the input stream to a logger (as debug logs)
+    */
+   static class ProcessLogger extends Thread
+   {
+      private final InputStream is;
+
+      private final String className;
+
+      private final boolean print;
+
+      ProcessLogger(final boolean print, final InputStream is, final String className) throws ClassNotFoundException
+      {
+         this.is = is;
+         this.print = print;
+         this.className = className;
+         setDaemon(true);
+      }
+
+      @Override
+      public void run()
+      {
+         try
+         {
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+            while ((line = br.readLine()) != null)
+            {
+               if (print)
+               {
+                  log(className + ":" + line);
+               }
+            }
+         }
+         catch (IOException ioe)
+         {
+            ioe.printStackTrace();
+         }
+      }
+   }
 }
