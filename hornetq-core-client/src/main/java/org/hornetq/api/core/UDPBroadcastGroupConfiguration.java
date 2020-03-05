@@ -166,9 +166,9 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
                if (open)
                {
                   HornetQClientLogger.LOGGER.warn(this + " getting exception when receiving broadcasting.", e);
-               } else {
+               }/* else {
                   logger.warn("An exception occurred at a expected point, where close = true, this is not an Error!", e);
-               }
+               } */
             }
             break;
          }
