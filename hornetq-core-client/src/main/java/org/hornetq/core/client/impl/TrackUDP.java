@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
+import org.hornetq.api.core.NIOUDPBroadcastGroupConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
@@ -74,6 +76,10 @@ public class TrackUDP {
 
    }
 
+   private static final int ARGUMENTS = 8;
+
+   private static boolean NIO = false;
+
    public static void main(String arg[]) {
 
       System.out.print("Arguments:: ");
@@ -83,8 +89,8 @@ public class TrackUDP {
       }
       System.out.println();
 
-      if (arg.length < 7) {
-         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries script...");
+      if (arg.length < ARGUMENTS) {
+         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries NIO|BLOCK script...");
          System.out.println("");
          System.out.println("retries:: 0 or <0 means retry forever");
          System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 bash netstat -nu");
@@ -99,22 +105,25 @@ public class TrackUDP {
       int timeout = Integer.parseInt(arg[4]);
       int sleep = Integer.parseInt(arg[5]);
       int retries = Integer.parseInt(arg[6]);
+      boolean isNIO = arg[7].toUpperCase().equals("NIO");
+      NIO = isNIO;
 
+      StringBuffer scriptArray = new StringBuffer();
       String script[] = null;
-      if (arg.length > 7) {
-         script = new String[arg.length - 7];
+      if (arg.length > ARGUMENTS) {
+         script = new String[arg.length - ARGUMENTS];
          int pos = 0;
-         for (int i = 7; i < arg.length; i++) {
+         for (int i = ARGUMENTS; i < arg.length; i++) {
             script[pos++] = arg[i];
          }
 
          for (String str : script) {
-            System.out.println("Script:: " + str);
+            scriptArray.append(str + " ");
          }
       }
 
 
-      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " script:: " + script);
+      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " nio::" + isNIO + " script:: " + scriptArray.toString());
 
       DiscoveryGroup[] discoveryGroups = new DiscoveryGroup[passiveThreads];
 
@@ -122,7 +131,8 @@ public class TrackUDP {
 
       try {
          for (int i = 0; i < passiveThreads; i++) {
-            UDPBroadcastGroupConfiguration udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(arg[0], port, null, -1);
+            BroadcastEndpointFactoryConfiguration udpBroadcastGroupConfiguration = createGroupConfig(group, port);
+
             discoveryGroups[i] = new DiscoveryGroup(UUID.randomUUID().toString(), "test" + i, timeout, udpBroadcastGroupConfiguration.createBroadcastEndpointFactory(), null);
             timestamListeners[i] = new TimestamListeners(i, true);
             discoveryGroups[i].registerListener(timestamListeners[i]);
@@ -149,6 +159,16 @@ public class TrackUDP {
       }
    }
 
+   private static BroadcastEndpointFactoryConfiguration createGroupConfig(String group, int port) {
+      BroadcastEndpointFactoryConfiguration udpBroadcastGroupConfiguration;
+
+      if (NIO) {
+         udpBroadcastGroupConfiguration = new NIOUDPBroadcastGroupConfiguration(group, port, null, -1);
+      } else {
+         udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(group, port, null, -1);
+      }
+      return udpBroadcastGroupConfiguration;
+   }
 
    static class ActiveConnectionThread extends Thread {
       private final String group;
@@ -180,7 +200,7 @@ public class TrackUDP {
                   Thread.sleep(sleep);
                }
 
-               UDPBroadcastGroupConfiguration udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(group, port, null, -1);
+               BroadcastEndpointFactoryConfiguration udpBroadcastGroupConfiguration = createGroupConfig(group, port);
                newGroup = new DiscoveryGroup(UUID.randomUUID().toString(), "retry-discovery", 30000l, udpBroadcastGroupConfiguration.createBroadcastEndpointFactory(), null);
                newGroup.registerListener(new TimestamListeners(1000, false));
                newGroup.start(); // opening the UDP connection, and starting the receiving thread
