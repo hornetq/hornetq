@@ -79,32 +79,33 @@ public class TrackUDP {
       }
       System.out.println();
 
-      if (arg.length != 7) {
-         System.out.println("Use: ./run.sh group-ip group-port threads timeout sleep retries script");
+      if (arg.length != 8) {
+         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries script");
          System.out.println("");
          System.out.println("retries:: 0 or <0 means retry forever");
          System.out.println("script:: the word 'null' means no script to run");
-         System.out.println("example: ./run.sh 231.7.7.7 9876 20 10000 10 10 null");
+         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 null");
          System.exit(-1);
       }
 
 
       String group = arg[0];
       int port = Integer.parseInt(arg[1]);
-      int threads = Integer.parseInt(arg[2]);
-      int timeout = Integer.parseInt(arg[3]);
-      int sleep = Integer.parseInt(arg[4]);
-      int retries = Integer.parseInt(arg[5]);
-      String script = arg[6];
+      int passiveThreads = Integer.parseInt(arg[2]);
+      int activeThreads = Integer.parseInt(arg[3]);
+      int timeout = Integer.parseInt(arg[4]);
+      int sleep = Integer.parseInt(arg[5]);
+      int retries = Integer.parseInt(arg[6]);
+      String script = arg[7];
 
-      log("Group :: " + group + " port :: " + port + " threads :: " + threads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " script:: " + script);
+      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " script:: " + script);
 
-      DiscoveryGroup[] discoveryGroups = new DiscoveryGroup[threads];
+      DiscoveryGroup[] discoveryGroups = new DiscoveryGroup[passiveThreads];
 
-      TimestamListeners[] timestamListeners = new TimestamListeners[threads];
+      TimestamListeners[] timestamListeners = new TimestamListeners[passiveThreads];
 
       try {
-         for (int i = 0; i < threads; i++) {
+         for (int i = 0; i < passiveThreads; i++) {
             UDPBroadcastGroupConfiguration udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(arg[0], port, null, -1);
             discoveryGroups[i] = new DiscoveryGroup(UUID.randomUUID().toString(), "test" + i, timeout, udpBroadcastGroupConfiguration.createBroadcastEndpointFactory(), null);
             timestamListeners[i] = new TimestamListeners(i, true);
@@ -116,44 +117,82 @@ public class TrackUDP {
          System.exit(-1);
       }
 
+      for (int i = 0; i < activeThreads; i++) {
+         ActiveConnectionThread activeConnectionThread = new ActiveConnectionThread(group, port, timeout, sleep, retries, script, i);
+         activeConnectionThread.start();
+      }
+
       while (true) {
-         DiscoveryGroup newGroup = null;
          try {
 
             checkListeners(timeout, timestamListeners);
-
-            if (sleep > 0) {
-               Thread.sleep(sleep);
-            }
-
-            UDPBroadcastGroupConfiguration udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(arg[0], port, null, -1);
-            newGroup = new DiscoveryGroup(UUID.randomUUID().toString(), "retry-discovery", 30000l, udpBroadcastGroupConfiguration.createBroadcastEndpointFactory(), null);
-            newGroup.registerListener(new TimestamListeners(1000, false));
-            newGroup.start(); // opening the UDP connection, and starting the receiving thread
-            long retryNR = 0;
-            while (true) {
-
-               retryNR++;
-
-               if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
-                  break;
-               } else {
-                  if (retryNR == 1 && script != null) {
-                     callScript(script, retryNR);
-                  }
-                  log("DANGER DANGER! Brand new connector did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE"));
-                  checkListeners(timeout, timestamListeners);
-               }
-
-               if (retryNR > 0 && retryNR >= retries) {
-                  log("Giving up retry loop, trying a new connection now");
-                  break;
-               }
-            }
+            Thread.sleep(1000);
          } catch (Exception e) {
             e.printStackTrace();
-         } finally {
-            newGroup.stop();
+         }
+      }
+   }
+
+
+   static class ActiveConnectionThread extends Thread {
+      private final String group;
+      private final int port;
+      private final int timeout;
+      private final int sleep;
+      private int retries;
+      private final String script;
+      private final int runnerId;
+
+      public ActiveConnectionThread(String group, int port, int timeout, int sleep, int retries, String script, int id) {
+         super("ActiveConnection::" + id);
+         this.group = group;
+         this.port = port;
+         this.timeout = timeout;
+         this.sleep = sleep;
+         this.script = script;
+         this.retries = retries;
+         this.runnerId = id;
+      }
+
+      @Override
+      public void run() {
+
+         while (true) {
+            DiscoveryGroup newGroup = null;
+            try {
+               if (sleep > 0) {
+                  Thread.sleep(sleep);
+               }
+
+               UDPBroadcastGroupConfiguration udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(group, port, null, -1);
+               newGroup = new DiscoveryGroup(UUID.randomUUID().toString(), "retry-discovery", 30000l, udpBroadcastGroupConfiguration.createBroadcastEndpointFactory(), null);
+               newGroup.registerListener(new TimestamListeners(1000, false));
+               newGroup.start(); // opening the UDP connection, and starting the receiving thread
+               long retryNR = 0;
+               while (true) {
+
+                  retryNR++;
+
+                  if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
+                     break;
+                  } else {
+                     if (retryNR == 1 && script != null) {
+                        callScript(script, retryNR);
+                     }
+                     log("DANGER DANGER! Brand new connector did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId + " thread = " + Thread.currentThread().getName());
+                  }
+
+                  if (retryNR > 0 && retryNR >= retries) {
+                     log("Giving up retry loop, trying a new connection now");
+                     break;
+                  }
+               }
+            } catch (Exception e) {
+               e.printStackTrace();
+            } finally {
+               newGroup.stop();
+            }
+
          }
       }
    }
