@@ -198,7 +198,7 @@ public class TrackUDP {
                      }
                   }
 
-                  if (retryNR > 0 && retryNR >= retries) {
+                  if (retries > 0 && retryNR >= retries) {
                      log(Thread.currentThread().getName() + "::Giving up retry loop, trying a new connection now");
                      break;
                   }
