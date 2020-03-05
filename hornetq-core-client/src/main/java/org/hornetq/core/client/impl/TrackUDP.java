@@ -190,6 +190,9 @@ public class TrackUDP {
                   retryNR++;
 
                   if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
+                     if (retryNR > 1) {
+                        log(Thread.currentThread().getName() + "::Recovered");
+                     }
                      break;
                   } else {
                      log(Thread.currentThread().getName() + "::WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId);
