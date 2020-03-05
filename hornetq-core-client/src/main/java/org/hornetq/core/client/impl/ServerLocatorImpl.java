@@ -1814,6 +1814,11 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
       }
    }
 
+   @Override
+   public void udpReceived() {
+      // no impl
+   }
+
    public synchronized void connectorsChanged(List<DiscoveryEntry> newConnectors)
    {
       if (receivedTopology)

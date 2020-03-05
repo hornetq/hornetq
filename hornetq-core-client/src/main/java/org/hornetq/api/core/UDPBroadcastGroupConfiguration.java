@@ -21,11 +21,12 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.client.HornetQClientLogger;
-
+import org.jboss.logging.Logger;
 
 /**
  * The configuration used to determine how the server will broadcast members.
@@ -36,6 +37,9 @@ import org.hornetq.core.client.HornetQClientLogger;
  */
 public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {
+
+   private static final Logger logger = Logger.getLogger(UDPBroadcastGroupConfiguration.class);
+
    private static final long serialVersionUID = 1052413739064253955L;
 
    private final transient String localBindAddress;
@@ -150,6 +154,11 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             // TODO: Do we need this?
             catch (InterruptedIOException e)
             {
+               if (!(e instanceof SocketTimeoutException)) {
+                  // a Timeout Exception here is totally expected.
+                  // if any other exceptions are happening here, I want to print it
+                  logger.warn(e.getMessage(), e);
+               }
                continue;
             }
             catch (IOException e)
@@ -157,6 +166,8 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
                if (open)
                {
                   HornetQClientLogger.LOGGER.warn(this + " getting exception when receiving broadcasting.", e);
+               } else {
+                  logger.warn("An exception occurred at a expected point, where close = true, this is not an Error!", e);
                }
             }
             break;
@@ -200,6 +211,7 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             }
             catch (IOException e)
             {
+               logger.warn(e.getMessage(), e);
                HornetQClientLogger.LOGGER.ioDiscoveryError(groupAddress.getHostAddress(), groupAddress instanceof Inet4Address ? "IPv4" : "IPv6");
 
                receivingSocket = new MulticastSocket(groupPort);

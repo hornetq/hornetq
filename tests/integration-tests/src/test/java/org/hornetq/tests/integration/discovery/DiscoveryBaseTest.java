@@ -222,6 +222,11 @@ public class DiscoveryBaseTest extends UnitTestCase
       {
          called = true;
       }
+
+      @Override
+      public void udpReceived() {
+
+      }
    }
 
 

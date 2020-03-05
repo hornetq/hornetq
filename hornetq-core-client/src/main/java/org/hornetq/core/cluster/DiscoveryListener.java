@@ -28,4 +28,6 @@ import java.util.List;
 public interface DiscoveryListener
 {
    void connectorsChanged(List<DiscoveryEntry> newConnectors);
+
+   void udpReceived();
 }

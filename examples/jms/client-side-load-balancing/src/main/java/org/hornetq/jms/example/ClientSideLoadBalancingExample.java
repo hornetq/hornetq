@@ -49,6 +49,14 @@ public class ClientSideLoadBalancingExample extends HornetQExample
       Connection connectionB = null;
       Connection connectionC = null;
 
+      try {
+         while (true) {
+            System.err.println("Sleeping");
+            Thread.sleep(1000);
+         }
+      } catch (Throwable e) {
+      }
+
       try
       {
          // Step 1. Get an initial context for looking up JNDI from server 0

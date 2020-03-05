@@ -418,6 +418,7 @@ public final class DiscoveryGroup implements HornetQComponent
 
                synchronized (waitLock)
                {
+                  udpReceived();
                   received = true;
 
                   waitLock.notifyAll();
@@ -454,6 +455,22 @@ public final class DiscoveryGroup implements HornetQComponent
          try
          {
             listener.connectorsChanged(getDiscoveryEntries());
+         }
+         catch (Throwable t)
+         {
+            // Catch it so exception doesn't prevent other listeners from running
+            HornetQClientLogger.LOGGER.failedToCallListenerInDiscovery(t);
+         }
+      }
+   }
+
+   private void udpReceived()
+   {
+      for (DiscoveryListener listener : listeners)
+      {
+         try
+         {
+            listener.udpReceived();
          }
          catch (Throwable t)
          {
