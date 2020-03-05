@@ -97,13 +97,7 @@ public class TrackUDP {
       int retries = Integer.parseInt(arg[5]);
       String script = arg[6];
 
-
-      if (sleep <= 0) {
-         System.err.println("Sleep has to be > 0");
-         System.exit(-1);
-      }
-
-      log("Group :: " + group + " port :: " + port + " threads :: " + threads + " timeout ::" + timeout + " sleep ::" + sleep);
+      log("Group :: " + group + " port :: " + port + " threads :: " + threads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " script:: " + script);
 
       DiscoveryGroup[] discoveryGroups = new DiscoveryGroup[threads];
 
@@ -126,16 +120,11 @@ public class TrackUDP {
          DiscoveryGroup newGroup = null;
          try {
 
+            checkListeners(timeout, timestamListeners);
 
-            for (TimestamListeners listener : timestamListeners) {
-               long timePassed = System.currentTimeMillis() - listener.lastTime;
-               if (timePassed > timeout) {
-                  listener.suspecting = true;
-                  log("Listener " + listener.id + " did not receive a packet for " + timePassed + " milliseconds");
-               }
+            if (sleep > 0) {
+               Thread.sleep(sleep);
             }
-
-            Thread.sleep(sleep);
 
             UDPBroadcastGroupConfiguration udpBroadcastGroupConfiguration = new UDPBroadcastGroupConfiguration(arg[0], port, null, -1);
             newGroup = new DiscoveryGroup(UUID.randomUUID().toString(), "retry-discovery", 30000l, udpBroadcastGroupConfiguration.createBroadcastEndpointFactory(), null);
@@ -143,16 +132,17 @@ public class TrackUDP {
             newGroup.start(); // opening the UDP connection, and starting the receiving thread
             long retryNR = 0;
             while (true) {
-               if (retryNR == 0 && script != null) {
-                  callScript(script, retryNR);
-               }
 
                retryNR++;
 
                if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
                   break;
                } else {
+                  if (retryNR == 1 && script != null) {
+                     callScript(script, retryNR);
+                  }
                   log("DANGER DANGER! Brand new connector did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE"));
+                  checkListeners(timeout, timestamListeners);
                }
 
                if (retryNR > 0 && retryNR >= retries) {
@@ -164,6 +154,16 @@ public class TrackUDP {
             e.printStackTrace();
          } finally {
             newGroup.stop();
+         }
+      }
+   }
+
+   private static void checkListeners(int timeout, TimestamListeners[] timestamListeners) {
+      for (TimestamListeners listener : timestamListeners) {
+         long timePassed = System.currentTimeMillis() - listener.lastTime;
+         if (timePassed > timeout) {
+            listener.suspecting = true;
+            log("Listener " + listener.id + " did not receive a packet for " + timePassed + " milliseconds");
          }
       }
    }
