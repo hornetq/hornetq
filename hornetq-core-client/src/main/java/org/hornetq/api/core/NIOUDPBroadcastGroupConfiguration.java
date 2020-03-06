@@ -106,6 +106,11 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
     */
    private static class UDPBroadcastEndpoint implements BroadcastEndpoint
    {
+
+      private volatile boolean debug = false;
+
+      private volatile String owner;
+
       private static final int SOCKET_TIMEOUT = 500;
 
       private final InetAddress localAddress;
@@ -123,6 +128,12 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
       private volatile boolean open;
 
       private Selector selector;
+
+      @Override
+      public void setDebug(boolean value, String owner) {
+         this.debug = value;
+         this.owner = owner;
+      }
 
       public UDPBroadcastEndpoint(final InetAddress groupAddress,
                                   final int groupPort,

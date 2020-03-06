@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit;
  */
 public interface BroadcastEndpoint
 {
+
+   void setDebug(boolean value, String owner);
    /**
     * This method initializes a BroadcastEndpoint as
     * a receiving end for broadcasts. After that data can be

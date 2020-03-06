@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.NIOUDPBroadcastGroupConfiguration;
@@ -37,9 +38,9 @@ public class TrackUDP {
 
    static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-   static public void log (String info) {
+   public static void log (String info) {
       synchronized (formatter) {
-         System.out.println(formatter.format(new Date()) + " " + info);
+         System.out.println(Thread.currentThread().getName() + "::" + formatter.format(new Date()) + " :: " + info);
       }
    }
 
@@ -76,7 +77,9 @@ public class TrackUDP {
 
    }
 
-   private static final int ARGUMENTS = 8;
+   private static final int ARGUMENTS = 9;
+
+   public static volatile boolean isDebug = false;
 
    private static boolean NIO = false;
 
@@ -90,10 +93,10 @@ public class TrackUDP {
       System.out.println();
 
       if (arg.length < ARGUMENTS) {
-         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries NIO|BLOCK script...");
+         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries NIO|BLOCK isPrintDebug script...");
          System.out.println("");
          System.out.println("retries:: 0 or <0 means retry forever");
-         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 BLOCK bash netstat -nu");
+         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 BLOCK true bash netstat -nu");
          System.exit(-1);
       }
 
@@ -106,6 +109,8 @@ public class TrackUDP {
       int sleep = Integer.parseInt(arg[5]);
       int retries = Integer.parseInt(arg[6]);
       boolean isNIO = arg[7].toUpperCase().equals("NIO");
+      isDebug = arg[8].toUpperCase().equals("TRUE");
+
       NIO = isNIO;
 
       StringBuffer scriptArray = new StringBuffer();
@@ -123,7 +128,7 @@ public class TrackUDP {
       }
 
 
-      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " nio::" + isNIO + " script:: " + scriptArray.toString());
+      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " activeThreads :: " + activeThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " nio::" + isNIO + " printDebug::" + isDebug + " script:: " + scriptArray.toString());
 
       DiscoveryGroup[] discoveryGroups = new DiscoveryGroup[passiveThreads];
 
@@ -152,7 +157,11 @@ public class TrackUDP {
          try {
 
             checkListeners(timeout, timestamListeners);
-            Thread.sleep(1000);
+            Thread.sleep(60000);
+
+            if (isDebug && !isNIO) {
+               log("interruptedExceptions from UDPSocketTimeout=" + UDPBroadcastGroupConfiguration.interruptedExceptions.get() + ", ioExceptionsOnClose=" + UDPBroadcastGroupConfiguration.ioExceptionsOnClose.get());
+            }
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -209,20 +218,28 @@ public class TrackUDP {
 
                   retryNR++;
 
+                  if (retryNR > 1) {
+                     log("Waiting for another broadcast retry " + retryNR);
+                  }
+
                   if (newGroup.waitForBroadcast(timeout)) { // This will wait the read and notification
+                     newGroup.getEndpoint().setDebug(false, Thread.currentThread().getName());
                      if (retryNR > 1) {
-                        log(Thread.currentThread().getName() + "::Recovered");
+                        log("Recovered");
                      }
                      break;
                   } else {
-                     log(Thread.currentThread().getName() + "::WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId);
+                     if (isDebug) {
+                        newGroup.getEndpoint().setDebug(true, Thread.currentThread().getName());
+                     }
+                     log("WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE"));
                      if (retryNR == 1 && script != null) {
                         callScript(script);
                      }
                   }
 
                   if (retries > 0 && retryNR >= retries) {
-                     log(Thread.currentThread().getName() + "::Giving up retry loop, trying a new connection now");
+                     log("Giving up retry loop, trying a new connection now");
                      break;
                   }
                }
@@ -277,6 +294,7 @@ public class TrackUDP {
 
       ProcessLogger(final boolean print, final InputStream is, final String className) throws ClassNotFoundException
       {
+         super("scriptOutputThread");
          this.is = is;
          this.print = print;
          this.className = className;

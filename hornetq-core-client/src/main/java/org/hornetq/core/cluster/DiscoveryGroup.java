@@ -83,6 +83,10 @@ public final class DiscoveryGroup implements HornetQComponent
 
    private final NotificationService notificationService;
 
+   public BroadcastEndpoint getEndpoint() {
+      return endpoint;
+   }
+
    /**
     * This is the main constructor, intended to be used
     *

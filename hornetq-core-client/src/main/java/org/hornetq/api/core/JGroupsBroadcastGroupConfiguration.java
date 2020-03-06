@@ -133,6 +133,11 @@ public final class JGroupsBroadcastGroupConfiguration implements BroadcastEndpoi
 
       private JGroupsReceiver receiver;
 
+      @Override
+      public void setDebug(boolean value, String owner) {
+
+      }
+
       public void broadcast(final byte[] data) throws Exception
       {
          if (broadcastOpened)

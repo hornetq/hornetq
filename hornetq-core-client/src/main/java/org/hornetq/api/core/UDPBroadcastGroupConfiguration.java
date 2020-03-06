@@ -24,8 +24,10 @@ import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.client.HornetQClientLogger;
+import org.hornetq.core.client.impl.TrackUDP;
 import org.jboss.logging.Logger;
 
 /**
@@ -37,6 +39,9 @@ import org.jboss.logging.Logger;
  */
 public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFactoryConfiguration, DiscoveryGroupConfigurationCompatibilityHelper
 {
+
+   public static AtomicInteger interruptedExceptions = new AtomicInteger(0);
+   public static AtomicInteger ioExceptionsOnClose = new AtomicInteger(0);
 
    private static final Logger logger = Logger.getLogger(UDPBroadcastGroupConfiguration.class);
 
@@ -106,6 +111,10 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
     */
    private static class UDPBroadcastEndpoint implements BroadcastEndpoint
    {
+      private volatile boolean debug = false;
+
+      private volatile String owner;
+
       private static final int SOCKET_TIMEOUT = 500;
 
       private final InetAddress localAddress;
@@ -133,11 +142,22 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
          this.localBindPort = localBindPort;
       }
 
+      @Override
+      public void setDebug(boolean value, String owner) {
+         this.debug = value;
+         this.owner = owner;
+      }
 
       public void broadcast(byte[] data) throws Exception
       {
          DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
          broadcastingSocket.send(packet);
+      }
+
+      private void log(String log) {
+         if (debug) {
+            TrackUDP.log(log + " owner::" + owner);
+         }
       }
 
       public byte[] receiveBroadcast() throws Exception
@@ -149,11 +169,18 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
          {
             try
             {
+               log("receivingSocket.receive(packet)");
                receivingSocket.receive(packet);
             }
             // TODO: Do we need this?
             catch (InterruptedIOException e)
             {
+               interruptedExceptions.incrementAndGet();
+               log(e.getMessage());
+               if (debug) {
+                  e.printStackTrace();
+               }
+
                if (!(e instanceof SocketTimeoutException)) {
                   // a Timeout Exception here is totally expected.
                   // if any other exceptions are happening here, I want to print it
@@ -163,10 +190,12 @@ public final class UDPBroadcastGroupConfiguration implements BroadcastEndpointFa
             }
             catch (IOException e)
             {
+               ioExceptionsOnClose.incrementAndGet();
                if (open)
                {
                   HornetQClientLogger.LOGGER.warn(this + " getting exception when receiving broadcasting.", e);
-               }/* else {
+               }
+               /* else {
                   logger.warn("An exception occurred at a expected point, where close = true, this is not an Error!", e);
                } */
             }
