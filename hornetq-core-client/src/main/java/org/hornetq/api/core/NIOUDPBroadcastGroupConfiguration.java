@@ -209,7 +209,8 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
             receivingSocket.join(groupAddress, networkInterfaces.nextElement());
          }
          receivingSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-         receivingSocket.bind(new InetSocketAddress(groupPort));
+         receivingSocket.bind(new InetSocketAddress(groupAddress, groupPort));
+
          if (selector != null) {
             receivingSocket.configureBlocking(false);
             receivingSocket.register(selector, SelectionKey.OP_READ);

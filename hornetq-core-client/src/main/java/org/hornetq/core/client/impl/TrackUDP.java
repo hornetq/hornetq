@@ -93,7 +93,7 @@ public class TrackUDP {
          System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries NIO|BLOCK script...");
          System.out.println("");
          System.out.println("retries:: 0 or <0 means retry forever");
-         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 bash netstat -nu");
+         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 BLOCK bash netstat -nu");
          System.exit(-1);
       }
 
