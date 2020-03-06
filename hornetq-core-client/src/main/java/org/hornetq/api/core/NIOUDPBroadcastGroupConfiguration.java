@@ -19,6 +19,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.StandardProtocolFamily;
 import java.net.StandardSocketOptions;
@@ -27,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.client.HornetQClientLogger;
@@ -150,6 +152,7 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
                if (selector != null) {
                   selector.select();
                }
+               selector.selectedKeys().clear();
                SocketAddress res = receivingSocket.receive(ByteBuffer.wrap(data));
                if (res == null) {
                   continue;
@@ -201,13 +204,16 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
       {
          selector = Selector.open();
          receivingSocket = DatagramChannel.open(StandardProtocolFamily.INET);
-         receivingSocket.bind(new InetSocketAddress(groupAddress, groupPort));
+         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+         while (networkInterfaces.hasMoreElements()){
+            receivingSocket.join(groupAddress, networkInterfaces.nextElement());
+         }
          receivingSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+         receivingSocket.bind(new InetSocketAddress(groupPort));
          if (selector != null) {
             receivingSocket.configureBlocking(false);
             receivingSocket.register(selector, SelectionKey.OP_READ);
          } else {
-
             receivingSocket.configureBlocking(true);
          }
 
