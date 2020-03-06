@@ -20,6 +20,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.StandardProtocolFamily;
+import java.net.StandardSocketOptions;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -145,7 +147,9 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
          {
             try
             {
-               selector.select();
+               if (selector != null) {
+                  selector.select();
+               }
                SocketAddress res = receivingSocket.receive(ByteBuffer.wrap(data));
                if (res == null) {
                   continue;
@@ -196,10 +200,16 @@ public final class NIOUDPBroadcastGroupConfiguration implements BroadcastEndpoin
       public void openClient() throws Exception
       {
          selector = Selector.open();
-         receivingSocket = DatagramChannel.open();
-         receivingSocket.connect(new InetSocketAddress(groupAddress, groupPort));
-         receivingSocket.configureBlocking(false);
-         receivingSocket.register(selector, SelectionKey.OP_READ);
+         receivingSocket = DatagramChannel.open(StandardProtocolFamily.INET);
+         receivingSocket.bind(new InetSocketAddress(groupAddress, groupPort));
+         receivingSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+         if (selector != null) {
+            receivingSocket.configureBlocking(false);
+            receivingSocket.register(selector, SelectionKey.OP_READ);
+         } else {
+
+            receivingSocket.configureBlocking(true);
+         }
 
          open = true;
       }

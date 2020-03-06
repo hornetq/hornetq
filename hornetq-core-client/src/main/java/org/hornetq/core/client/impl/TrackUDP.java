@@ -217,7 +217,7 @@ public class TrackUDP {
                   } else {
                      log(Thread.currentThread().getName() + "::WARNING! Error Condition! UDP connection did not receive any data, retry " + retryNR + " of " + (retries > 0 ? "" + retries : "INFINITE") + " on runnerID=" + runnerId);
                      if (retryNR == 1 && script != null) {
-                        callScript(script, runnerId, retryNR);
+                        callScript(script);
                      }
                   }
 
@@ -246,13 +246,11 @@ public class TrackUDP {
       }
    }
 
-   private static void callScript(String[] script, long id, long retryNR) {
+   private static void callScript(String[] script) {
 
       if (script != null) {
          try {
             ProcessBuilder builder = new ProcessBuilder(script);
-            builder.command().add("" + id);
-            builder.command().add("" + retryNR);
             Process process = builder.start();
             ProcessLogger logger = new ProcessLogger(true, process.getErrorStream(), "script err");
             logger.start();
