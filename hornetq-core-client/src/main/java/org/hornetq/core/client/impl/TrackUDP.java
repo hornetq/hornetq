@@ -33,6 +33,7 @@ import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
+import org.hornetq.utils.Random;
 
 public class TrackUDP {
 
@@ -77,7 +78,7 @@ public class TrackUDP {
 
    }
 
-   private static final int ARGUMENTS = 9;
+   private static final int ARGUMENTS = 10;
 
    public static volatile boolean isDebug = false;
 
@@ -93,10 +94,10 @@ public class TrackUDP {
       System.out.println();
 
       if (arg.length < ARGUMENTS) {
-         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads timeout sleep retries NIO|BLOCK isPrintDebug script...");
+         System.out.println("Use: ./run.sh group-ip group-port passive-threads active-threads high-cpu-threads timeout sleep retries NIO|BLOCK isPrintDebug script...");
          System.out.println("");
          System.out.println("retries:: 0 or <0 means retry forever");
-         System.out.println("example: ./run.sh 231.7.7.7 9876 20 20 10000 0 10 BLOCK true bash netstat -nu");
+         System.out.println("example: ./run.sh 231.7.7.7 9876 20 1 5 10000 0 10 BLOCK true bash netstat -nu");
          System.exit(-1);
       }
 
@@ -105,11 +106,12 @@ public class TrackUDP {
       int port = Integer.parseInt(arg[1]);
       int passiveThreads = Integer.parseInt(arg[2]);
       int activeThreads = Integer.parseInt(arg[3]);
-      int timeout = Integer.parseInt(arg[4]);
-      int sleep = Integer.parseInt(arg[5]);
-      int retries = Integer.parseInt(arg[6]);
-      boolean isNIO = arg[7].toUpperCase().equals("NIO");
-      isDebug = arg[8].toUpperCase().equals("TRUE");
+      int highCPU = Integer.parseInt(arg[4]);
+      int timeout = Integer.parseInt(arg[5]);
+      int sleep = Integer.parseInt(arg[6]);
+      int retries = Integer.parseInt(arg[7]);
+      boolean isNIO = arg[8].toUpperCase().equals("NIO");
+      isDebug = arg[9].toUpperCase().equals("TRUE");
 
       NIO = isNIO;
 
@@ -151,6 +153,10 @@ public class TrackUDP {
       for (int i = 0; i < activeThreads; i++) {
          ActiveConnectionThread activeConnectionThread = new ActiveConnectionThread(group, port, timeout, sleep, retries, script, i);
          activeConnectionThread.start();
+      }
+
+      for (int i = 0; i < highCPU; i++) {
+         new HighCPU().start();
       }
 
       while (true) {
@@ -275,6 +281,34 @@ public class TrackUDP {
             loggerOut.start();
          } catch (Exception e) {
             e.printStackTrace(System.out);
+         }
+      }
+   }
+
+
+   static class HighCPU extends Thread {
+
+      @Override
+      public void run() {
+         Random x = new Random();
+         while (true) {
+
+            double maxLog = Double.MIN_VALUE;
+
+            long time = System.currentTimeMillis() + 10000;
+
+            while (System.currentTimeMillis() < time) {
+               double value = Math.log(x.getRandom().nextDouble());
+               if (value > maxLog) {
+                  maxLog = value;
+               }
+            }
+
+            try {
+               Thread.sleep(1000);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
          }
       }
    }
