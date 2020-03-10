@@ -156,7 +156,7 @@ public class TrackUDP {
       }
 
       for (int i = 0; i < highCPU; i++) {
-         new HighCPU().start();
+         new HighCPU(sleep).start();
       }
 
       while (true) {
@@ -288,6 +288,12 @@ public class TrackUDP {
 
    static class HighCPU extends Thread {
 
+      private final int sleep;
+
+      HighCPU(int sleep) {
+         this.sleep = sleep;
+      }
+
       @Override
       public void run() {
          Random x = new Random();
@@ -295,7 +301,7 @@ public class TrackUDP {
 
             double maxLog = Double.MIN_VALUE;
 
-            long time = System.currentTimeMillis() + 10000;
+            long time = System.currentTimeMillis() + sleep > 0 ? sleep : 10000;
 
             while (System.currentTimeMillis() < time) {
                double value = Math.log(x.getRandom().nextDouble());
@@ -305,7 +311,9 @@ public class TrackUDP {
             }
 
             try {
-               Thread.sleep(1000);
+               if (sleep > 0) {
+                  Thread.sleep(sleep);
+               }
             } catch (Throwable e) {
                e.printStackTrace();
             }
