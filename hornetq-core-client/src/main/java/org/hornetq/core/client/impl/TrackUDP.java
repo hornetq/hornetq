@@ -130,7 +130,7 @@ public class TrackUDP {
       }
 
 
-      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " activeThreads :: " + activeThreads + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " nio::" + isNIO + " printDebug::" + isDebug + " script:: " + scriptArray.toString());
+      log("Group :: " + group + " port :: " + port + " threads :: " + passiveThreads + " activeThreads :: " + activeThreads + " highCPU::" + highCPU + " timeout ::" + timeout + " sleep ::" + sleep + " retries :: " + retries + " nio::" + isNIO + " printDebug::" + isDebug + " script:: " + scriptArray.toString());
 
       DiscoveryGroup[] discoveryGroups = new DiscoveryGroup[passiveThreads];
 
