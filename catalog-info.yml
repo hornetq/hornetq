@@ -1,0 +1,20 @@
+
+# catalog-info.yml
+# This file contains metadata for backstage
+# Read more about available fields and annotations:
+# https://github.com/backstage/backstage
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hornetq
+  description: |
+    HornetQ is an open source project to build a multi-protocol, embeddable, very high performance, clustered, asynchronous messaging system.
+  annotations:
+    github.com/project-slug: Tradeshift/hornetq # GitHub project name
+  tags:
+    - java
+spec:
+  type: other
+  owner: sre
+  lifecycle: production
