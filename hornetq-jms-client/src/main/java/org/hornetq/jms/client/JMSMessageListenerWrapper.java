@@ -45,7 +45,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
    private final boolean individualACK;
 
    protected JMSMessageListenerWrapper(final ConnectionFactoryOptions options,
-                                       final HornetQConnection connection,                                    
+                                       final HornetQConnection connection,
                                        final HornetQSession session,
                                        final ClientConsumer consumer,
                                        final MessageListener listener,
