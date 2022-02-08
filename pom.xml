@@ -476,6 +476,7 @@
                 <module>hornetq-core-client</module>
                 <module>hornetq-server</module>
                 <module>hornetq-jms-client</module>
+		        <module>hornetq-jakarta-client</module>
                 <module>hornetq-jms-server</module>
                 <module>hornetq-journal</module>
                 <module>hornetq-native</module>
@@ -499,6 +500,7 @@
                 <module>hornetq-core-client</module>
                 <module>hornetq-server</module>
                 <module>hornetq-jms-client</module>
+		        <module>hornetq-jakarta-client</module>
                 <module>hornetq-jms-server</module>
                 <module>hornetq-journal</module>
                 <module>hornetq-native</module>
@@ -522,6 +524,7 @@
                 <module>hornetq-core-client</module>
                 <module>hornetq-server</module>
                 <module>hornetq-jms-client</module>
+		        <module>hornetq-jakarta-client</module>
                 <module>hornetq-jms-server</module>
                 <module>hornetq-native</module>
                 <module>hornetq-journal</module>
@@ -583,6 +586,7 @@
                 <module>hornetq-core-client</module>
                 <module>hornetq-server</module>
                 <module>hornetq-jms-client</module>
+		        <module>hornetq-jakarta-client</module>
                 <module>hornetq-jms-server</module>
                 <module>hornetq-native</module>
                 <module>hornetq-journal</module>
@@ -615,6 +619,7 @@
                 <module>hornetq-core-client</module>
                 <module>hornetq-server</module>
                 <module>hornetq-jms-client</module>
+                <module>hornetq-jakarta-client</module>
                 <module>hornetq-jms-server</module>
                 <module>hornetq-native</module>
                 <module>hornetq-journal</module>
