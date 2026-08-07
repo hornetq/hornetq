@@ -602,16 +602,21 @@ public final class ServerLocatorImpl implements ServerLocatorInternal, Discovery
          int pos = loadBalancingPolicy.select(usedTopology.length);
          Pair<TransportConfiguration, TransportConfiguration> pair = usedTopology[pos];
 
-         return pair.getA();
+         if (pair.getA() != null)
+         {
+            return pair.getA();
+         }
+         // Topology entry has no live connector yet (can happen transiently during
+         // topology updates from the server). Fall through to initialConnectors.
       }
-      else
+
+      if (initialConnectors != null)
       {
-         // Get from initialconnectors
-
          int pos = loadBalancingPolicy.select(initialConnectors.length);
-
          return initialConnectors[pos];
       }
+
+      return null;
    }
 
    public void start(Executor executor) throws Exception
